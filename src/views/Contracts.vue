@@ -53,16 +53,7 @@
       <n-data-table
         :columns="columns"
         :data="contractStore.paginatedContracts"
-        :pagination="{
-          page: contractStore.currentPage,
-          pageSize: contractStore.pageSize,
-          itemCount: contractStore.total,
-          showSizePicker: true,
-          pageSizes: [10, 20, 50, 100],
-          showQuickJumper: true,
-          'onUpdate:page': (page: number) => contractStore.setCurrentPage(page),
-          'onUpdate:pageSize': (size: number) => contractStore.setPageSize(size)
-        }"
+        :pagination="pagination"
         :bordered="false"
         size="large"
       />
@@ -271,6 +262,17 @@ const employeeOptions = computed(() =>
     employeeName: emp.name
   }))
 )
+
+const pagination = computed(() => ({
+  page: contractStore.currentPage,
+  pageSize: contractStore.pageSize,
+  itemCount: contractStore.total,
+  showSizePicker: true,
+  pageSizes: [10, 20, 50, 100],
+  showQuickJumper: true,
+  onUpdatePage: (page: number) => contractStore.setCurrentPage(page),
+  onUpdatePageSize: (size: number) => contractStore.setPageSize(size)
+}))
 
 const formData = ref<Partial<Contract>>({
   employeeId: '',
@@ -745,5 +747,34 @@ onMounted(() => {
 
 .warning-alert {
   margin-top: 20px;
+}
+
+:deep(.n-data-table .n-pagination) {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  padding: 16px !important;
+}
+
+:deep(.n-pagination .n-pagination-item) {
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-width: 32px !important;
+  height: 32px !important;
+}
+
+:deep(.n-pagination .n-pagination-item.n-pagination-item--button) {
+  display: inline-flex !important;
+}
+
+:deep(.n-pagination .n-pagination-jumper) {
+  display: inline-flex !important;
+  visibility: visible !important;
+}
+
+:deep(.n-pagination .n-pagination-sizes) {
+  display: inline-flex !important;
+  visibility: visible !important;
 }
 </style>
