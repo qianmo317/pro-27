@@ -101,21 +101,35 @@
       </template>
     </n-modal>
     
-    <n-modal v-model:show="showDetailModal" preset="card" :title="detailCourse?.title" style="width: 560px;">
+    <n-modal v-model:show="showDetailModal" preset="card" :title="detailCourse?.title" style="width: 700px;">
       <template v-if="detailCourse">
-        <n-descriptions bordered :column="1" label-placement="left">
-          <n-descriptions-item label="课程名称">{{ detailCourse.title }}</n-descriptions-item>
-          <n-descriptions-item label="课程描述">{{ detailCourse.description }}</n-descriptions-item>
-          <n-descriptions-item label="讲师">{{ detailCourse.instructor }}</n-descriptions-item>
-          <n-descriptions-item label="课程状态">
-            <n-tag size="small" :type="statusTypeMap[detailCourse.status]">
-              {{ statusLabelMap[detailCourse.status] }}
-            </n-tag>
-          </n-descriptions-item>
-          <n-descriptions-item label="开始日期">{{ detailCourse.startDate }}</n-descriptions-item>
-          <n-descriptions-item label="结束日期">{{ detailCourse.endDate }}</n-descriptions-item>
-          <n-descriptions-item label="参与人数">{{ detailCourse.participants }} 人</n-descriptions-item>
-        </n-descriptions>
+        <n-tabs v-model:value="activeDetailTab" type="line">
+          <n-tab-pane name="info" tab="课程信息">
+            <n-descriptions bordered :column="1" label-placement="left">
+              <n-descriptions-item label="课程名称">{{ detailCourse.title }}</n-descriptions-item>
+              <n-descriptions-item label="课程描述">{{ detailCourse.description }}</n-descriptions-item>
+              <n-descriptions-item label="讲师">{{ detailCourse.instructor }}</n-descriptions-item>
+              <n-descriptions-item label="课程状态">
+                <n-tag size="small" :type="statusTypeMap[detailCourse.status]">
+                  {{ statusLabelMap[detailCourse.status] }}
+                </n-tag>
+              </n-descriptions-item>
+              <n-descriptions-item label="开始日期">{{ detailCourse.startDate }}</n-descriptions-item>
+              <n-descriptions-item label="结束日期">{{ detailCourse.endDate }}</n-descriptions-item>
+              <n-descriptions-item label="参与人数">{{ detailCourse.participants }} 人</n-descriptions-item>
+            </n-descriptions>
+          </n-tab-pane>
+          
+          <n-tab-pane name="materials" tab="课程资料">
+            <AttachmentManager
+              v-if="detailCourse"
+              owner-type="training"
+              :owner-id="detailCourse.id"
+              title="培训资料管理"
+              :allowed-categories="['training_material', 'other']"
+            />
+          </n-tab-pane>
+        </n-tabs>
       </template>
       
       <template #footer>
@@ -135,6 +149,7 @@ import { useTrainingStore } from '@/stores/training'
 import { useMessage } from 'naive-ui'
 import type { FormInst, FormRules } from 'naive-ui'
 import type { TrainingCourse } from '@/types'
+import AttachmentManager from '@/components/AttachmentManager.vue'
 
 const trainingStore = useTrainingStore()
 const message = useMessage()
@@ -155,6 +170,7 @@ function formatDate(timestamp: number | null): string {
 }
 
 const activeTab = ref('all')
+const activeDetailTab = ref('info')
 const showAddModal = ref(false)
 const showDetailModal = ref(false)
 const detailCourse = ref<TrainingCourse | null>(null)
@@ -226,6 +242,7 @@ function handleAdd() {
 
 function openDetail(course: TrainingCourse) {
   detailCourse.value = { ...course }
+  activeDetailTab.value = 'info'
   showDetailModal.value = true
 }
 

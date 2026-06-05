@@ -95,3 +95,51 @@ export interface MenuItem {
   icon: string
   path: string
 }
+
+export type AttachmentCategory = 
+  | 'id_card'
+  | 'education_certificate'
+  | 'medical_report'
+  | 'resignation_proof'
+  | 'labor_contract'
+  | 'training_material'
+  | 'other'
+
+export interface Attachment {
+  id: string
+  name: string
+  originalName: string
+  category: AttachmentCategory
+  fileType: string
+  fileSize: number
+  url: string
+  thumbnail?: string
+  uploaderId: string
+  uploaderName: string
+  uploadDate: string
+  description?: string
+  isSensitive: boolean
+  watermarkText?: string
+  ownerType: 'employee' | 'training' | 'other'
+  ownerId: string
+}
+
+export const ATTACHMENT_CATEGORY_OPTIONS: { label: string; value: AttachmentCategory; isSensitive?: boolean }[] = [
+  { label: '身份证', value: 'id_card', isSensitive: true },
+  { label: '学历证书', value: 'education_certificate', isSensitive: true },
+  { label: '体检报告', value: 'medical_report', isSensitive: true },
+  { label: '离职证明', value: 'resignation_proof' },
+  { label: '劳动合同', value: 'labor_contract', isSensitive: true },
+  { label: '培训资料', value: 'training_material' },
+  { label: '其他', value: 'other' }
+]
+
+export const ATTACHMENT_CATEGORY_LABELS: Record<AttachmentCategory, string> = {
+  id_card: '身份证',
+  education_certificate: '学历证书',
+  medical_report: '体检报告',
+  resignation_proof: '离职证明',
+  labor_contract: '劳动合同',
+  training_material: '培训资料',
+  other: '其他'
+}

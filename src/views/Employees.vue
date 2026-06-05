@@ -97,7 +97,7 @@
       </template>
     </n-modal>
     
-    <n-modal v-model:show="showViewModal" preset="card" title="员工详情" style="width: 700px;">
+    <n-modal v-model:show="showViewModal" preset="card" title="员工详情" style="width: 900px;">
       <div v-if="currentEmployee" class="employee-detail">
         <div class="detail-header">
           <div class="detail-avatar">
@@ -119,56 +119,70 @@
           <n-descriptions-item label="入职日期">{{ currentEmployee.entryDate }}</n-descriptions-item>
         </n-descriptions>
 
-        <div v-if="currentContract" class="current-contract">
-          <div class="section-title">
-            <span>当前合同</span>
-            <n-tag :type="contractStatusTypes[currentContract.status]" size="small">
-              {{ contractStatusLabels[currentContract.status] }}
-            </n-tag>
-          </div>
-          <n-card size="small" class="contract-card">
-            <n-descriptions :column="2" :bordered="false" size="small">
-              <n-descriptions-item label="合同类型">{{ contractTypeLabels[currentContract.type] }}</n-descriptions-item>
-              <n-descriptions-item label="合同编号">{{ currentContract.id }}</n-descriptions-item>
-              <n-descriptions-item label="合同期限">{{ currentContract.startDate }} 至 {{ currentContract.endDate }}</n-descriptions-item>
-              <n-descriptions-item label="薪资约定">¥ {{ currentContract.salaryAgreement.toLocaleString() }}</n-descriptions-item>
-            </n-descriptions>
-            <n-alert v-if="currentContract.status === 'expiring'" type="warning" size="small" class="contract-warning">
-              此合同将在 {{ getDaysRemaining(currentContract.endDate) }} 天后到期，请及时处理续签事宜。
-            </n-alert>
-          </n-card>
-        </div>
-
-        <div v-else class="no-contract">
-          <n-alert type="info" :bordered="false">
-            该员工暂无有效合同
-          </n-alert>
-        </div>
-
-        <div class="contract-timeline">
-          <div class="section-title">合同时间线</div>
-          <n-timeline v-if="employeeContracts.length > 0" :type="timelineType">
-            <n-timeline-item
-              v-for="(contract, index) in employeeContracts"
-              :key="contract.id"
-              :type="getTimelineItemType(contract, index)"
-              :title="`${contractTypeLabels[contract.type]}合同`"
-              :time="`${contract.startDate} ~ ${contract.endDate}`"
-            >
-              <div class="timeline-content">
-                <div class="timeline-id">合同编号：{{ contract.id }}</div>
-                <div class="timeline-salary">薪资：¥ {{ contract.salaryAgreement.toLocaleString() }}</div>
-                <n-tag size="small" :type="contractStatusTypes[contract.status]">
-                  {{ contractStatusLabels[contract.status] }}
+        <n-tabs v-model:value="activeDetailTab" type="line" style="margin-top: 20px;">
+          <n-tab-pane name="contract" tab="合同信息">
+            <div v-if="currentContract" class="current-contract">
+              <div class="section-title">
+                <span>当前合同</span>
+                <n-tag :type="contractStatusTypes[currentContract.status]" size="small">
+                  {{ contractStatusLabels[currentContract.status] }}
                 </n-tag>
-                <div v-if="contract.remarks" class="timeline-remarks">{{ contract.remarks }}</div>
               </div>
-            </n-timeline-item>
-          </n-timeline>
-          <div v-else class="no-history">
-            <n-empty description="暂无历史合同记录" />
-          </div>
-        </div>
+              <n-card size="small" class="contract-card">
+                <n-descriptions :column="2" :bordered="false" size="small">
+                  <n-descriptions-item label="合同类型">{{ contractTypeLabels[currentContract.type] }}</n-descriptions-item>
+                  <n-descriptions-item label="合同编号">{{ currentContract.id }}</n-descriptions-item>
+                  <n-descriptions-item label="合同期限">{{ currentContract.startDate }} 至 {{ currentContract.endDate }}</n-descriptions-item>
+                  <n-descriptions-item label="薪资约定">¥ {{ currentContract.salaryAgreement.toLocaleString() }}</n-descriptions-item>
+                </n-descriptions>
+                <n-alert v-if="currentContract.status === 'expiring'" type="warning" size="small" class="contract-warning">
+                  此合同将在 {{ getDaysRemaining(currentContract.endDate) }} 天后到期，请及时处理续签事宜。
+                </n-alert>
+              </n-card>
+            </div>
+
+            <div v-else class="no-contract">
+              <n-alert type="info" :bordered="false">
+                该员工暂无有效合同
+              </n-alert>
+            </div>
+
+            <div class="contract-timeline">
+              <div class="section-title">合同时间线</div>
+              <n-timeline v-if="employeeContracts.length > 0" :type="timelineType">
+                <n-timeline-item
+                  v-for="(contract, index) in employeeContracts"
+                  :key="contract.id"
+                  :type="getTimelineItemType(contract, index)"
+                  :title="`${contractTypeLabels[contract.type]}合同`"
+                  :time="`${contract.startDate} ~ ${contract.endDate}`"
+                >
+                  <div class="timeline-content">
+                    <div class="timeline-id">合同编号：{{ contract.id }}</div>
+                    <div class="timeline-salary">薪资：¥ {{ contract.salaryAgreement.toLocaleString() }}</div>
+                    <n-tag size="small" :type="contractStatusTypes[contract.status]">
+                      {{ contractStatusLabels[contract.status] }}
+                    </n-tag>
+                    <div v-if="contract.remarks" class="timeline-remarks">{{ contract.remarks }}</div>
+                  </div>
+                </n-timeline-item>
+              </n-timeline>
+              <div v-else class="no-history">
+                <n-empty description="暂无历史合同记录" />
+              </div>
+            </div>
+          </n-tab-pane>
+          
+          <n-tab-pane name="attachments" tab="档案附件">
+            <AttachmentManager
+              v-if="currentEmployee"
+              owner-type="employee"
+              :owner-id="currentEmployee.id"
+              title="员工档案附件"
+              :allowed-categories="['id_card', 'education_certificate', 'medical_report', 'resignation_proof', 'labor_contract', 'other']"
+            />
+          </n-tab-pane>
+        </n-tabs>
       </div>
       <template #footer>
         <n-space justify="end">
@@ -228,6 +242,7 @@ import { useContractStore } from '@/stores/contract'
 import { useMessage, useDialog, NTag, NSpace, NButton, NTimeline, NTimelineItem } from 'naive-ui'
 import type { FormInst, FormRules, DataTableColumns, DialogReactive } from 'naive-ui'
 import type { Employee, Contract } from '@/types'
+import AttachmentManager from '@/components/AttachmentManager.vue'
 
 const employeeStore = useEmployeeStore()
 const contractStore = useContractStore()
@@ -250,6 +265,7 @@ const showAddModal = ref(false)
 const showViewModal = ref(false)
 const showEditModal = ref(false)
 const currentEmployee = ref<Employee | null>(null)
+const activeDetailTab = ref('contract')
 
 const employeeContracts = computed(() => {
   if (!currentEmployee.value) return []
@@ -422,6 +438,7 @@ const columns: DataTableColumns<Employee> = [
 
 function handleView(employee: Employee) {
   currentEmployee.value = employee
+  activeDetailTab.value = 'contract'
   showViewModal.value = true
 }
 
