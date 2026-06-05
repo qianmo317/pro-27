@@ -1,0 +1,177 @@
+import type { User, Employee, AttendanceRecord, SalaryRecord, Candidate, TrainingCourse, Department } from '@/types'
+
+export const mockUsers: User[] = [
+  {
+    id: '1',
+    username: 'admin',
+    name: '系统管理员',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin',
+    role: 'admin',
+    department: '技术部'
+  },
+  {
+    id: '2',
+    username: 'hr',
+    name: '李人事',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=hr',
+    role: 'hr',
+    department: '人力资源部'
+  },
+  {
+    id: '3',
+    username: 'employee',
+    name: '王员工',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=employee',
+    role: 'employee',
+    department: '市场部'
+  }
+]
+
+export const mockEmployees: Employee[] = [
+  { id: '1', name: '张三', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=zhangsan', gender: 'male', phone: '13800138001', email: 'zhangsan@company.com', department: '技术部', position: '高级前端工程师', entryDate: '2022-03-15', status: 'active' },
+  { id: '2', name: '李四', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=lisi', gender: 'female', phone: '13800138002', email: 'lisi@company.com', department: '产品部', position: '产品经理', entryDate: '2021-08-20', status: 'active' },
+  { id: '3', name: '王五', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=wangwu', gender: 'male', phone: '13800138003', email: 'wangwu@company.com', department: '技术部', position: '后端工程师', entryDate: '2023-01-10', status: 'probation' },
+  { id: '4', name: '赵六', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=zhaoliu', gender: 'female', phone: '13800138004', email: 'zhaoliu@company.com', department: '市场部', position: '市场专员', entryDate: '2020-06-01', status: 'active' },
+  { id: '5', name: '孙七', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sunqi', gender: 'male', phone: '13800138005', email: 'sunqi@company.com', department: '人力资源部', position: 'HR 专员', entryDate: '2021-11-30', status: 'active' },
+  { id: '6', name: '周八', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=zhouba', gender: 'female', phone: '13800138006', email: 'zhouba@company.com', department: '财务部', position: '财务主管', entryDate: '2019-09-15', status: 'active' },
+  { id: '7', name: '吴九', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=wujiu', gender: 'male', phone: '13800138007', email: 'wujiu@company.com', department: '技术部', position: '测试工程师', entryDate: '2022-07-25', status: 'active' },
+  { id: '8', name: '郑十', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=zhengshi', gender: 'female', phone: '13800138008', email: 'zhengshi@company.com', department: '运营部', position: '运营经理', entryDate: '2023-04-18', status: 'probation' },
+  { id: '9', name: '陈十一', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=chenshiyi', gender: 'male', phone: '13800138009', email: 'chenshiyi@company.com', department: '技术部', position: '架构师', entryDate: '2018-02-14', status: 'active' },
+  { id: '10', name: '林十二', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=linshier', gender: 'female', phone: '13800138010', email: 'linshier@company.com', department: '设计部', position: 'UI 设计师', entryDate: '2021-05-20', status: 'active' }
+]
+
+export const mockAttendanceRecords: AttendanceRecord[] = Array.from({ length: 30 }, (_, i) => {
+  const date = new Date(2024, 0, i + 1)
+  const day = date.getDay()
+  if (day === 0 || day === 6) return null
+  return {
+    id: `att-${i}`,
+    employeeId: mockEmployees[i % mockEmployees.length].id,
+    employeeName: mockEmployees[i % mockEmployees.length].name,
+    date: date.toISOString().split('T')[0],
+    checkIn: `${8 + Math.floor(Math.random() * 2)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
+    checkOut: `${17 + Math.floor(Math.random() * 3)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
+    status: ['normal', 'late', 'early', 'absent'][Math.floor(Math.random() * 4)] as AttendanceRecord['status']
+  }
+}).filter(Boolean) as AttendanceRecord[]
+
+export const mockSalaryRecords: SalaryRecord[] = [
+  { id: 'sal-1', employeeId: '1', employeeName: '张三', month: '2024-01', baseSalary: 18000, bonus: 3000, allowance: 500, deduction: 1500, netSalary: 20000 },
+  { id: 'sal-2', employeeId: '1', employeeName: '张三', month: '2024-02', baseSalary: 18000, bonus: 2500, allowance: 500, deduction: 1500, netSalary: 19500 },
+  { id: 'sal-3', employeeId: '1', employeeName: '张三', month: '2024-03', baseSalary: 18000, bonus: 4000, allowance: 500, deduction: 1500, netSalary: 21000 },
+  { id: 'sal-4', employeeId: '2', employeeName: '李四', month: '2024-01', baseSalary: 20000, bonus: 3500, allowance: 500, deduction: 1800, netSalary: 22200 },
+  { id: 'sal-5', employeeId: '2', employeeName: '李四', month: '2024-02', baseSalary: 20000, bonus: 3000, allowance: 500, deduction: 1800, netSalary: 21700 },
+  { id: 'sal-6', employeeId: '3', employeeName: '王五', month: '2024-01', baseSalary: 12000, bonus: 1000, allowance: 500, deduction: 1000, netSalary: 12500 },
+  { id: 'sal-7', employeeId: '4', employeeName: '赵六', month: '2024-01', baseSalary: 10000, bonus: 1500, allowance: 500, deduction: 800, netSalary: 11200 },
+  { id: 'sal-8', employeeId: '5', employeeName: '孙七', month: '2024-01', baseSalary: 11000, bonus: 1200, allowance: 500, deduction: 900, netSalary: 11800 }
+]
+
+export const mockCandidates: Candidate[] = [
+  { id: 'can-1', name: '刘小明', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=liuxiaoming', position: '前端工程师', stage: 'screening', appliedDate: '2024-01-10', experience: '3年', education: '本科' },
+  { id: 'can-2', name: '陈小红', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=chenxiaohong', position: '产品经理', stage: 'screening', appliedDate: '2024-01-12', experience: '5年', education: '硕士' },
+  { id: 'can-3', name: '杨小华', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=yangxiaohua', position: '后端工程师', stage: 'interview1', appliedDate: '2024-01-08', experience: '4年', education: '本科' },
+  { id: 'can-4', name: '黄小丽', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=huangxiaoli', position: 'UI 设计师', stage: 'interview1', appliedDate: '2024-01-09', experience: '2年', education: '本科' },
+  { id: 'can-5', name: '周小强', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=zhouxiaoqiang', position: '测试工程师', stage: 'interview2', appliedDate: '2024-01-05', experience: '3年', education: '本科' },
+  { id: 'can-6', name: '吴小燕', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=wuxiaoyan', position: '运营专员', stage: 'interview2', appliedDate: '2024-01-06', experience: '2年', education: '大专' },
+  { id: 'can-7', name: '郑小军', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=zhengxiaojun', position: 'Java 开发', stage: 'offer', appliedDate: '2024-01-03', experience: '6年', education: '硕士' },
+  { id: 'can-8', name: '孙小芳', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sunxiaofang', position: 'HR 专员', stage: 'offer', appliedDate: '2024-01-04', experience: '3年', education: '本科' },
+  { id: 'can-9', name: '马小波', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=maxiaobo', position: '数据分析师', stage: 'rejected', appliedDate: '2024-01-02', experience: '1年', education: '本科' },
+  { id: 'can-10', name: '林小燕', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=linxiaoyan', position: '市场专员', stage: 'rejected', appliedDate: '2024-01-01', experience: '1年', education: '大专' }
+]
+
+export const mockTrainingCourses: TrainingCourse[] = [
+  { id: 'tc-1', title: 'Vue 3 进阶开发', description: '深入学习 Vue 3 Composition API、Pinia 状态管理等高级特性', instructor: '张老师', startDate: '2024-02-01', endDate: '2024-02-15', status: 'upcoming', participants: 25 },
+  { id: 'tc-2', title: '项目管理实战', description: '学习敏捷开发、Scrum 流程、项目风险管理等', instructor: '李老师', startDate: '2024-01-15', endDate: '2024-01-30', status: 'ongoing', participants: 18 },
+  { id: 'tc-3', title: '沟通技巧提升', description: '提升职场沟通能力、团队协作技巧', instructor: '王老师', startDate: '2024-01-01', endDate: '2024-01-10', status: 'completed', participants: 32 },
+  { id: 'tc-4', title: 'TypeScript 高级编程', description: '深入理解 TypeScript 类型系统、泛型、装饰器等', instructor: '赵老师', startDate: '2024-02-10', endDate: '2024-02-25', status: 'upcoming', participants: 20 },
+  { id: 'tc-5', title: '领导力培训', description: '培养团队管理能力、决策能力、激励技巧', instructor: '孙老师', startDate: '2024-01-20', endDate: '2024-02-05', status: 'ongoing', participants: 12 },
+  { id: 'tc-6', title: '新员工入职培训', description: '公司文化、规章制度、办公软件使用等', instructor: 'HR 部', startDate: '2024-01-05', endDate: '2024-01-07', status: 'completed', participants: 15 }
+]
+
+function buildDepartmentTree(): Department[] {
+  const deptEmployees: Record<string, Employee[]> = {}
+  mockEmployees.forEach(emp => {
+    if (!deptEmployees[emp.department]) {
+      deptEmployees[emp.department] = []
+    }
+    deptEmployees[emp.department].push(emp)
+  })
+
+  const departments: Department[] = [
+    {
+      id: 'dept-1',
+      name: '总公司',
+      parentId: null,
+      manager: '陈十一',
+      employeeCount: mockEmployees.length,
+      employees: mockEmployees,
+      children: [
+        {
+          id: 'dept-2',
+          name: '技术部',
+          parentId: 'dept-1',
+          manager: '陈十一',
+          employeeCount: (deptEmployees['技术部'] || []).length,
+          employees: deptEmployees['技术部'] || [],
+          children: [
+            { id: 'dept-6', name: '前端组', parentId: 'dept-2', manager: '张三', employeeCount: 1, employees: deptEmployees['技术部']?.filter(e => e.position.includes('前端')) || [] },
+            { id: 'dept-7', name: '后端组', parentId: 'dept-2', manager: '王五', employeeCount: 1, employees: deptEmployees['技术部']?.filter(e => e.position.includes('后端') || e.position.includes('架构')) || [] },
+            { id: 'dept-8', name: '测试组', parentId: 'dept-2', manager: '吴九', employeeCount: 1, employees: deptEmployees['技术部']?.filter(e => e.position.includes('测试')) || [] }
+          ]
+        },
+        {
+          id: 'dept-3',
+          name: '产品部',
+          parentId: 'dept-1',
+          manager: '李四',
+          employeeCount: (deptEmployees['产品部'] || []).length,
+          employees: deptEmployees['产品部'] || []
+        },
+        {
+          id: 'dept-4',
+          name: '市场部',
+          parentId: 'dept-1',
+          manager: '赵六',
+          employeeCount: (deptEmployees['市场部'] || []).length,
+          employees: deptEmployees['市场部'] || []
+        },
+        {
+          id: 'dept-5',
+          name: '人力资源部',
+          parentId: 'dept-1',
+          manager: '孙七',
+          employeeCount: (deptEmployees['人力资源部'] || []).length,
+          employees: deptEmployees['人力资源部'] || []
+        },
+        {
+          id: 'dept-9',
+          name: '财务部',
+          parentId: 'dept-1',
+          manager: '周八',
+          employeeCount: (deptEmployees['财务部'] || []).length,
+          employees: deptEmployees['财务部'] || []
+        },
+        {
+          id: 'dept-10',
+          name: '运营部',
+          parentId: 'dept-1',
+          manager: '郑十',
+          employeeCount: (deptEmployees['运营部'] || []).length,
+          employees: deptEmployees['运营部'] || []
+        },
+        {
+          id: 'dept-11',
+          name: '设计部',
+          parentId: 'dept-1',
+          manager: '林十二',
+          employeeCount: (deptEmployees['设计部'] || []).length,
+          employees: deptEmployees['设计部'] || []
+        }
+      ]
+    }
+  ]
+
+  return departments
+}
+
+export const mockDepartments: Department[] = buildDepartmentTree()

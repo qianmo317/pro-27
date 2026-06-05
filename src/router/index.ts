@@ -1,0 +1,92 @@
+import { createRouter, createWebHistory } from 'vue-router'
+import type { RouteRecordRaw } from 'vue-router'
+import { useUserStore } from '@/stores/user'
+
+const routes: RouteRecordRaw[] = [
+  {
+    path: '/login',
+    name: 'login',
+    component: () => import('@/views/Login.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/',
+    component: () => import('@/components/layout/MainLayout.vue'),
+    meta: { requiresAuth: true },
+    redirect: '/dashboard',
+    children: [
+      {
+        path: '/dashboard',
+        name: 'dashboard',
+        component: () => import('@/views/Dashboard.vue'),
+        meta: { title: '仪表盘' }
+      },
+      {
+        path: '/employees',
+        name: 'employees',
+        component: () => import('@/views/Employees.vue'),
+        meta: { title: '员工花名册' }
+      },
+      {
+        path: '/attendance',
+        name: 'attendance',
+        component: () => import('@/views/Attendance.vue'),
+        meta: { title: '考勤统计' }
+      },
+      {
+        path: '/salary',
+        name: 'salary',
+        component: () => import('@/views/Salary.vue'),
+        meta: { title: '薪资工资条' }
+      },
+      {
+        path: '/recruitment',
+        name: 'recruitment',
+        component: () => import('@/views/Recruitment.vue'),
+        meta: { title: '招聘看板' }
+      },
+      {
+        path: '/training',
+        name: 'training',
+        component: () => import('@/views/Training.vue'),
+        meta: { title: '培训管理' }
+      },
+      {
+        path: '/organization',
+        name: 'organization',
+        component: () => import('@/views/Organization.vue'),
+        meta: { title: '组织架构' }
+      }
+    ]
+  }
+]
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes
+})
+
+router.beforeEach((to, _from, next) => {
+  const userStore = useUserStore()
+  
+  if (to.meta.requiresAuth && !userStore.isLoggedIn) {
+    userStore.restoreSession()
+    if (!userStore.isLoggedIn) {
+      next('/login')
+      return
+    }
+  }
+  
+  if (to.path === '/login' && userStore.isLoggedIn) {
+    next('/dashboard')
+  } else {
+    next()
+  }
+})
+
+router.afterEach((to) => {
+  const title = to.meta.title as string | undefined
+  document.title = title ? `${title} - HR 人力资源管理系统` : 'HR 人力资源管理系统'
+})
+
+export default router
