@@ -37,7 +37,27 @@
       </div>
 
       <div class="preview-content">
-        <div v-if="isImage && watermarkedUrl" class="image-preview">
+        <div v-if="loadingWatermark" class="loading-preview">
+          <div class="loading-content">
+            <Loader2 :size="32" class="loading-icon" :spin="true" />
+            <p>{{ attachment.isSensitive ? '正在为敏感文件添加水印...' : '正在加载图片...' }}</p>
+          </div>
+        </div>
+        
+        <div v-else-if="loadError" class="error-preview">
+          <div class="error-content">
+            <AlertTriangle :size="32" class="error-icon" />
+            <p>{{ errorMessage || '图片加载失败' }}</p>
+            <n-button size="small" @click="retryLoad">
+              <template #icon>
+                <RotateCcw :size="14" />
+              </template>
+              重新加载
+            </n-button>
+          </div>
+        </div>
+        
+        <div v-else-if="isImage && watermarkedUrl" class="image-preview">
           <img :src="watermarkedUrl" :alt="attachment.name" />
           <div v-if="attachment.isSensitive" class="watermark-notice">
             <AlertTriangle :size="14" />
@@ -80,8 +100,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { Lock, AlertTriangle, FileText, Download, File, FileImage, FileVideo, FileAudio, FileSpreadsheet, FilePresentation, FileArchive } from 'lucide-vue-next'
+import { ref, computed, watch, nextTick } from 'vue'
+import { Lock, AlertTriangle, FileText, Download, File, FileImage, FileVideo, FileAudio, FileSpreadsheet, FileArchive, Loader2, RotateCcw } from 'lucide-vue-next'
 import type { Attachment } from '@/types'
 import { ATTACHMENT_CATEGORY_LABELS } from '@/types'
 import { formatFileSize, isImageFile, isPdfFile, addWatermarkToImage, getFileIcon } from '@/lib/watermark'
@@ -102,6 +122,9 @@ const visible = computed({
 
 const watermarkedUrl = ref<string>('')
 const loadingWatermark = ref(false)
+const loadError = ref(false)
+const errorMessage = ref('')
+let currentRequestId = 0
 
 const categoryLabel = computed(() => {
   if (!props.attachment) return ''
@@ -131,29 +154,84 @@ const fileIconComponent = computed(() => {
     pdf: FileText,
     word: FileText,
     excel: FileSpreadsheet,
-    ppt: FilePresentation,
+    ppt: FileText,
     zip: FileArchive,
     file: File
   }
   return iconMap[iconType] || File
 })
 
-watch(() => props.attachment, async (newVal) => {
-  if (newVal && isImageFile(newVal.fileType)) {
-    loadingWatermark.value = true
-    try {
-      if (newVal.isSensitive && newVal.watermarkText) {
-        watermarkedUrl.value = await addWatermarkToImage(newVal.url, newVal.watermarkText)
-      } else {
-        watermarkedUrl.value = newVal.url
-      }
-    } catch (e) {
-      watermarkedUrl.value = newVal.url
-    } finally {
+async function loadAttachmentImage(attachment: Attachment) {
+  const requestId = ++currentRequestId
+  loadError.value = false
+  errorMessage.value = ''
+  
+  if (!isImageFile(attachment.fileType)) {
+    watermarkedUrl.value = ''
+    loadingWatermark.value = false
+    return
+  }
+  
+  loadingWatermark.value = true
+  
+  try {
+    let resultUrl: string
+    
+    if (attachment.isSensitive && attachment.watermarkText) {
+      resultUrl = await addWatermarkToImage(attachment.url, attachment.watermarkText)
+    } else {
+      resultUrl = attachment.url
+    }
+    
+    if (requestId === currentRequestId) {
+      watermarkedUrl.value = resultUrl
+      loadError.value = false
+    }
+  } catch (e) {
+    if (requestId === currentRequestId) {
+      loadError.value = true
+      errorMessage.value = e instanceof Error ? e.message : '图片加载失败'
+      watermarkedUrl.value = attachment.url
+    }
+  } finally {
+    if (requestId === currentRequestId) {
       loadingWatermark.value = false
     }
   }
+}
+
+async function retryLoad() {
+  if (props.attachment) {
+    await loadAttachmentImage(props.attachment)
+  }
+}
+
+function resetState() {
+  currentRequestId++
+  watermarkedUrl.value = ''
+  loadingWatermark.value = false
+  loadError.value = false
+  errorMessage.value = ''
+}
+
+watch(() => props.attachment, (newVal, oldVal) => {
+  if (newVal && newVal.id !== oldVal?.id) {
+    resetState()
+    nextTick(() => {
+      if (newVal) {
+        loadAttachmentImage(newVal)
+      }
+    })
+  } else if (!newVal) {
+    resetState()
+  }
 }, { immediate: true })
+
+watch(() => props.show, (newShow) => {
+  if (newShow && props.attachment && !watermarkedUrl.value && !loadingWatermark.value) {
+    loadAttachmentImage(props.attachment)
+  }
+})
 
 function handleDownload() {
   if (!props.attachment) return
@@ -257,5 +335,53 @@ function handleDownload() {
 .other-hint {
   font-size: 12px !important;
   color: #9CA3AF;
+}
+
+.loading-preview,
+.error-preview {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 300px;
+}
+
+.loading-content,
+.error-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.loading-icon {
+  color: #7C3AED;
+  animation: spin 1s linear infinite;
+}
+
+.loading-content p {
+  margin: 0;
+  font-size: 14px;
+  color: #6B7280;
+}
+
+.error-icon {
+  color: #EF4444;
+}
+
+.error-content p {
+  margin: 0;
+  font-size: 14px;
+  color: #EF4444;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

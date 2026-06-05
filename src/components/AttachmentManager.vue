@@ -211,10 +211,10 @@ import { ref, computed, watch } from 'vue'
 import {
   Paperclip, Upload, Eye, Lock, MoreVertical, File, X, AlertTriangle,
   FileImage, FileVideo, FileAudio, FileText, FileSpreadsheet,
-  FilePresentation, FileArchive, Trash2, Edit3, Download
+  FileArchive, Trash2, Edit3, Download
 } from 'lucide-vue-next'
 import { useMessage, useDialog } from 'naive-ui'
-import type { FormInst, FormRules, UploadCustomRequestOptions, UploadFile } from 'naive-ui'
+import type { FormInst, FormRules, UploadCustomRequestOptions } from 'naive-ui'
 import type { Attachment, AttachmentCategory } from '@/types'
 import { ATTACHMENT_CATEGORY_OPTIONS, ATTACHMENT_CATEGORY_LABELS } from '@/types'
 import { useAttachmentStore } from '@/stores/attachment'
@@ -268,7 +268,7 @@ const filteredAttachments = computed(() => {
   return attachments.value.filter(a => a.category === selectedCategory.value)
 })
 
-const fileList = ref<UploadFile[]>([])
+const fileList = ref<any[]>([])
 const pendingFiles = ref<File[]>([])
 const showUploadModal = ref(false)
 const uploading = ref(false)
@@ -319,7 +319,7 @@ function getFileIcon(fileType: string) {
     pdf: FileText,
     word: FileText,
     excel: FileSpreadsheet,
-    ppt: FilePresentation,
+    ppt: FileText,
     zip: FileArchive,
     file: File
   }
@@ -394,9 +394,25 @@ async function confirmUpload() {
       uploading.value = true
       try {
         const currentUser = userStore.currentUser
-        for (const file of pendingFiles.value) {
+        const fileCount = pendingFiles.value.length
+        const customName = uploadForm.value.name?.trim()
+        
+        for (let i = 0; i < pendingFiles.value.length; i++) {
+          const file = pendingFiles.value[i]
+          let finalName: string | undefined
+          
+          if (customName) {
+            if (fileCount > 1) {
+              finalName = `${customName} (${i + 1})`
+            } else {
+              finalName = customName
+            }
+          } else {
+            finalName = file.name.replace(/\.[^/.]+$/, '')
+          }
+          
           const attachment = await attachmentStore.uploadAttachment(file, {
-            name: uploadForm.value.name || undefined,
+            name: finalName,
             category: uploadForm.value.category,
             description: uploadForm.value.description || undefined,
             ownerType: props.ownerType,
