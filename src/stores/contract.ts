@@ -45,8 +45,8 @@ export const useContractStore = defineStore('contract', () => {
         return matchKeyword && matchType && matchStatus
       })
       .sort((a, b) => {
-        const numA = parseInt(a.id.replace('con-', ''))
-        const numB = parseInt(b.id.replace('con-', ''))
+        const numA = parseInt(a.id.replace('con-', '')) || 0
+        const numB = parseInt(b.id.replace('con-', '')) || 0
         return numB - numA
       })
   })
@@ -96,6 +96,11 @@ export const useContractStore = defineStore('contract', () => {
 
   function setCurrentPage(page: number) {
     currentPage.value = page
+  }
+
+  function setPageSize(size: number) {
+    pageSize.value = size
+    currentPage.value = 1
   }
 
   function startAutoRefresh(intervalMinutes: number = 30) {
@@ -203,6 +208,7 @@ export const useContractStore = defineStore('contract', () => {
     setFilterType,
     setFilterStatus,
     setCurrentPage,
+    setPageSize,
     addContract,
     updateContract,
     deleteContract,

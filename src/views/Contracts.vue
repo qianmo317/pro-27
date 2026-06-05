@@ -57,7 +57,11 @@
           page: contractStore.currentPage,
           pageSize: contractStore.pageSize,
           itemCount: contractStore.total,
-          onUpdatePage: (page) => contractStore.setCurrentPage(page)
+          showSizePicker: true,
+          pageSizes: [10, 20, 50, 100],
+          showQuickJumper: true,
+          'onUpdate:page': (page: number) => contractStore.setCurrentPage(page),
+          'onUpdate:pageSize': (size: number) => contractStore.setPageSize(size)
         }"
         :bordered="false"
         size="large"
@@ -411,7 +415,7 @@ const columns: DataTableColumns<Contract> = [
     render: (row) => {
       const emp = employeeStore.getEmployeeById(row.employeeId)
       return h('div', { class: 'employee-info' }, [
-        emp ? h('img', { src: emp.avatar, class: 'employee-avatar' }) : null,
+        emp ? h('img', { src: emp.avatar, class: 'employee-avatar', style: 'width: 28px; height: 28px; border-radius: 50%; object-fit: cover;' }) : null,
         h('div', { class: 'employee-details' }, [
           h('div', { class: 'employee-name' }, row.employeeName),
           h('div', { class: 'employee-dept' }, emp?.department || '-')
@@ -664,10 +668,11 @@ onMounted(() => {
   gap: 12px;
 }
 
-.employee-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
+:deep(.employee-avatar) {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
 }
 
 .employee-details {
