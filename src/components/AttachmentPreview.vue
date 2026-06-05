@@ -10,7 +10,7 @@
       <div class="preview-info">
         <div class="info-row">
           <span class="info-label">分类：</span>
-          <n-space size="8">
+          <n-space :size="8">
             <n-tag size="small" :type="attachment.isSensitive ? 'warning' : 'info'">
               {{ categoryLabel }}
             </n-tag>

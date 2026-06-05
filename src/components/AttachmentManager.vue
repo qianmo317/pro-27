@@ -27,6 +27,7 @@
             :custom-request="handleCustomRequest"
             multiple
             :max="10"
+            accept="*/*"
           >
             <n-button type="primary" size="small">
               <template #icon>
@@ -214,7 +215,7 @@ import {
   FileArchive, Trash2, Edit3, Download
 } from 'lucide-vue-next'
 import { useMessage, useDialog } from 'naive-ui'
-import type { FormInst, FormRules, UploadCustomRequestOptions } from 'naive-ui'
+import type { FormInst, FormRules, UploadCustomRequestOptions, UploadFileInfo } from 'naive-ui'
 import type { Attachment, AttachmentCategory } from '@/types'
 import { ATTACHMENT_CATEGORY_OPTIONS, ATTACHMENT_CATEGORY_LABELS } from '@/types'
 import { useAttachmentStore } from '@/stores/attachment'
@@ -365,11 +366,13 @@ function handleAction(key: string, attachment: Attachment) {
   }
 }
 
-function handleBeforeUpload({ file }: { file: File }): boolean {
-  pendingFiles.value.push(file)
-  uploadForm.value.name = ''
-  uploadForm.value.description = ''
-  showUploadModal.value = true
+function handleBeforeUpload({ file }: UploadFileInfo): boolean {
+  if (file instanceof File) {
+    pendingFiles.value.push(file)
+    uploadForm.value.name = ''
+    uploadForm.value.description = ''
+    showUploadModal.value = true
+  }
   return false
 }
 
@@ -569,6 +572,7 @@ watch(() => props.ownerId, () => {
   color: #fff;
   opacity: 0;
   transition: opacity 0.2s;
+  pointer-events: none;
 }
 
 .card-thumbnail:hover .thumbnail-overlay {
