@@ -207,7 +207,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, h } from 'vue'
 import {
   Paperclip, Upload, Eye, Lock, MoreVertical, File, X, AlertTriangle,
   FileImage, FileVideo, FileAudio, FileText, FileSpreadsheet,
@@ -336,14 +336,14 @@ function getCategoryTagType(category: AttachmentCategory): string {
 }
 
 function getActionOptions(attachment: Attachment) {
-  const options: Array<{ label: string; key: string; icon?: any; props?: any }> = []
+  const options: Array<{ label: string; key: string; icon?: () => any; props?: any }> = []
   
   if (isPreviewable(attachment.fileType)) {
-    options.push({ label: '预览', key: 'preview', icon: () => Eye })
+    options.push({ label: '预览', key: 'preview', icon: () => h(Eye, { size: 16 }) })
   }
-  options.push({ label: '下载', key: 'download', icon: () => Download })
-  options.push({ label: '编辑', key: 'edit', icon: () => Edit3 })
-  options.push({ label: '删除', key: 'delete', icon: () => Trash2, props: { style: 'color: #EF4444;' } })
+  options.push({ label: '下载', key: 'download', icon: () => h(Download, { size: 16 }) })
+  options.push({ label: '编辑', key: 'edit', icon: () => h(Edit3, { size: 16 }) })
+  options.push({ label: '删除', key: 'delete', icon: () => h(Trash2, { size: 16 }), props: { style: 'color: #EF4444;' } })
   
   return options
 }
@@ -365,7 +365,7 @@ function handleAction(key: string, attachment: Attachment) {
   }
 }
 
-function handleBeforeUpload(file: File): boolean {
+function handleBeforeUpload({ file }: { file: File }): boolean {
   pendingFiles.value.push(file)
   uploadForm.value.name = ''
   uploadForm.value.description = ''

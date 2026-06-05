@@ -10,13 +10,15 @@
       <div class="preview-info">
         <div class="info-row">
           <span class="info-label">分类：</span>
-          <n-tag size="small" :type="attachment.isSensitive ? 'warning' : 'info'">
-            {{ categoryLabel }}
-            <n-tag v-if="attachment.isSensitive" type="error" size="small" style="margin-left: 8px;">
-              <Lock :size="12" style="margin-right: 4px;" />
+          <n-space size="8">
+            <n-tag size="small" :type="attachment.isSensitive ? 'warning' : 'info'">
+              {{ categoryLabel }}
+            </n-tag>
+            <n-tag v-if="attachment.isSensitive" type="error" size="small">
+              <Lock :size="12" style="margin-right: 4px; vertical-align: -2px;" />
               敏感文件
             </n-tag>
-          </n-tag>
+          </n-space>
         </div>
         <div class="info-row">
           <span class="info-label">上传者：</span>
