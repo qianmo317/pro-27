@@ -188,7 +188,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, h } from 'vue'
+import { ref, computed, watch, h, onMounted } from 'vue'
 import { Plus, Search, Edit, Trash2, Eye, FileText, AlertTriangle, Ban } from 'lucide-vue-next'
 import { useContractStore } from '@/stores/contract'
 import { useEmployeeStore } from '@/stores/employee'
@@ -295,10 +295,43 @@ const editFormData = ref<Partial<Contract>>({
 const formRules: FormRules = {
   employeeId: [{ required: true, message: '请选择员工', trigger: 'change' }],
   type: [{ required: true, message: '请选择合同类型', trigger: 'change' }],
-  startDate: [{ required: true, message: '请选择开始日期', trigger: 'change' }],
-  endDate: [{ required: true, message: '请选择结束日期', trigger: 'change' }],
+  startDate: [
+    { 
+      required: true, 
+      validator: (_rule, value) => {
+        if (value === null || value === undefined || value === '') {
+          return new Error('请选择开始日期')
+        }
+        return true
+      },
+      trigger: 'change' 
+    }
+  ],
+  endDate: [
+    { 
+      required: true, 
+      validator: (_rule, value) => {
+        if (value === null || value === undefined || value === '') {
+          return new Error('请选择结束日期')
+        }
+        return true
+      },
+      trigger: 'change' 
+    }
+  ],
   conversionConditions: [{ required: true, message: '请输入转正条件', trigger: 'blur' }],
-  salaryAgreement: [{ required: true, message: '请输入薪资约定', trigger: 'blur' }]
+  salaryAgreement: [
+    { 
+      required: true, 
+      validator: (_rule, value) => {
+        if (value === null || value === undefined || value < 0) {
+          return new Error('请输入有效的薪资约定')
+        }
+        return true
+      },
+      trigger: 'blur' 
+    }
+  ]
 }
 
 watch([searchKeyword, filterType, filterStatus], () => {
@@ -533,6 +566,10 @@ function resetForm() {
     remarks: ''
   }
 }
+
+onMounted(() => {
+  contractStore.updateContractStatus()
+})
 </script>
 
 <style scoped>

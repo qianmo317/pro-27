@@ -65,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { 
   Users, 
@@ -194,6 +194,14 @@ function handleUserAction(key: string) {
     router.push('/login')
   }
 }
+
+onMounted(() => {
+  contractStore.startAutoRefresh(30)
+})
+
+onUnmounted(() => {
+  contractStore.stopAutoRefresh()
+})
 </script>
 
 <style scoped>

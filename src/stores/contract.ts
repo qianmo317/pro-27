@@ -3,6 +3,8 @@ import { ref, computed } from 'vue'
 import type { Contract } from '@/types'
 import { mockContracts } from '@/mock/data'
 
+let refreshTimer: number | null = null
+
 export const useContractStore = defineStore('contract', () => {
   const contracts = ref<Contract[]>([...mockContracts])
   const searchKeyword = ref('')
@@ -90,11 +92,30 @@ export const useContractStore = defineStore('contract', () => {
     currentPage.value = page
   }
 
+  function startAutoRefresh(intervalMinutes: number = 30) {
+    stopAutoRefresh()
+    refreshTimer = window.setInterval(() => {
+      updateContractStatus()
+    }, intervalMinutes * 60 * 1000)
+  }
+
+  function stopAutoRefresh() {
+    if (refreshTimer !== null) {
+      clearInterval(refreshTimer)
+      refreshTimer = null
+    }
+  }
+
   function addContract(contract: Omit<Contract, 'id' | 'createdAt' | 'status'>) {
-    const newId = `con-${String(Math.max(...contracts.value.map(c => {
-      const num = parseInt(c.id.replace('con-', ''))
-      return isNaN(num) ? 0 : num
-    })) + 1)}`
+    let maxNum = 0
+    if (contracts.value.length > 0) {
+      const nums = contracts.value.map(c => {
+        const num = parseInt(c.id.replace('con-', ''))
+        return isNaN(num) ? 0 : num
+      })
+      maxNum = Math.max(...nums, 0)
+    }
+    const newId = `con-${maxNum + 1}`
 
     const now = new Date()
     const createdAt = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
@@ -180,6 +201,8 @@ export const useContractStore = defineStore('contract', () => {
     updateContract,
     deleteContract,
     terminateContract,
-    updateContractStatus
+    updateContractStatus,
+    startAutoRefresh,
+    stopAutoRefresh
   }
 })

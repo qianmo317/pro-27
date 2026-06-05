@@ -206,6 +206,7 @@ function getDaysRemaining(endDate: string): number {
 }
 
 onMounted(() => {
+  contractStore.updateContractStatus()
   initLineChart()
   initPieChart()
 })
