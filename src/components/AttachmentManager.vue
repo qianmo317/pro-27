@@ -24,7 +24,6 @@
             v-model:file-list="fileList"
             :show-file-list="false"
             :before-upload="handleBeforeUpload"
-            :custom-request="handleCustomRequest"
             multiple
             :max="10"
             accept="*/*"
@@ -215,7 +214,7 @@ import {
   FileArchive, Trash2, Edit3, Download
 } from 'lucide-vue-next'
 import { useMessage, useDialog } from 'naive-ui'
-import type { FormInst, FormRules, UploadCustomRequestOptions, UploadFileInfo } from 'naive-ui'
+import type { FormInst, FormRules, UploadFileInfo } from 'naive-ui'
 import type { Attachment, AttachmentCategory } from '@/types'
 import { ATTACHMENT_CATEGORY_OPTIONS, ATTACHMENT_CATEGORY_LABELS } from '@/types'
 import { useAttachmentStore } from '@/stores/attachment'
@@ -366,18 +365,39 @@ function handleAction(key: string, attachment: Attachment) {
   }
 }
 
-function handleBeforeUpload({ file }: UploadFileInfo): boolean {
-  if (file instanceof File) {
-    pendingFiles.value.push(file)
-    uploadForm.value.name = ''
-    uploadForm.value.description = ''
-    showUploadModal.value = true
-  }
-  return false
-}
+const isUploadingModal = ref(false)
+const collectedFiles: File[] = []
+let uploadTimer: number | null = null
 
-function handleCustomRequest(options: UploadCustomRequestOptions) {
-  // Upload handled in confirmUpload
+function handleBeforeUpload({ file }: { file: UploadFileInfo }): boolean {
+  if (isUploadingModal.value) {
+    fileList.value = []
+    return false
+  }
+  
+  const rawFile = file.file
+  if (rawFile instanceof File) {
+    if (!collectedFiles.find(f => f.name === rawFile.name && f.size === rawFile.size)) {
+      collectedFiles.push(rawFile)
+    }
+  }
+  
+  if (uploadTimer) {
+    clearTimeout(uploadTimer)
+  }
+  uploadTimer = window.setTimeout(() => {
+    if (collectedFiles.length > 0) {
+      pendingFiles.value = [...collectedFiles]
+      collectedFiles.length = 0
+      uploadForm.value.name = ''
+      uploadForm.value.description = ''
+      isUploadingModal.value = true
+      showUploadModal.value = true
+      fileList.value = []
+    }
+  }, 100)
+  
+  return false
 }
 
 function removePendingFile(index: number) {
@@ -386,7 +406,9 @@ function removePendingFile(index: number) {
 
 function cancelUpload() {
   showUploadModal.value = false
+  isUploadingModal.value = false
   pendingFiles.value = []
+  collectedFiles.length = 0
   fileList.value = []
   uploadForm.value = { category: '', name: '', description: '' }
 }
