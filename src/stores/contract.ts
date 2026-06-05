@@ -35,14 +35,20 @@ export const useContractStore = defineStore('contract', () => {
   updateContractStatus()
 
   const filteredContracts = computed(() => {
-    return contracts.value.filter(con => {
-      const matchKeyword = !searchKeyword.value ||
-        con.employeeName.includes(searchKeyword.value) ||
-        con.id.includes(searchKeyword.value)
-      const matchType = !filterType.value || con.type === filterType.value
-      const matchStatus = !filterStatus.value || con.status === filterStatus.value
-      return matchKeyword && matchType && matchStatus
-    })
+    return contracts.value
+      .filter(con => {
+        const matchKeyword = !searchKeyword.value ||
+          con.employeeName.includes(searchKeyword.value) ||
+          con.id.includes(searchKeyword.value)
+        const matchType = !filterType.value || con.type === filterType.value
+        const matchStatus = !filterStatus.value || con.status === filterStatus.value
+        return matchKeyword && matchType && matchStatus
+      })
+      .sort((a, b) => {
+        const numA = parseInt(a.id.replace('con-', ''))
+        const numB = parseInt(b.id.replace('con-', ''))
+        return numB - numA
+      })
   })
 
   const paginatedContracts = computed(() => {

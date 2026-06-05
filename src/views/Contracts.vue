@@ -146,7 +146,7 @@
       <n-form
         ref="editFormRef"
         :model="editFormData"
-        :rules="formRules"
+        :rules="editFormRules"
         label-placement="left"
         label-width="100px"
       >
@@ -292,6 +292,23 @@ const editFormData = ref<Partial<Contract>>({
   remarks: ''
 })
 
+function createDateRangeValidator(startDateGetter: () => any) {
+  return (_rule: any, value: any) => {
+    if (value === null || value === undefined || value === '') {
+      return new Error('请选择结束日期')
+    }
+    const startVal = startDateGetter()
+    if (startVal !== null && startVal !== undefined && startVal !== '') {
+      const start = typeof startVal === 'number' ? new Date(startVal) : new Date(startVal)
+      const end = typeof value === 'number' ? new Date(value) : new Date(value)
+      if (end < start) {
+        return new Error('结束日期不能早于开始日期')
+      }
+    }
+    return true
+  }
+}
+
 const formRules: FormRules = {
   employeeId: [{ required: true, message: '请选择员工', trigger: 'change' }],
   type: [{ required: true, message: '请选择合同类型', trigger: 'change' }],
@@ -310,12 +327,43 @@ const formRules: FormRules = {
   endDate: [
     { 
       required: true, 
+      validator: createDateRangeValidator(() => formData.value.startDate),
+      trigger: 'change' 
+    }
+  ],
+  conversionConditions: [{ required: true, message: '请输入转正条件', trigger: 'blur' }],
+  salaryAgreement: [
+    { 
+      required: true, 
       validator: (_rule, value) => {
-        if (value === null || value === undefined || value === '') {
-          return new Error('请选择结束日期')
+        if (value === null || value === undefined || value < 0) {
+          return new Error('请输入有效的薪资约定')
         }
         return true
       },
+      trigger: 'blur' 
+    }
+  ]
+}
+
+const editFormRules: FormRules = {
+  type: [{ required: true, message: '请选择合同类型', trigger: 'change' }],
+  startDate: [
+    { 
+      required: true, 
+      validator: (_rule, value) => {
+        if (value === null || value === undefined || value === '') {
+          return new Error('请选择开始日期')
+        }
+        return true
+      },
+      trigger: 'change' 
+    }
+  ],
+  endDate: [
+    { 
+      required: true, 
+      validator: createDateRangeValidator(() => editFormData.value.startDate),
       trigger: 'change' 
     }
   ],
@@ -420,7 +468,7 @@ const columns: DataTableColumns<Contract> = [
           h(NButton as any, { size: 'small', quaternary: true, onClick: () => handleView(row) }, {
             icon: () => h(Eye as any, { size: 14 })
           }),
-          h(NButton as any, { size: 'small', quaternary: true, onClick: () => handleEdit(row) }, {
+          h(NButton as any, { size: 'small', quaternary: true, onClick: () => handleEdit(row), disabled: row.status === 'terminated' }, {
             icon: () => h(Edit as any, { size: 14 })
           }),
           h(NButton as any, {
@@ -461,6 +509,10 @@ function handleView(contract: Contract) {
 }
 
 function handleEdit(contract: Contract) {
+  if (contract.status === 'terminated') {
+    message.warning('已终止的合同不能编辑')
+    return
+  }
   currentContract.value = contract
   editFormData.value = { ...contract }
   if (contract.startDate) {
@@ -546,6 +598,7 @@ function handleAdd() {
         salaryAgreement: formData.value.salaryAgreement || 0,
         remarks: formData.value.remarks
       })
+      contractStore.setCurrentPage(1)
       message.success('新增成功')
       showAddModal.value = false
       resetForm()
@@ -612,8 +665,8 @@ onMounted(() => {
 }
 
 .employee-avatar {
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
 }
 
