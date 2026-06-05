@@ -56,6 +56,12 @@ const routes: RouteRecordRaw[] = [
         name: 'organization',
         component: () => import('@/views/Organization.vue'),
         meta: { title: '组织架构' }
+      },
+      {
+        path: '/contracts',
+        name: 'contracts',
+        component: () => import('@/views/Contracts.vue'),
+        meta: { title: '合同管理' }
       }
     ]
   }

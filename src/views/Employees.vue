@@ -97,25 +97,78 @@
       </template>
     </n-modal>
     
-    <n-modal v-model:show="showViewModal" preset="card" title="员工详情" style="width: 500px;">
+    <n-modal v-model:show="showViewModal" preset="card" title="员工详情" style="width: 700px;">
       <div v-if="currentEmployee" class="employee-detail">
-        <div class="detail-avatar">
-          <img :src="currentEmployee.avatar" alt="" />
+        <div class="detail-header">
+          <div class="detail-avatar">
+            <img :src="currentEmployee.avatar" alt="" />
+          </div>
+          <div class="detail-info">
+            <div class="detail-name">{{ currentEmployee.name }}</div>
+            <div class="detail-position">{{ currentEmployee.department }} · {{ currentEmployee.position }}</div>
+            <n-tag :type="currentEmployee.status === 'active' ? 'success' : currentEmployee.status === 'probation' ? 'warning' : 'error'" size="small">
+              {{ currentEmployee.status === 'active' ? '正式' : currentEmployee.status === 'probation' ? '试用' : '离职' }}
+            </n-tag>
+          </div>
         </div>
-        <n-descriptions :column="1" bordered>
-          <n-descriptions-item label="姓名">{{ currentEmployee.name }}</n-descriptions-item>
+
+        <n-descriptions :column="2" bordered class="detail-desc">
           <n-descriptions-item label="性别">{{ currentEmployee.gender === 'male' ? '男' : '女' }}</n-descriptions-item>
           <n-descriptions-item label="电话">{{ currentEmployee.phone }}</n-descriptions-item>
           <n-descriptions-item label="邮箱">{{ currentEmployee.email }}</n-descriptions-item>
-          <n-descriptions-item label="部门">{{ currentEmployee.department }}</n-descriptions-item>
-          <n-descriptions-item label="职位">{{ currentEmployee.position }}</n-descriptions-item>
           <n-descriptions-item label="入职日期">{{ currentEmployee.entryDate }}</n-descriptions-item>
-          <n-descriptions-item label="状态">
-            <n-tag :type="currentEmployee.status === 'active' ? 'success' : currentEmployee.status === 'probation' ? 'warning' : 'error'">
-              {{ currentEmployee.status === 'active' ? '正式' : currentEmployee.status === 'probation' ? '试用' : '离职' }}
-            </n-tag>
-          </n-descriptions-item>
         </n-descriptions>
+
+        <div v-if="currentContract" class="current-contract">
+          <div class="section-title">
+            <span>当前合同</span>
+            <n-tag :type="contractStatusTypes[currentContract.status]" size="small">
+              {{ contractStatusLabels[currentContract.status] }}
+            </n-tag>
+          </div>
+          <n-card size="small" class="contract-card">
+            <n-descriptions :column="2" :bordered="false" size="small">
+              <n-descriptions-item label="合同类型">{{ contractTypeLabels[currentContract.type] }}</n-descriptions-item>
+              <n-descriptions-item label="合同编号">{{ currentContract.id }}</n-descriptions-item>
+              <n-descriptions-item label="合同期限">{{ currentContract.startDate }} 至 {{ currentContract.endDate }}</n-descriptions-item>
+              <n-descriptions-item label="薪资约定">¥ {{ currentContract.salaryAgreement.toLocaleString() }}</n-descriptions-item>
+            </n-descriptions>
+            <n-alert v-if="currentContract.status === 'expiring'" type="warning" size="small" class="contract-warning">
+              此合同将在 {{ getDaysRemaining(currentContract.endDate) }} 天后到期，请及时处理续签事宜。
+            </n-alert>
+          </n-card>
+        </div>
+
+        <div v-else class="no-contract">
+          <n-alert type="info" :bordered="false">
+            该员工暂无有效合同
+          </n-alert>
+        </div>
+
+        <div class="contract-timeline">
+          <div class="section-title">合同时间线</div>
+          <n-timeline v-if="employeeContracts.length > 0" :type="timelineType">
+            <n-timeline-item
+              v-for="(contract, index) in employeeContracts"
+              :key="contract.id"
+              :type="getTimelineItemType(contract, index)"
+              :title="`${contractTypeLabels[contract.type]}合同`"
+              :time="`${contract.startDate} ~ ${contract.endDate}`"
+            >
+              <div class="timeline-content">
+                <div class="timeline-id">合同编号：{{ contract.id }}</div>
+                <div class="timeline-salary">薪资：¥ {{ contract.salaryAgreement.toLocaleString() }}</div>
+                <n-tag size="small" :type="contractStatusTypes[contract.status]">
+                  {{ contractStatusLabels[contract.status] }}
+                </n-tag>
+                <div v-if="contract.remarks" class="timeline-remarks">{{ contract.remarks }}</div>
+              </div>
+            </n-timeline-item>
+          </n-timeline>
+          <div v-else class="no-history">
+            <n-empty description="暂无历史合同记录" />
+          </div>
+        </div>
       </div>
       <template #footer>
         <n-space justify="end">
@@ -171,11 +224,13 @@
 import { ref, computed, watch, h } from 'vue'
 import { Plus, Search, Edit, Trash2, Eye } from 'lucide-vue-next'
 import { useEmployeeStore } from '@/stores/employee'
-import { useMessage, useDialog, NTag, NSpace, NButton } from 'naive-ui'
+import { useContractStore } from '@/stores/contract'
+import { useMessage, useDialog, NTag, NSpace, NButton, NTimeline, NTimelineItem } from 'naive-ui'
 import type { FormInst, FormRules, DataTableColumns, DialogReactive } from 'naive-ui'
-import type { Employee } from '@/types'
+import type { Employee, Contract } from '@/types'
 
 const employeeStore = useEmployeeStore()
+const contractStore = useContractStore()
 const message = useMessage()
 const dialog = useDialog()
 
@@ -195,6 +250,56 @@ const showAddModal = ref(false)
 const showViewModal = ref(false)
 const showEditModal = ref(false)
 const currentEmployee = ref<Employee | null>(null)
+
+const employeeContracts = computed(() => {
+  if (!currentEmployee.value) return []
+  return contractStore.getContractsByEmployeeId(currentEmployee.value.id)
+})
+
+const currentContract = computed(() => {
+  if (!currentEmployee.value) return null
+  return contractStore.getCurrentContract(currentEmployee.value.id)
+})
+
+const contractTypeLabels: Record<string, string> = {
+  fulltime: '全职',
+  parttime: '兼职',
+  intern: '实习'
+}
+
+const contractStatusLabels: Record<string, string> = {
+  active: '生效中',
+  expiring: '即将到期',
+  expired: '已到期',
+  terminated: '已终止'
+}
+
+const contractStatusTypes: Record<string, any> = {
+  active: 'success',
+  expiring: 'warning',
+  expired: 'error',
+  terminated: 'default'
+}
+
+function getDaysRemaining(endDate: string): number {
+  const now = new Date()
+  const end = new Date(endDate)
+  const diff = end.getTime() - now.getTime()
+  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
+}
+
+const timelineType = 'line'
+
+function getTimelineItemType(contract: Contract, index: number): any {
+  if (index === 0 && (contract.status === 'active' || contract.status === 'expiring')) {
+    return 'success'
+  }
+  if (contract.status === 'expiring') return 'warning'
+  if (contract.status === 'expired') return 'default'
+  if (contract.status === 'terminated') return 'error'
+  return 'default'
+}
+
 const formRef = ref<FormInst | null>(null)
 const editFormRef = ref<FormInst | null>(null)
 
@@ -439,17 +544,107 @@ function resetForm() {
 }
 
 .employee-detail {
-  text-align: center;
+  text-align: left;
+}
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #EDE9FE;
 }
 
 .detail-avatar {
-  margin-bottom: 20px;
+  flex-shrink: 0;
 }
 
 .detail-avatar img {
-  width: 80px;
-  height: 80px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
   border: 3px solid #7C3AED;
+}
+
+.detail-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detail-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1E1B4B;
+}
+
+.detail-position {
+  font-size: 14px;
+  color: #6B7280;
+}
+
+.detail-desc {
+  margin-bottom: 24px;
+}
+
+.current-contract {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1E1B4B;
+  margin-bottom: 12px;
+}
+
+.contract-card {
+  background: linear-gradient(135deg, #FAF5FF 0%, #F5F3FF 100%);
+  border: 1px solid #EDE9FE;
+}
+
+.contract-warning {
+  margin-top: 12px;
+}
+
+.no-contract {
+  margin-bottom: 24px;
+}
+
+.contract-timeline {
+  margin-top: 24px;
+}
+
+.timeline-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0;
+}
+
+.timeline-id {
+  font-size: 13px;
+  color: #374151;
+}
+
+.timeline-salary {
+  font-size: 13px;
+  color: #059669;
+  font-weight: 500;
+}
+
+.timeline-remarks {
+  font-size: 12px;
+  color: #6B7280;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.no-history {
+  padding: 20px 0;
 }
 </style>

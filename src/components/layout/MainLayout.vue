@@ -38,7 +38,7 @@
           </div>
           <div class="header-right">
             <n-space align="center">
-              <n-badge :value="5" type="info">
+              <n-badge :value="totalNotificationCount" type="info">
                 <n-button quaternary circle>
                   <Bell :size="20" />
                 </n-button>
@@ -76,16 +76,19 @@ import {
   Briefcase, 
   GraduationCap, 
   Building2,
+  FileText,
   Bell,
   LogOut,
   Settings
 } from 'lucide-vue-next'
+import { useContractStore } from '@/stores/contract'
 import { useUserStore } from '@/stores/user'
 import type { MenuOption, DropdownOption } from 'naive-ui'
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
+const contractStore = useContractStore()
 
 const collapsed = ref(false)
 
@@ -99,7 +102,8 @@ const currentPageTitle = computed(() => {
     '/salary': '薪资工资条',
     '/recruitment': '招聘看板',
     '/training': '培训管理',
-    '/organization': '组织架构'
+    '/organization': '组织架构',
+    '/contracts': '合同管理'
   }
   return titles[route.path] || '仪表盘'
 })
@@ -115,6 +119,8 @@ const roleLabel = computed(() => {
 
 import { h } from 'vue'
 
+const totalNotificationCount = computed(() => 5 + contractStore.expiringCount)
+
 const menuOptions: MenuOption[] = [
   {
     label: '仪表盘',
@@ -125,6 +131,11 @@ const menuOptions: MenuOption[] = [
     label: '员工花名册',
     key: '/employees',
     icon: () => h(UserCheck as any, { size: 20 }) as any
+  },
+  {
+    label: '合同管理',
+    key: '/contracts',
+    icon: () => h(FileText as any, { size: 20 }) as any
   },
   {
     label: '考勤统计',

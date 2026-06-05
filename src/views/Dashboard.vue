@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="page-title">仪表盘</div>
     
-    <n-grid :cols="4" :x-gap="20" :y-gap="20" class="stat-grid">
+    <n-grid :cols="5" :x-gap="20" :y-gap="20" class="stat-grid">
       <n-grid-item>
         <n-card class="stat-card card-gradient">
           <div class="stat-content">
@@ -12,6 +12,20 @@
             <div class="stat-info">
               <div class="stat-value">{{ employeeStore.employees.length }}</div>
               <div class="stat-label">员工总数</div>
+            </div>
+          </div>
+        </n-card>
+      </n-grid-item>
+      
+      <n-grid-item>
+        <n-card class="stat-card" style="background: linear-gradient(135deg, #EF4444 0%, #F87171 100%); color: white;">
+          <div class="stat-content">
+            <div class="stat-icon">
+              <AlertTriangle :size="28" color="#fff" />
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ contractStore.expiringCount }}</div>
+              <div class="stat-label">即将到期合同</div>
             </div>
           </div>
         </n-card>
@@ -74,7 +88,7 @@
       </n-grid-item>
     </n-grid>
     
-    <n-grid :cols="2" :x-gap="20" :y-gap="20" style="margin-top: 20px;">
+    <n-grid :cols="3" :x-gap="20" :y-gap="20" style="margin-top: 20px;">
       <n-grid-item>
         <n-card title="最近入职员工" class="list-card">
           <n-list>
@@ -93,6 +107,30 @@
               </template>
             </n-list-item>
           </n-list>
+        </n-card>
+      </n-grid-item>
+      
+      <n-grid-item>
+        <n-card title="即将到期合同" class="list-card">
+          <n-list v-if="expiringContractsList.length > 0">
+            <n-list-item v-for="con in expiringContractsList" :key="con.id">
+              <template #prefix>
+                <div class="contract-icon">
+                  <FileText :size="20" color="#F59E0B" />
+                </div>
+              </template>
+              <div class="employee-item">
+                <span class="employee-name">{{ con.employeeName }}</span>
+                <span class="employee-position">{{ contractTypeLabels[con.type] }} · {{ con.endDate }}</span>
+              </div>
+              <template #suffix>
+                <n-tag size="small" type="warning">
+                  剩 {{ getDaysRemaining(con.endDate) }} 天
+                </n-tag>
+              </template>
+            </n-list-item>
+          </n-list>
+          <n-empty v-else description="暂无即将到期合同" />
         </n-card>
       </n-grid-item>
       
@@ -123,17 +161,19 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import * as echarts from 'echarts'
-import { Users, UserCheck, Briefcase, GraduationCap } from 'lucide-vue-next'
+import { Users, UserCheck, Briefcase, GraduationCap, FileText, AlertTriangle } from 'lucide-vue-next'
 import { useEmployeeStore } from '@/stores/employee'
 import { useAttendanceStore } from '@/stores/attendance'
 import { useRecruitmentStore } from '@/stores/recruitment'
 import { useTrainingStore } from '@/stores/training'
+import { useContractStore } from '@/stores/contract'
 import { stageLabels } from '@/stores/recruitment'
 
 const employeeStore = useEmployeeStore()
 const attendanceStore = useAttendanceStore()
 const recruitmentStore = useRecruitmentStore()
 const trainingStore = useTrainingStore()
+const contractStore = useContractStore()
 
 const chartRef = ref<HTMLDivElement | null>(null)
 const pieChartRef = ref<HTMLDivElement | null>(null)
@@ -147,6 +187,23 @@ const recentEmployees = computed(() =>
 const pendingCandidates = computed(() => 
   recruitmentStore.screeningCandidates.slice(0, 5)
 )
+
+const expiringContractsList = computed(() => 
+  contractStore.expiringContracts.slice(0, 5)
+)
+
+const contractTypeLabels: Record<string, string> = {
+  fulltime: '全职',
+  parttime: '兼职',
+  intern: '实习'
+}
+
+function getDaysRemaining(endDate: string): number {
+  const now = new Date()
+  const end = new Date(endDate)
+  const diff = end.getTime() - now.getTime()
+  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
+}
 
 onMounted(() => {
   initLineChart()
@@ -323,5 +380,15 @@ function initPieChart() {
 .employee-position {
   font-size: 12px;
   color: #6B7280;
+}
+
+.contract-icon {
+  width: 40px;
+  height: 40px;
+  background: #FEF3C7;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

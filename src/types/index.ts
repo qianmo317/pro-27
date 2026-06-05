@@ -74,6 +74,21 @@ export interface Department {
   employees?: Employee[]
 }
 
+export interface Contract {
+  id: string
+  employeeId: string
+  employeeName: string
+  type: 'fulltime' | 'parttime' | 'intern'
+  startDate: string
+  endDate: string
+  probationMonths: number
+  conversionConditions: string
+  salaryAgreement: number
+  status: 'active' | 'expiring' | 'expired' | 'terminated'
+  remarks?: string
+  createdAt: string
+}
+
 export interface MenuItem {
   key: string
   label: string
