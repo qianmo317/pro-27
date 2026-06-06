@@ -4,7 +4,10 @@
       <div class="page-title">面试日程</div>
       <div class="header-actions">
         <n-space>
-          <n-segmented v-model:value="viewMode" :options="viewOptions" />
+          <n-radio-group v-model:value="viewMode" button-style>
+            <n-radio value="day">日视图</n-radio>
+            <n-radio value="week">周视图</n-radio>
+          </n-radio-group>
           <n-button type="primary" @click="showScheduleModal = true">
             <template #icon>
               <Plus :size="16" />
@@ -145,7 +148,7 @@
             </a>
           </n-descriptions-item>
           <n-descriptions-item v-if="selectedInterview.result" label="面试结果">
-            <n-tag :color="INTERVIEW_RESULT_COLORS[selectedInterview.result]" text-color="white">
+            <n-tag :type="INTERVIEW_RESULT_COLORS[selectedInterview.result]">
               {{ INTERVIEW_RESULT_LABELS[selectedInterview.result] }}
             </n-tag>
           </n-descriptions-item>
@@ -164,7 +167,7 @@
               </template>
             </n-statistic>
             <div class="result-badge">
-              <n-tag :color="INTERVIEW_RESULT_COLORS[existingEvaluation.result]" text-color="white" size="large">
+              <n-tag :type="INTERVIEW_RESULT_COLORS[existingEvaluation.result]" size="large">
                 {{ INTERVIEW_RESULT_LABELS[existingEvaluation.result] }}
               </n-tag>
             </div>
@@ -334,7 +337,6 @@
           <n-date-picker 
             v-model:value="scheduleForm.date" 
             type="date" 
-            value-format="yyyy-MM-dd"
             style="width: 100%;"
             :min-date="Date.now()"
           />
@@ -345,7 +347,6 @@
             <n-time-picker 
               v-model:value="scheduleForm.startTime" 
               format="HH:mm"
-              value-format="HH:mm"
               style="width: 150px;"
             />
           </n-form-item>
@@ -353,7 +354,6 @@
             <n-time-picker 
               v-model:value="scheduleForm.endTime" 
               format="HH:mm"
-              value-format="HH:mm"
               style="width: 150px;"
             />
           </n-form-item>
@@ -393,7 +393,7 @@ import { ref, computed, reactive } from 'vue'
 import { Plus, ChevronLeft, ChevronRight, MapPin, ThumbsUp, ThumbsDown, MessageSquare } from 'lucide-vue-next'
 import { useInterviewStore, INTERVIEW_ROUND_LABELS, INTERVIEW_STATUS_LABELS, INTERVIEW_RESULT_LABELS, INTERVIEW_RESULT_COLORS, getNextStage } from '@/stores/interview'
 import { useRecruitmentStore } from '@/stores/recruitment'
-import { useMessage } from 'naive-ui'
+import { useMessage, NRadioGroup, NRadio, NCard, NButton, NSpace, NTag, NModal, NForm, NFormItem, NSelect, NDatePicker, NTimePicker, NInput, NText, NProgress, NSlider, NList, NListItem, NAvatar } from 'naive-ui'
 import type { FormInst, FormRules, SelectOption } from 'naive-ui'
 import type { InterviewSchedule, InterviewEvaluation, InterviewRound, InterviewResult } from '@/types'
 import Empty from '@/components/Empty.vue'
@@ -405,10 +405,6 @@ const message = useMessage()
 type ViewMode = 'week' | 'day'
 
 const viewMode = ref<ViewMode>('week')
-const viewOptions: { label: string; value: ViewMode }[] = [
-  { label: '日视图', value: 'day' },
-  { label: '周视图', value: 'week' }
-]
 
 const currentDate = ref(new Date())
 const selectedInterview = ref<InterviewSchedule | null>(null)
@@ -539,20 +535,24 @@ const scheduleForm = reactive({
   interviewerId: '',
   interviewerName: '',
   interviewerAvatar: '',
-  date: null as string | null,
-  startTime: null as string | null,
-  endTime: null as string | null,
+  date: null as number | null,
+  startTime: null as number | null,
+  endTime: null as number | null,
   location: '',
   meetingLink: '',
   remarks: ''
 })
 
-function convertDateToString(date: string | null): string {
-  return date || ''
+function convertDateToString(timestamp: number | null): string {
+  if (!timestamp) return ''
+  return new Date(timestamp).toISOString().split('T')[0]
 }
 
-function convertTimeToString(time: string | null): string {
-  return time || ''
+function convertTimeToString(seconds: number | null): string {
+  if (!seconds) return ''
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
 }
 
 const scheduleRules: FormRules = {

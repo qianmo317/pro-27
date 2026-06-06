@@ -372,10 +372,10 @@ export const INTERVIEW_RESULT_LABELS: Record<InterviewResult, string> = {
   pending: '待定'
 }
 
-export const INTERVIEW_RESULT_COLORS: Record<InterviewResult, string> = {
-  pass: '#10B981',
-  fail: '#EF4444',
-  pending: '#F59E0B'
+export const INTERVIEW_RESULT_COLORS: Record<InterviewResult, 'success' | 'error' | 'warning'> = {
+  pass: 'success',
+  fail: 'error',
+  pending: 'warning'
 }
 
 export interface InterviewSchedule {
