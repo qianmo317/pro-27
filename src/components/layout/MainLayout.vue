@@ -80,7 +80,8 @@ import {
   Bell,
   LogOut,
   Settings,
-  Award
+  Award,
+  ArrowRightLeft
 } from 'lucide-vue-next'
 import { useContractStore } from '@/stores/contract'
 import { useUserStore } from '@/stores/user'
@@ -105,7 +106,8 @@ const currentPageTitle = computed(() => {
     '/training': '培训管理',
     '/organization': '组织架构',
     '/contracts': '合同管理',
-    '/performance': '绩效考核'
+    '/performance': '绩效考核',
+    '/transfer': '异动管理'
   }
   return titles[route.path] || '仪表盘'
 })
@@ -168,6 +170,11 @@ const menuOptions: MenuOption[] = [
     label: '绩效考核',
     key: '/performance',
     icon: () => h(Award as any, { size: 20 }) as any
+  },
+  {
+    label: '异动管理',
+    key: '/transfer',
+    icon: () => h(ArrowRightLeft as any, { size: 20 }) as any
   }
 ]
 

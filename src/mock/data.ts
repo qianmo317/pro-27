@@ -1,4 +1,4 @@
-import type { User, Employee, AttendanceRecord, SalaryRecord, Candidate, TrainingCourse, Department, Contract, Attachment, PerformancePlan, PerformanceAppraisal, KpiIndicator } from '@/types'
+import type { User, Employee, AttendanceRecord, SalaryRecord, Candidate, TrainingCourse, Department, Contract, Attachment, PerformancePlan, PerformanceAppraisal, KpiIndicator, EmployeeTransfer } from '@/types'
 
 export const mockUsers: User[] = [
   {
@@ -644,6 +644,194 @@ function generateAppraisals(): PerformanceAppraisal[] {
 }
 
 export const mockPerformanceAppraisals: PerformanceAppraisal[] = generateAppraisals()
+
+export const mockEmployeeTransfers: EmployeeTransfer[] = [
+  {
+    id: 'trans-1',
+    employeeId: '1',
+    employeeName: '张三',
+    type: 'promotion',
+    beforeDepartment: '技术部',
+    beforePosition: '前端工程师',
+    afterDepartment: '技术部',
+    afterPosition: '高级前端工程师',
+    reason: '工作表现突出，技术能力较强，符合晋升条件',
+    effectiveDate: '2023-06-01',
+    status: 'effective',
+    createdAt: '2023-05-20',
+    createdBy: '李人事',
+    remarks: '晋升后薪资上调20%'
+  },
+  {
+    id: 'trans-2',
+    employeeId: '1',
+    employeeName: '张三',
+    type: 'salary_adjustment',
+    beforeDepartment: '技术部',
+    beforePosition: '高级前端工程师',
+    afterDepartment: '技术部',
+    afterPosition: '高级前端工程师',
+    reason: '年度绩效考核优秀，建议调薪',
+    effectiveDate: '2024-01-01',
+    status: 'effective',
+    createdAt: '2023-12-15',
+    createdBy: '李人事',
+    remarks: '薪资从18K调整至22K'
+  },
+  {
+    id: 'trans-3',
+    employeeId: '2',
+    employeeName: '李四',
+    type: 'promotion',
+    beforeDepartment: '产品部',
+    beforePosition: '产品专员',
+    afterDepartment: '产品部',
+    afterPosition: '产品经理',
+    reason: '负责产品项目表现优异，具备产品管理能力',
+    effectiveDate: '2022-12-01',
+    status: 'effective',
+    createdAt: '2022-11-20',
+    createdBy: '李人事'
+  },
+  {
+    id: 'trans-4',
+    employeeId: '3',
+    employeeName: '王五',
+    type: 'department_change',
+    beforeDepartment: '技术部',
+    beforePosition: '后端开发工程师',
+    afterDepartment: '技术部',
+    afterPosition: '后端工程师',
+    reason: '后端组架构调整，优化人员配置',
+    effectiveDate: '2023-09-01',
+    status: 'effective',
+    createdAt: '2023-08-25',
+    createdBy: '李人事'
+  },
+  {
+    id: 'trans-5',
+    employeeId: '4',
+    employeeName: '赵六',
+    type: 'promotion',
+    beforeDepartment: '市场部',
+    beforePosition: '市场助理',
+    afterDepartment: '市场部',
+    afterPosition: '市场专员',
+    reason: '试用期表现良好，顺利转正并晋升',
+    effectiveDate: '2020-09-01',
+    status: 'effective',
+    createdAt: '2020-08-20',
+    createdBy: '李人事'
+  },
+  {
+    id: 'trans-6',
+    employeeId: '5',
+    employeeName: '孙七',
+    type: 'transfer_in',
+    beforeDepartment: '人力资源部',
+    beforePosition: '招聘专员',
+    afterDepartment: '人力资源部',
+    afterPosition: 'HR 专员',
+    reason: '从子公司调入总部人力资源部',
+    effectiveDate: '2022-03-01',
+    status: 'effective',
+    createdAt: '2022-02-15',
+    createdBy: '李人事'
+  },
+  {
+    id: 'trans-7',
+    employeeId: '7',
+    employeeName: '吴九',
+    type: 'salary_adjustment',
+    beforeDepartment: '技术部',
+    beforePosition: '测试工程师',
+    afterDepartment: '技术部',
+    afterPosition: '测试工程师',
+    reason: '年度考核良好，工作认真负责',
+    effectiveDate: '2024-01-01',
+    status: 'effective',
+    createdAt: '2023-12-20',
+    createdBy: '李人事',
+    remarks: '薪资从12K调整至16K'
+  },
+  {
+    id: 'trans-8',
+    employeeId: '9',
+    employeeName: '陈十一',
+    type: 'promotion',
+    beforeDepartment: '技术部',
+    beforePosition: '技术总监',
+    afterDepartment: '技术部',
+    afterPosition: '架构师',
+    reason: '公司技术架构升级，任命为首席架构师',
+    effectiveDate: '2021-01-01',
+    status: 'effective',
+    createdAt: '2020-12-15',
+    createdBy: '李人事'
+  },
+  {
+    id: 'trans-9',
+    employeeId: '10',
+    employeeName: '林十二',
+    type: 'transfer_in',
+    beforeDepartment: '设计部',
+    beforePosition: 'UI设计师（兼职）',
+    afterDepartment: '设计部',
+    afterPosition: 'UI 设计师',
+    reason: '兼职转全职，表现优秀',
+    effectiveDate: '2024-05-20',
+    status: 'effective',
+    createdAt: '2024-05-10',
+    createdBy: '李人事'
+  },
+  {
+    id: 'trans-10',
+    employeeId: '2',
+    employeeName: '李四',
+    type: 'salary_adjustment',
+    beforeDepartment: '产品部',
+    beforePosition: '产品经理',
+    afterDepartment: '产品部',
+    afterPosition: '产品经理',
+    reason: '续签无固定期限合同，薪资调整',
+    effectiveDate: '2024-08-20',
+    status: 'effective',
+    createdAt: '2024-08-01',
+    createdBy: '李人事',
+    remarks: '薪资从20K调整至25K'
+  },
+  {
+    id: 'trans-11',
+    employeeId: '3',
+    employeeName: '王五',
+    type: 'department_change',
+    beforeDepartment: '技术部',
+    beforePosition: '后端工程师',
+    afterDepartment: '产品部',
+    afterPosition: '产品经理（技术背景）',
+    reason: '个人发展意愿，转岗产品方向，具备技术优势',
+    effectiveDate: '2024-07-01',
+    status: 'pending',
+    createdAt: '2024-06-15',
+    createdBy: '李人事',
+    remarks: '待生效，需完成工作交接'
+  },
+  {
+    id: 'trans-12',
+    employeeId: '6',
+    employeeName: '周八',
+    type: 'promotion',
+    beforeDepartment: '财务部',
+    beforePosition: '财务会计',
+    afterDepartment: '财务部',
+    afterPosition: '财务主管',
+    reason: '老员工，工作认真负责，管理能力突出',
+    effectiveDate: '2021-03-01',
+    status: 'effective',
+    createdAt: '2021-02-20',
+    createdBy: '李人事'
+  }
+]
 
 export const mockAttachments: Attachment[] = [
   {

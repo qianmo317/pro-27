@@ -225,3 +225,61 @@ export const PERFORMANCE_GRADE_SALARY_SUGGESTION: Record<PerformanceResultGrade,
   qualified: '建议调薪 3%-5% 或保持不变',
   needs_improvement: '建议不调薪，制定绩效改进计划'
 }
+
+export type TransferType = 'department_change' | 'promotion' | 'demotion' | 'salary_adjustment' | 'transfer_out' | 'transfer_in'
+
+export interface EmployeeTransfer {
+  id: string
+  employeeId: string
+  employeeName: string
+  type: TransferType
+  beforeDepartment: string
+  beforePosition: string
+  afterDepartment: string
+  afterPosition: string
+  reason: string
+  effectiveDate: string
+  status: 'pending' | 'effective' | 'cancelled'
+  createdAt: string
+  createdBy: string
+  remarks?: string
+}
+
+export const TRANSFER_TYPE_OPTIONS: { label: string; value: TransferType }[] = [
+  { label: '部门调动', value: 'department_change' },
+  { label: '晋升', value: 'promotion' },
+  { label: '降职', value: 'demotion' },
+  { label: '薪资调整', value: 'salary_adjustment' },
+  { label: '调入', value: 'transfer_in' },
+  { label: '调出', value: 'transfer_out' }
+]
+
+export const TRANSFER_TYPE_LABELS: Record<TransferType, string> = {
+  department_change: '部门调动',
+  promotion: '晋升',
+  demotion: '降职',
+  salary_adjustment: '薪资调整',
+  transfer_in: '调入',
+  transfer_out: '调出'
+}
+
+export const TRANSFER_TYPE_COLORS: Record<TransferType, string> = {
+  department_change: '#3B82F6',
+  promotion: '#10B981',
+  demotion: '#EF4444',
+  salary_adjustment: '#F59E0B',
+  transfer_in: '#8B5CF6',
+  transfer_out: '#EC4899'
+}
+
+export const TRANSFER_STATUS_OPTIONS: { label: string; value: EmployeeTransfer['status'] }[] = [
+  { label: '待生效', value: 'pending' },
+  { label: '已生效', value: 'effective' },
+  { label: '已取消', value: 'cancelled' }
+]
+
+export const TRANSFER_STATUS_LABELS: Record<EmployeeTransfer['status'], string> = {
+  pending: '待生效',
+  effective: '已生效',
+  cancelled: '已取消'
+}

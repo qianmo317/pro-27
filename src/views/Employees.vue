@@ -232,6 +232,57 @@
               </div>
             </div>
           </n-tab-pane>
+
+          <n-tab-pane name="transfer" tab="异动记录">
+            <div v-if="currentEmployee" class="transfer-section">
+              <div class="section-header">
+                <span class="section-title">员工异动时间线</span>
+                <n-button type="primary" size="small" @click="openAddTransferModal">
+                  <template #icon>
+                    <Plus :size="14" />
+                  </template>
+                  新增异动
+                </n-button>
+              </div>
+
+              <div v-if="employeeTransfers.length > 0" class="transfer-timeline">
+                <n-timeline :type="timelineType">
+                  <n-timeline-item
+                    v-for="(transfer, index) in employeeTransfers"
+                    :key="transfer.id"
+                    :type="getTransferTimelineType(transfer, index)"
+                    :title="getTransferTypeLabel(transfer.type)"
+                    :time="transfer.effectiveDate"
+                  >
+                    <div class="timeline-content">
+                      <div class="transfer-info">
+                        <div class="transfer-path">
+                          <span class="transfer-before">
+                            {{ transfer.beforeDepartment }} · {{ transfer.beforePosition }}
+                          </span>
+                          <span class="transfer-arrow">→</span>
+                          <span class="transfer-after">
+                            {{ transfer.afterDepartment }} · {{ transfer.afterPosition }}
+                          </span>
+                        </div>
+                        <div class="transfer-reason">异动原因：{{ transfer.reason }}</div>
+                        <div v-if="transfer.remarks" class="transfer-remarks">备注：{{ transfer.remarks }}</div>
+                        <div class="transfer-meta">
+                          <n-tag :type="transfer.status === 'effective' ? 'success' : transfer.status === 'pending' ? 'warning' : 'default'" size="small">
+                            {{ transfer.status === 'effective' ? '已生效' : transfer.status === 'pending' ? '待生效' : '已取消' }}
+                          </n-tag>
+                          <span class="transfer-operator">操作人：{{ transfer.createdBy }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </n-timeline-item>
+                </n-timeline>
+              </div>
+              <div v-else class="no-transfer">
+                <n-empty description="暂无异动记录" />
+              </div>
+            </div>
+          </n-tab-pane>
         </n-tabs>
       </div>
       <template #footer>
@@ -358,25 +409,92 @@
         </n-space>
       </template>
     </n-modal>
+
+    <n-modal v-model:show="showAddTransferModal" preset="card" title="新增异动" style="width: 680px;">
+      <n-form
+        ref="transferFormRef"
+        :model="transferFormData"
+        :rules="transferFormRules"
+        label-placement="left"
+        label-width="100px"
+      >
+        <n-form-item label="员工姓名">
+          <n-input :value="currentEmployee?.name" disabled />
+        </n-form-item>
+        <n-form-item label="异动类型" path="type">
+          <n-select v-model:value="transferFormData.type" placeholder="请选择异动类型" :options="transferTypeOptions" />
+        </n-form-item>
+        <n-row :gutter="16">
+          <n-col :span="12">
+            <n-form-item label="异动前部门" path="beforeDepartment">
+              <n-select v-model:value="transferFormData.beforeDepartment" placeholder="请选择部门" :options="departmentOptions" />
+            </n-form-item>
+          </n-col>
+          <n-col :span="12">
+            <n-form-item label="异动前职位" path="beforePosition">
+              <n-input v-model:value="transferFormData.beforePosition" placeholder="请输入职位" />
+            </n-form-item>
+          </n-col>
+        </n-row>
+        <n-row :gutter="16">
+          <n-col :span="12">
+            <n-form-item label="异动后部门" path="afterDepartment">
+              <n-select v-model:value="transferFormData.afterDepartment" placeholder="请选择部门" :options="departmentOptions" />
+            </n-form-item>
+          </n-col>
+          <n-col :span="12">
+            <n-form-item label="异动后职位" path="afterPosition">
+              <n-input v-model:value="transferFormData.afterPosition" placeholder="请输入职位" />
+            </n-form-item>
+          </n-col>
+        </n-row>
+        <n-form-item label="异动原因" path="reason">
+          <n-input v-model:value="transferFormData.reason" type="textarea" placeholder="请输入异动原因" :rows="3" />
+        </n-form-item>
+        <n-row :gutter="16">
+          <n-col :span="12">
+            <n-form-item label="生效日期" path="effectiveDate">
+              <n-date-picker v-model:value="transferFormData.effectiveDate" type="date" style="width: 100%;" />
+            </n-form-item>
+          </n-col>
+          <n-col :span="12">
+            <n-form-item label="状态" path="status">
+              <n-select v-model:value="transferFormData.status" placeholder="请选择状态" :options="transferStatusOptions" />
+            </n-form-item>
+          </n-col>
+        </n-row>
+        <n-form-item label="备注">
+          <n-input v-model:value="transferFormData.remarks" type="textarea" placeholder="请输入备注信息" :rows="2" />
+        </n-form-item>
+      </n-form>
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="showAddTransferModal = false">取消</n-button>
+          <n-button type="primary" @click="handleAddTransfer">确认</n-button>
+        </n-space>
+      </template>
+    </n-modal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, h, nextTick, onMounted } from 'vue'
-import { Plus, Search, Edit, Trash2, Eye } from 'lucide-vue-next'
+import { Plus, Search, Edit, Trash2, Eye, ArrowRightLeft } from 'lucide-vue-next'
 import * as echarts from 'echarts'
 import { useEmployeeStore } from '@/stores/employee'
 import { useContractStore } from '@/stores/contract'
 import { usePerformanceStore } from '@/stores/performance'
-import { useMessage, useDialog, NTag, NSpace, NButton, NTimeline, NTimelineItem } from 'naive-ui'
+import { useEmployeeTransferStore } from '@/stores/employee-transfer'
+import { useMessage, useDialog, NTag, NSpace, NButton, NTimeline, NTimelineItem, NRow, NCol } from 'naive-ui'
 import type { FormInst, FormRules, DataTableColumns, DialogReactive } from 'naive-ui'
-import type { Employee, Contract, PerformanceAppraisal, PerformanceResultGrade } from '@/types'
-import { PERFORMANCE_GRADE_LABELS, PERFORMANCE_GRADE_COLORS } from '@/types'
+import type { Employee, Contract, PerformanceAppraisal, PerformanceResultGrade, EmployeeTransfer, TransferType } from '@/types'
+import { PERFORMANCE_GRADE_LABELS, PERFORMANCE_GRADE_COLORS, TRANSFER_TYPE_OPTIONS, TRANSFER_TYPE_LABELS, TRANSFER_STATUS_OPTIONS, TRANSFER_TYPE_COLORS } from '@/types'
 import AttachmentManager from '@/components/AttachmentManager.vue'
 
 const employeeStore = useEmployeeStore()
 const contractStore = useContractStore()
 const performanceStore = usePerformanceStore()
+const transferStore = useEmployeeTransferStore()
 const message = useMessage()
 const dialog = useDialog()
 
@@ -395,6 +513,7 @@ const filterStatus = ref('')
 const showAddModal = ref(false)
 const showViewModal = ref(false)
 const showEditModal = ref(false)
+const showAddTransferModal = ref(false)
 const currentEmployee = ref<Employee | null>(null)
 const activeDetailTab = ref('contract')
 
@@ -411,6 +530,11 @@ const currentContract = computed(() => {
 const employeeAppraisals = computed(() => {
   if (!currentEmployee.value) return []
   return performanceStore.getAppraisalsByEmployeeId(currentEmployee.value.id)
+})
+
+const employeeTransfers = computed(() => {
+  if (!currentEmployee.value) return []
+  return transferStore.getTransfersByEmployeeId(currentEmployee.value.id)
 })
 
 const trendChartRef = ref<HTMLElement | null>(null)
@@ -552,6 +676,96 @@ function getDaysRemaining(endDate: string): number {
 
 const timelineType = 'line'
 
+const transferTypeOptions = TRANSFER_TYPE_OPTIONS
+const transferStatusOptions = TRANSFER_STATUS_OPTIONS
+const transferFormRef = ref<FormInst | null>(null)
+
+const transferFormData = ref<Partial<EmployeeTransfer>>({
+  type: 'department_change' as TransferType,
+  beforeDepartment: '',
+  beforePosition: '',
+  afterDepartment: '',
+  afterPosition: '',
+  reason: '',
+  effectiveDate: null,
+  status: 'pending' as EmployeeTransfer['status'],
+  remarks: ''
+})
+
+const transferFormRules: FormRules = {
+  type: [{ required: true, message: '请选择异动类型', trigger: 'change' }],
+  beforeDepartment: [{ required: true, message: '请选择异动前部门', trigger: 'change' }],
+  beforePosition: [{ required: true, message: '请输入异动前职位', trigger: 'blur' }],
+  afterDepartment: [{ required: true, message: '请选择异动后部门', trigger: 'change' }],
+  afterPosition: [{ required: true, message: '请输入异动后职位', trigger: 'blur' }],
+  reason: [{ required: true, message: '请输入异动原因', trigger: 'blur' }],
+  effectiveDate: [{ required: true, message: '请选择生效日期', trigger: 'change' }]
+}
+
+function getTransferTypeLabel(type: TransferType): string {
+  return TRANSFER_TYPE_LABELS[type]
+}
+
+function getTransferTimelineType(transfer: EmployeeTransfer, index: number): any {
+  if (index === 0 && transfer.status === 'effective') {
+    return 'success'
+  }
+  if (transfer.status === 'pending') return 'warning'
+  if (transfer.status === 'cancelled') return 'default'
+  return 'default'
+}
+
+function openAddTransferModal() {
+  if (currentEmployee.value) {
+    transferFormData.value = {
+      type: 'department_change' as TransferType,
+      beforeDepartment: currentEmployee.value.department,
+      beforePosition: currentEmployee.value.position,
+      afterDepartment: currentEmployee.value.department,
+      afterPosition: currentEmployee.value.position,
+      reason: '',
+      effectiveDate: null,
+      status: 'pending' as EmployeeTransfer['status'],
+      remarks: ''
+    }
+  }
+  showAddTransferModal.value = true
+}
+
+function handleAddTransfer() {
+  transferFormRef.value?.validate((errors) => {
+    if (!errors && currentEmployee.value) {
+      const effectiveDate = typeof transferFormData.value.effectiveDate === 'number'
+        ? formatDate(transferFormData.value.effectiveDate as number)
+        : transferFormData.value.effectiveDate || ''
+      
+      const today = new Date().toISOString().split('T')[0]
+      let status = transferFormData.value.status || 'pending'
+      if (status === 'pending' && effectiveDate <= today) {
+        status = 'effective'
+      }
+
+      transferStore.addTransfer({
+        employeeId: currentEmployee.value.id,
+        employeeName: currentEmployee.value.name,
+        type: transferFormData.value.type as TransferType,
+        beforeDepartment: transferFormData.value.beforeDepartment || '',
+        beforePosition: transferFormData.value.beforePosition || '',
+        afterDepartment: transferFormData.value.afterDepartment || '',
+        afterPosition: transferFormData.value.afterPosition || '',
+        reason: transferFormData.value.reason || '',
+        effectiveDate,
+        status,
+        createdAt: today,
+        createdBy: '李人事',
+        remarks: transferFormData.value.remarks
+      })
+      message.success('异动记录创建成功')
+      showAddTransferModal.value = false
+    }
+  })
+}
+
 function getTimelineItemType(contract: Contract, index: number): any {
   if (index === 0 && (contract.status === 'active' || contract.status === 'expiring')) {
     return 'success'
@@ -670,12 +884,15 @@ const columns: DataTableColumns<Employee> = [
   {
     title: '操作',
     key: 'actions',
-    width: 150,
+    width: 200,
     render: (row) => {
       return h(NSpace as any, { size: 'small' }, {
         default: () => [
           h(NButton as any, { size: 'small', quaternary: true, onClick: () => handleView(row) }, {
             icon: () => h(Eye as any, { size: 14 })
+          }),
+          h(NButton as any, { size: 'small', quaternary: true, onClick: () => handleTransfer(row) }, {
+            icon: () => h(ArrowRightLeft as any, { size: 14 })
           }),
           h(NButton as any, { size: 'small', quaternary: true, onClick: () => handleEdit(row) }, {
             icon: () => h(Edit as any, { size: 14 })
@@ -696,14 +913,10 @@ function handleView(employee: Employee) {
   showViewModal.value = true
 }
 
-function handleEdit(employee: Employee) {
+function handleTransfer(employee: Employee) {
   currentEmployee.value = employee
-  editFormData.value = { ...employee }
-  if (employee.entryDate) {
-    const [year, month, day] = employee.entryDate.split('-').map(Number)
-    editFormData.value.entryDate = new Date(year, month - 1, day).getTime() as any
-  }
-  showEditModal.value = true
+  activeDetailTab.value = 'transfer'
+  showViewModal.value = true
 }
 
 function handleEditSubmit() {
@@ -1127,5 +1340,69 @@ function resetForm() {
   font-weight: 600;
   color: #7C3AED;
   margin-left: 16px;
+}
+
+.transfer-section {
+  padding: 8px 0;
+}
+
+.transfer-timeline {
+  padding: 12px 0;
+}
+
+.transfer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 0;
+}
+
+.transfer-path {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #374151;
+}
+
+.transfer-before {
+  color: #6B7280;
+}
+
+.transfer-arrow {
+  color: #7C3AED;
+  font-weight: 600;
+}
+
+.transfer-after {
+  color: #1E1B4B;
+  font-weight: 500;
+}
+
+.transfer-reason {
+  font-size: 13px;
+  color: #374151;
+}
+
+.transfer-remarks {
+  font-size: 12px;
+  color: #6B7280;
+  font-style: italic;
+}
+
+.transfer-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.transfer-operator {
+  font-size: 12px;
+  color: #9CA3AF;
+}
+
+.no-transfer {
+  padding: 40px 0;
 }
 </style>

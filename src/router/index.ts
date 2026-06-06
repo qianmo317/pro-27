@@ -68,6 +68,12 @@ const routes: RouteRecordRaw[] = [
         name: 'performance',
         component: () => import('@/views/Performance.vue'),
         meta: { title: '绩效考核' }
+      },
+      {
+        path: '/transfer',
+        name: 'transfer',
+        component: () => import('@/views/Transfer.vue'),
+        meta: { title: '异动管理' }
       }
     ]
   }
