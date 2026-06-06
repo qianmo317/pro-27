@@ -1,4 +1,4 @@
-import type { User, Employee, AttendanceRecord, SalaryRecord, Candidate, TrainingCourse, Department, Contract, Attachment } from '@/types'
+import type { User, Employee, AttendanceRecord, SalaryRecord, Candidate, TrainingCourse, Department, Contract, Attachment, PerformancePlan, PerformanceAppraisal, KpiIndicator } from '@/types'
 
 export const mockUsers: User[] = [
   {
@@ -436,6 +436,214 @@ export const mockContracts: Contract[] = [
     createdAt: '2024-05-10'
   }
 ]
+
+const defaultKpiIndicators: KpiIndicator[] = [
+  { id: 'kpi-1', name: '工作业绩', description: '完成工作目标和任务的质量与数量', weight: 40, maxScore: 100 },
+  { id: 'kpi-2', name: '工作能力', description: '专业技能、解决问题能力和创新能力', weight: 25, maxScore: 100 },
+  { id: 'kpi-3', name: '工作态度', description: '责任心、积极性和团队协作精神', weight: 20, maxScore: 100 },
+  { id: 'kpi-4', name: '学习成长', description: '学习新知识、技能提升和自我发展', weight: 15, maxScore: 100 }
+]
+
+export const mockPerformancePlans: PerformancePlan[] = [
+  {
+    id: 'plan-1',
+    name: '2024年Q1绩效考核',
+    cycleType: 'quarterly',
+    period: '2024-Q1',
+    startDate: '2024-01-01',
+    endDate: '2024-03-31',
+    department: '全公司',
+    kpiIndicators: defaultKpiIndicators,
+    status: 'completed',
+    createdAt: '2024-01-05',
+    createdBy: '李人事'
+  },
+  {
+    id: 'plan-2',
+    name: '2024年Q2绩效考核',
+    cycleType: 'quarterly',
+    period: '2024-Q2',
+    startDate: '2024-04-01',
+    endDate: '2024-06-30',
+    department: '全公司',
+    kpiIndicators: defaultKpiIndicators,
+    status: 'completed',
+    createdAt: '2024-04-01',
+    createdBy: '李人事'
+  },
+  {
+    id: 'plan-3',
+    name: '2024年Q3绩效考核',
+    cycleType: 'quarterly',
+    period: '2024-Q3',
+    startDate: '2024-07-01',
+    endDate: '2024-09-30',
+    department: '全公司',
+    kpiIndicators: defaultKpiIndicators,
+    status: 'completed',
+    createdAt: '2024-07-01',
+    createdBy: '李人事'
+  },
+  {
+    id: 'plan-4',
+    name: '2024年Q4绩效考核',
+    cycleType: 'quarterly',
+    period: '2024-Q4',
+    startDate: '2024-10-01',
+    endDate: '2024-12-31',
+    department: '全公司',
+    kpiIndicators: defaultKpiIndicators,
+    status: 'active',
+    createdAt: '2024-10-01',
+    createdBy: '李人事'
+  },
+  {
+    id: 'plan-5',
+    name: '技术部1月绩效考核',
+    cycleType: 'monthly',
+    period: '2024-01',
+    startDate: '2024-01-01',
+    endDate: '2024-01-31',
+    department: '技术部',
+    kpiIndicators: [
+      { id: 'kpi-tech-1', name: '代码质量', description: '代码规范、Bug率、可维护性', weight: 35, maxScore: 100 },
+      { id: 'kpi-tech-2', name: '开发效率', description: '任务完成进度、交付及时性', weight: 30, maxScore: 100 },
+      { id: 'kpi-tech-3', name: '技术贡献', description: '技术分享、架构优化、工具建设', weight: 20, maxScore: 100 },
+      { id: 'kpi-tech-4', name: '团队协作', description: '沟通配合、知识传递', weight: 15, maxScore: 100 }
+    ],
+    status: 'completed',
+    createdAt: '2024-01-02',
+    createdBy: '陈十一'
+  }
+]
+
+function generateScores(plan: PerformancePlan, totalScore: number): { scores: any[], total: number, grade: string } {
+  const kpis = plan.kpiIndicators
+  const scores: any[] = []
+  let remaining = totalScore
+  const totalWeight = kpis.reduce((sum, kpi) => sum + kpi.weight, 0)
+  
+  for (let i = 0; i < kpis.length; i++) {
+    const kpi = kpis[i]
+    let score: number
+    
+    if (i === kpis.length - 1) {
+      score = Math.round(remaining / (kpi.weight / totalWeight))
+    } else {
+      const baseScore = Math.round((totalScore * (kpi.weight / totalWeight)) * (0.9 + Math.random() * 0.2))
+      score = Math.max(0, Math.min(100, baseScore))
+      remaining -= score * (kpi.weight / totalWeight)
+    }
+    
+    const weightedScore = Math.round(score * (kpi.weight / 100) * 10) / 10
+    scores.push({
+      kpiId: kpi.id,
+      kpiName: kpi.name,
+      score,
+      weight: kpi.weight,
+      weightedScore
+    })
+  }
+  
+  const calculatedTotal = Math.round(scores.reduce((sum, s) => sum + s.weightedScore, 0))
+  let grade: string
+  if (calculatedTotal >= 90) grade = 'excellent'
+  else if (calculatedTotal >= 75) grade = 'good'
+  else if (calculatedTotal >= 60) grade = 'qualified'
+  else grade = 'needs_improvement'
+  
+  return { scores, total: calculatedTotal, grade }
+}
+
+function generateAppraisals(): PerformanceAppraisal[] {
+  const appraisals: PerformanceAppraisal[] = []
+  const employees = mockEmployees.filter(e => e.status !== 'inactive')
+  const comments = [
+    '工作表现非常出色，超额完成各项任务指标，展现了优秀的专业能力和领导力。',
+    '工作认真负责，按时完成各项任务，团队协作良好，专业能力有待进一步提升。',
+    '基本完成工作任务，但在主动性和创新性方面需要加强，期待下一周期有更好表现。',
+    '工作态度积极，学习能力强，成长迅速，是团队的中坚力量。',
+    '能够胜任本职工作，但需要提升工作效率和质量，加强与团队成员的沟通协作。'
+  ]
+  
+  let id = 1
+  
+  employees.forEach(emp => {
+    const deptManager = mockDepartments[0].children?.find(d => d.name === emp.department)?.manager || '陈十一'
+    const supervisor = mockEmployees.find(e => e.name === deptManager) || mockEmployees[0]
+    
+    const performanceScores = [
+      { plan: mockPerformancePlans[0], total: 78 + Math.floor(Math.random() * 20) },
+      { plan: mockPerformancePlans[1], total: 82 + Math.floor(Math.random() * 15) },
+      { plan: mockPerformancePlans[2], total: 85 + Math.floor(Math.random() * 12) }
+    ]
+    
+    performanceScores.forEach(({ plan, total }) => {
+      const result = generateScores(plan, total)
+      const grade = result.grade as any
+      
+      let salaryAdjustment = 0
+      if (grade === 'excellent') salaryAdjustment = 2000 + Math.floor(Math.random() * 1500)
+      else if (grade === 'good') salaryAdjustment = 1000 + Math.floor(Math.random() * 1000)
+      else if (grade === 'qualified') salaryAdjustment = 300 + Math.floor(Math.random() * 500)
+      
+      const commentIndex = grade === 'excellent' ? 0 : grade === 'good' ? 3 : grade === 'qualified' ? 1 : 2
+      
+      appraisals.push({
+        id: `appr-${id++}`,
+        planId: plan.id,
+        planName: plan.name,
+        period: plan.period,
+        employeeId: emp.id,
+        employeeName: emp.name,
+        department: emp.department,
+        supervisorId: supervisor.id,
+        supervisorName: supervisor.name,
+        scores: result.scores,
+        totalScore: result.total,
+        grade,
+        comments: comments[commentIndex],
+        salaryAdjustmentSuggestion: [
+          '建议调薪 15%-20%，优先考虑晋升',
+          '建议调薪 8%-12%',
+          '建议调薪 3%-5% 或保持不变',
+          '建议不调薪，制定绩效改进计划'
+        ][['excellent', 'good', 'qualified', 'needs_improvement'].indexOf(grade)],
+        salaryAdjustmentAmount: salaryAdjustment,
+        status: 'approved',
+        submittedAt: `${plan.endDate}`,
+        approvedAt: `${plan.endDate}`,
+        createdAt: `${plan.endDate}`
+      })
+    })
+    
+    const activePlan = mockPerformancePlans[3]
+    const activeResult = generateScores(activePlan, 75 + Math.floor(Math.random() * 20))
+    appraisals.push({
+      id: `appr-${id++}`,
+      planId: activePlan.id,
+      planName: activePlan.name,
+      period: activePlan.period,
+      employeeId: emp.id,
+      employeeName: emp.name,
+      department: emp.department,
+      supervisorId: supervisor.id,
+      supervisorName: supervisor.name,
+      scores: activeResult.scores,
+      totalScore: activeResult.total,
+      grade: activeResult.grade as any,
+      comments: '',
+      salaryAdjustmentSuggestion: '',
+      salaryAdjustmentAmount: 0,
+      status: 'pending',
+      createdAt: new Date().toISOString().split('T')[0]
+    })
+  })
+  
+  return appraisals
+}
+
+export const mockPerformanceAppraisals: PerformanceAppraisal[] = generateAppraisals()
 
 export const mockAttachments: Attachment[] = [
   {

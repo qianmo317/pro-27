@@ -134,6 +134,57 @@
             </div>
           </div>
         </div>
+        
+        <n-divider style="margin: 20px 0;" />
+        
+        <div v-if="latestAppraisal" class="performance-section">
+          <div class="section-title">
+            <span>绩效考核关联</span>
+            <n-tag size="small" :type="latestAppraisal.grade === 'excellent' ? 'success' : latestAppraisal.grade === 'good' ? 'info' : latestAppraisal.grade === 'qualified' ? 'warning' : 'error'">
+              {{ getGradeLabel(latestAppraisal.grade) }}
+            </n-tag>
+          </div>
+          
+          <n-card size="small" class="performance-card" :bordered="false">
+            <div class="performance-header">
+              <div class="performance-info">
+                <div class="performance-period">{{ latestAppraisal.period }}</div>
+                <div class="performance-plan">{{ latestAppraisal.planName }}</div>
+              </div>
+              <div class="performance-score">
+                <span class="score-label">绩效得分</span>
+                <span class="score-value" :style="{ color: getGradeColor(latestAppraisal.grade) }">
+                  {{ latestAppraisal.totalScore }}
+                </span>
+              </div>
+            </div>
+            
+            <n-divider style="margin: 12px 0;" />
+            
+            <div class="salary-suggestion">
+              <div class="suggestion-title">调薪建议</div>
+              <div class="suggestion-content">
+                {{ latestAppraisal.salaryAdjustmentSuggestion }}
+              </div>
+              <div v-if="latestAppraisal.salaryAdjustmentAmount > 0" class="adjustment-amount">
+                建议调薪金额: <span>+ ¥ {{ formatNumber(latestAppraisal.salaryAdjustmentAmount) }}</span>
+              </div>
+            </div>
+            
+            <div class="performance-comments">
+              <div class="comments-title">上级评语</div>
+              <div class="comments-content">
+                {{ latestAppraisal.comments || '暂无评语' }}
+              </div>
+            </div>
+          </n-card>
+        </div>
+        
+        <div v-else class="no-performance">
+          <n-alert type="info" :bordered="false">
+            该员工暂无绩效考核记录
+          </n-alert>
+        </div>
       </div>
       
       <template #footer>
@@ -150,14 +201,31 @@
 import { ref, computed, watch } from 'vue'
 import { Search } from 'lucide-vue-next'
 import { useSalaryStore } from '@/stores/salary'
-import type { SalaryRecord } from '@/types'
+import { usePerformanceStore } from '@/stores/performance'
+import type { SalaryRecord, PerformanceAppraisal } from '@/types'
+import { PERFORMANCE_GRADE_LABELS, PERFORMANCE_GRADE_COLORS } from '@/types'
 
 const salaryStore = useSalaryStore()
+const performanceStore = usePerformanceStore()
 
 const selectedMonth = ref('2024-01')
 const employeeFilter = ref('')
 const showDetailModal = ref(false)
 const selectedRecord = ref<SalaryRecord | null>(null)
+
+const latestAppraisal = computed((): PerformanceAppraisal | null => {
+  if (!selectedRecord.value) return null
+  const appraisals = performanceStore.getAppraisalsByEmployeeId(selectedRecord.value.employeeId)
+  return appraisals.length > 0 ? appraisals[appraisals.length - 1] : null
+})
+
+function getGradeLabel(grade: string): string {
+  return PERFORMANCE_GRADE_LABELS[grade as keyof typeof PERFORMANCE_GRADE_LABELS] || '-'
+}
+
+function getGradeColor(grade: string): string {
+  return PERFORMANCE_GRADE_COLORS[grade as keyof typeof PERFORMANCE_GRADE_COLORS] || '#9CA3AF'
+}
 
 const monthOptions = computed(() => salaryStore.months.map(m => ({ label: m, value: m })))
 
@@ -349,5 +417,110 @@ function showDetail(record: SalaryRecord) {
 .total-row {
   font-weight: 600;
   color: #7C3AED;
+}
+
+.performance-section {
+  margin-top: 8px;
+}
+
+.performance-section .section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1E1B4B;
+  margin-bottom: 12px;
+}
+
+.performance-card {
+  background: linear-gradient(135deg, #FAF5FF 0%, #F5F3FF 100%);
+  border: 1px solid #EDE9FE;
+}
+
+.performance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.performance-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.performance-period {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1E1B4B;
+}
+
+.performance-plan {
+  font-size: 13px;
+  color: #6B7280;
+}
+
+.performance-score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.performance-score .score-label {
+  font-size: 12px;
+  color: #6B7280;
+}
+
+.performance-score .score-value {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.salary-suggestion {
+  margin-top: 4px;
+}
+
+.suggestion-title, .comments-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1E1B4B;
+  margin-bottom: 6px;
+}
+
+.suggestion-content {
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.6;
+}
+
+.adjustment-amount {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #10B981;
+  font-weight: 600;
+}
+
+.adjustment-amount span {
+  font-size: 18px;
+}
+
+.performance-comments {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed #DDD6FE;
+}
+
+.comments-content {
+  font-size: 14px;
+  color: #6B7280;
+  line-height: 1.6;
+  font-style: italic;
+}
+
+.no-performance {
+  margin-top: 8px;
 }
 </style>

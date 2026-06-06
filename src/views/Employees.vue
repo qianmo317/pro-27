@@ -182,6 +182,56 @@
               :allowed-categories="['id_card', 'education_certificate', 'medical_report', 'resignation_proof', 'labor_contract', 'other']"
             />
           </n-tab-pane>
+          
+          <n-tab-pane name="performance" tab="绩效考核">
+            <div v-if="currentEmployee" class="performance-section">
+              <div class="section-header">
+                <span class="section-title">绩效考核得分趋势</span>
+              </div>
+              <n-card class="chart-card">
+                <div ref="trendChartRef" class="trend-chart"></div>
+              </n-card>
+              
+              <div class="section-header" style="margin-top: 24px;">
+                <span class="section-title">历次考核记录</span>
+              </div>
+              <div v-if="employeeAppraisals.length > 0" class="appraisal-list">
+                <div 
+                  v-for="appraisal in employeeAppraisals" 
+                  :key="appraisal.id" 
+                  class="appraisal-item"
+                  @click="showAppraisalDetail(appraisal)"
+                >
+                  <div class="appraisal-main">
+                    <div class="appraisal-info">
+                      <div class="appraisal-period">{{ appraisal.period }}</div>
+                      <div class="appraisal-plan">{{ appraisal.planName }}</div>
+                      <div class="appraisal-supervisor">评分人: {{ appraisal.supervisorName }}</div>
+                    </div>
+                    <div class="appraisal-score">
+                      <div class="score-value" :style="{ color: getGradeColor(appraisal.grade) }">
+                        {{ appraisal.totalScore }}
+                      </div>
+                      <n-tag :type="getGradeTagType(appraisal.grade)" size="small">
+                        {{ getGradeLabel(appraisal.grade) }}
+                      </n-tag>
+                    </div>
+                  </div>
+                  <div class="appraisal-suggestion">
+                    <n-alert :type="getGradeTagType(appraisal.grade)" :bordered="false" size="small">
+                      {{ appraisal.salaryAdjustmentSuggestion }}
+                      <span v-if="appraisal.salaryAdjustmentAmount > 0" class="adjustment-amount">
+                        建议调薪: ¥{{ appraisal.salaryAdjustmentAmount.toLocaleString() }}
+                      </span>
+                    </n-alert>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="no-appraisal">
+                <n-empty description="暂无考核记录" />
+              </div>
+            </div>
+          </n-tab-pane>
         </n-tabs>
       </div>
       <template #footer>
@@ -191,6 +241,83 @@
       </template>
     </n-modal>
     
+    <n-modal v-model:show="showAppraisalDetailModal" preset="card" title="考核详情" style="width: 680px;">
+      <div v-if="selectedAppraisal" class="appraisal-detail-modal">
+        <div class="detail-header">
+          <div class="detail-info">
+            <div class="detail-period">{{ selectedAppraisal.period }}</div>
+            <div class="detail-plan">{{ selectedAppraisal.planName }}</div>
+            <div class="detail-meta">
+              员工: {{ selectedAppraisal.employeeName }} · 
+              部门: {{ selectedAppraisal.department }} · 
+              评分人: {{ selectedAppraisal.supervisorName }}
+            </div>
+          </div>
+          <div class="detail-score">
+            <div class="score-label">总分</div>
+            <div class="score-value" :style="{ color: getGradeColor(selectedAppraisal.grade) }">
+              {{ selectedAppraisal.totalScore }}
+            </div>
+            <n-tag :type="getGradeTagType(selectedAppraisal.grade)" size="small">
+              {{ getGradeLabel(selectedAppraisal.grade) }}
+            </n-tag>
+          </div>
+        </div>
+        
+        <n-divider />
+        
+        <div class="kpi-scores">
+          <div class="section-title">KPI 评分明细</div>
+          <div class="kpi-score-list">
+            <div v-for="score in selectedAppraisal.scores" :key="score.kpiId" class="kpi-score-item">
+              <div class="kpi-info">
+                <span class="kpi-name">{{ score.kpiName }}</span>
+                <span class="kpi-weight">权重 {{ score.weight }}%</span>
+              </div>
+              <div class="kpi-score-bar">
+                <div 
+                  class="score-progress" 
+                  :style="{ width: `${score.score}%`, backgroundColor: getGradeColor(selectedAppraisal.grade) }"
+                ></div>
+              </div>
+              <div class="kpi-score-value">
+                <span class="raw-score">{{ score.score }} 分</span>
+                <span class="weighted-score">加权 {{ score.weightedScore.toFixed(1) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <n-divider />
+        
+        <div class="comments-section">
+          <div class="section-title">评语</div>
+          <n-card size="small" :bordered="false" style="background: #F9FAFB;">
+            {{ selectedAppraisal.comments || '暂无评语' }}
+          </n-card>
+        </div>
+        
+        <n-divider />
+        
+        <div class="suggestion-section">
+          <div class="section-title">调薪建议</div>
+          <n-alert :type="getGradeTagType(selectedAppraisal.grade)" :bordered="false">
+            <div class="suggestion-content">
+              <span>{{ selectedAppraisal.salaryAdjustmentSuggestion }}</span>
+              <span v-if="selectedAppraisal.salaryAdjustmentAmount > 0" class="adjustment-amount">
+                建议调薪金额: ¥{{ selectedAppraisal.salaryAdjustmentAmount.toLocaleString() }}
+              </span>
+            </div>
+          </n-alert>
+        </div>
+      </div>
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="showAppraisalDetailModal = false">关闭</n-button>
+        </n-space>
+      </template>
+    </n-modal>
+
     <n-modal v-model:show="showEditModal" preset="card" title="编辑员工" style="width: 600px;">
       <n-form
         ref="editFormRef"
@@ -235,17 +362,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, h } from 'vue'
+import { ref, computed, watch, h, nextTick, onMounted } from 'vue'
 import { Plus, Search, Edit, Trash2, Eye } from 'lucide-vue-next'
+import * as echarts from 'echarts'
 import { useEmployeeStore } from '@/stores/employee'
 import { useContractStore } from '@/stores/contract'
+import { usePerformanceStore } from '@/stores/performance'
 import { useMessage, useDialog, NTag, NSpace, NButton, NTimeline, NTimelineItem } from 'naive-ui'
 import type { FormInst, FormRules, DataTableColumns, DialogReactive } from 'naive-ui'
-import type { Employee, Contract } from '@/types'
+import type { Employee, Contract, PerformanceAppraisal, PerformanceResultGrade } from '@/types'
+import { PERFORMANCE_GRADE_LABELS, PERFORMANCE_GRADE_COLORS } from '@/types'
 import AttachmentManager from '@/components/AttachmentManager.vue'
 
 const employeeStore = useEmployeeStore()
 const contractStore = useContractStore()
+const performanceStore = usePerformanceStore()
 const message = useMessage()
 const dialog = useDialog()
 
@@ -276,6 +407,121 @@ const currentContract = computed(() => {
   if (!currentEmployee.value) return null
   return contractStore.getCurrentContract(currentEmployee.value.id)
 })
+
+const employeeAppraisals = computed(() => {
+  if (!currentEmployee.value) return []
+  return performanceStore.getAppraisalsByEmployeeId(currentEmployee.value.id)
+})
+
+const trendChartRef = ref<HTMLElement | null>(null)
+const showAppraisalDetailModal = ref(false)
+const selectedAppraisal = ref<PerformanceAppraisal | null>(null)
+
+function getGradeLabel(grade: PerformanceResultGrade): string {
+  return PERFORMANCE_GRADE_LABELS[grade]
+}
+
+function getGradeColor(grade: PerformanceResultGrade): string {
+  return PERFORMANCE_GRADE_COLORS[grade]
+}
+
+function getGradeTagType(grade: PerformanceResultGrade): any {
+  const typeMap: Record<PerformanceResultGrade, any> = {
+    excellent: 'success',
+    good: 'info',
+    qualified: 'warning',
+    needs_improvement: 'error'
+  }
+  return typeMap[grade]
+}
+
+function showAppraisalDetail(appraisal: PerformanceAppraisal) {
+  selectedAppraisal.value = appraisal
+  showAppraisalDetailModal.value = true
+}
+
+function initTrendChart() {
+  if (!trendChartRef.value || !currentEmployee.value) return
+  
+  const chart = echarts.init(trendChartRef.value)
+  const appraisals = employeeAppraisals.value
+  
+  if (appraisals.length === 0) {
+    chart.setOption({
+      title: { text: '暂无考核数据', left: 'center', top: 'center', textStyle: { color: '#9CA3AF' } }
+    })
+    return
+  }
+  
+  const periods = appraisals.map(a => a.period)
+  const scores = appraisals.map(a => a.totalScore)
+  const gradeColors = appraisals.map(a => getGradeColor(a.grade))
+  
+  chart.setOption({
+    tooltip: {
+      trigger: 'axis',
+      formatter: (params: any) => {
+        const data = params[0]
+        const appraisal = appraisals[data.dataIndex]
+        return `<div style="padding: 8px;">
+          <div style="font-weight: 600; margin-bottom: 4px;">${data.name}</div>
+          <div>得分: <span style="color: ${getGradeColor(appraisal.grade)}; font-weight: 600;">${data.value}</span></div>
+          <div>等级: ${getGradeLabel(appraisal.grade)}</div>
+        </div>`
+      }
+    },
+    grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+    xAxis: {
+      type: 'category',
+      data: periods,
+      axisLabel: { fontSize: 12 }
+    },
+    yAxis: {
+      type: 'value',
+      min: 0,
+      max: 100,
+      axisLabel: { fontSize: 12 }
+    },
+    series: [{
+      type: 'line',
+      data: scores.map((score, i) => ({
+        value: score,
+        itemStyle: { color: gradeColors[i] }
+      })),
+      smooth: true,
+      symbol: 'circle',
+      symbolSize: 10,
+      lineStyle: {
+        width: 3,
+        color: {
+          type: 'linear',
+          x: 0, y: 0, x2: 1, y2: 0,
+          colorStops: [
+            { offset: 0, color: '#7C3AED' },
+            { offset: 1, color: '#A78BFA' }
+          ]
+        }
+      },
+      areaStyle: {
+        color: {
+          type: 'linear',
+          x: 0, y: 0, x2: 0, y2: 1,
+          colorStops: [
+            { offset: 0, color: 'rgba(124, 58, 237, 0.3)' },
+            { offset: 1, color: 'rgba(124, 58, 237, 0.05)' }
+          ]
+        }
+      },
+      label: {
+        show: true,
+        position: 'top',
+        fontSize: 12,
+        fontWeight: 600,
+        formatter: '{c}'
+      }
+    }]
+  })
+}
 
 const contractTypeLabels: Record<string, string> = {
   fulltime: '全职',
@@ -367,6 +613,14 @@ watch([searchKeyword, filterDepartment, filterStatus], () => {
   employeeStore.setSearchKeyword(searchKeyword.value)
   employeeStore.setFilterDepartment(filterDepartment.value)
   employeeStore.setFilterStatus(filterStatus.value)
+})
+
+watch([activeDetailTab, showViewModal], ([tab, visible]) => {
+  if (visible && tab === 'performance') {
+    nextTick(() => {
+      initTrendChart()
+    })
+  }
 })
 
 const columns: DataTableColumns<Employee> = [
@@ -663,5 +917,215 @@ function resetForm() {
 
 .no-history {
   padding: 20px 0;
+}
+
+.performance-section {
+  padding: 8px 0;
+}
+
+.section-header {
+  margin-bottom: 12px;
+}
+
+.chart-card {
+  background: #fff;
+  margin-bottom: 20px;
+}
+
+.trend-chart {
+  height: 280px;
+  width: 100%;
+}
+
+.appraisal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.appraisal-item {
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.appraisal-item:hover {
+  border-color: #7C3AED;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.1);
+}
+
+.appraisal-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.appraisal-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.appraisal-period {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1E1B4B;
+}
+
+.appraisal-plan {
+  font-size: 13px;
+  color: #6B7280;
+}
+
+.appraisal-supervisor {
+  font-size: 12px;
+  color: #9CA3AF;
+}
+
+.appraisal-score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.score-value {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.no-appraisal {
+  padding: 40px 0;
+}
+
+.appraisal-detail-modal {
+  padding: 8px 0;
+}
+
+.appraisal-detail-modal .detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.appraisal-detail-modal .detail-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.appraisal-detail-modal .detail-period {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1E1B4B;
+}
+
+.appraisal-detail-modal .detail-plan {
+  font-size: 14px;
+  color: #6B7280;
+}
+
+.appraisal-detail-modal .detail-meta {
+  font-size: 13px;
+  color: #9CA3AF;
+}
+
+.appraisal-detail-modal .detail-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.appraisal-detail-modal .score-label {
+  font-size: 13px;
+  color: #6B7280;
+}
+
+.appraisal-detail-modal .score-value {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.kpi-score-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.kpi-score-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.kpi-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 120px;
+}
+
+.kpi-name {
+  font-weight: 500;
+  color: #1E1B4B;
+  font-size: 14px;
+}
+
+.kpi-weight {
+  font-size: 12px;
+  color: #7C3AED;
+}
+
+.kpi-score-bar {
+  flex: 1;
+  height: 8px;
+  background: #E5E7EB;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.score-progress {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s;
+}
+
+.kpi-score-value {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 100px;
+  gap: 2px;
+}
+
+.raw-score {
+  font-weight: 600;
+  color: #1E1B4B;
+  font-size: 14px;
+}
+
+.weighted-score {
+  font-size: 12px;
+  color: #7C3AED;
+  font-weight: 500;
+}
+
+.suggestion-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.adjustment-amount {
+  font-weight: 600;
+  color: #7C3AED;
+  margin-left: 16px;
 }
 </style>

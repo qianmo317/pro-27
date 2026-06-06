@@ -143,3 +143,85 @@ export const ATTACHMENT_CATEGORY_LABELS: Record<AttachmentCategory, string> = {
   training_material: '培训资料',
   other: '其他'
 }
+
+export type PerformanceCycleType = 'quarterly' | 'monthly'
+
+export type PerformanceResultGrade = 'excellent' | 'good' | 'qualified' | 'needs_improvement'
+
+export interface KpiIndicator {
+  id: string
+  name: string
+  description: string
+  weight: number
+  maxScore: number
+}
+
+export interface PerformancePlan {
+  id: string
+  name: string
+  cycleType: PerformanceCycleType
+  period: string
+  startDate: string
+  endDate: string
+  department: string
+  kpiIndicators: KpiIndicator[]
+  status: 'draft' | 'active' | 'completed'
+  createdAt: string
+  createdBy: string
+}
+
+export interface EmployeePerformanceScore {
+  kpiId: string
+  kpiName: string
+  score: number
+  weight: number
+  weightedScore: number
+}
+
+export interface PerformanceAppraisal {
+  id: string
+  planId: string
+  planName: string
+  period: string
+  employeeId: string
+  employeeName: string
+  department: string
+  supervisorId: string
+  supervisorName: string
+  scores: EmployeePerformanceScore[]
+  totalScore: number
+  grade: PerformanceResultGrade
+  comments: string
+  salaryAdjustmentSuggestion: string
+  salaryAdjustmentAmount: number
+  status: 'pending' | 'submitted' | 'approved'
+  submittedAt?: string
+  approvedAt?: string
+  createdAt: string
+}
+
+export const PERFORMANCE_GRADE_LABELS: Record<PerformanceResultGrade, string> = {
+  excellent: '优秀',
+  good: '良好',
+  qualified: '合格',
+  needs_improvement: '待改进'
+}
+
+export const PERFORMANCE_GRADE_COLORS: Record<PerformanceResultGrade, string> = {
+  excellent: '#10B981',
+  good: '#3B82F6',
+  qualified: '#F59E0B',
+  needs_improvement: '#EF4444'
+}
+
+export const PERFORMANCE_CYCLE_LABELS: Record<PerformanceCycleType, string> = {
+  quarterly: '季度',
+  monthly: '月度'
+}
+
+export const PERFORMANCE_GRADE_SALARY_SUGGESTION: Record<PerformanceResultGrade, string> = {
+  excellent: '建议调薪 15%-20%，优先考虑晋升',
+  good: '建议调薪 8%-12%',
+  qualified: '建议调薪 3%-5% 或保持不变',
+  needs_improvement: '建议不调薪，制定绩效改进计划'
+}
