@@ -334,6 +334,7 @@
           <n-date-picker 
             v-model:value="scheduleForm.date" 
             type="date" 
+            value-format="yyyy-MM-dd"
             style="width: 100%;"
             :min-date="Date.now()"
           />
@@ -344,6 +345,7 @@
             <n-time-picker 
               v-model:value="scheduleForm.startTime" 
               format="HH:mm"
+              value-format="HH:mm"
               style="width: 150px;"
             />
           </n-form-item>
@@ -351,6 +353,7 @@
             <n-time-picker 
               v-model:value="scheduleForm.endTime" 
               format="HH:mm"
+              value-format="HH:mm"
               style="width: 150px;"
             />
           </n-form-item>
@@ -536,7 +539,7 @@ const scheduleForm = reactive({
   interviewerId: '',
   interviewerName: '',
   interviewerAvatar: '',
-  date: null as number | null,
+  date: null as string | null,
   startTime: null as string | null,
   endTime: null as string | null,
   location: '',
@@ -544,9 +547,8 @@ const scheduleForm = reactive({
   remarks: ''
 })
 
-function convertDateToString(timestamp: number | null): string {
-  if (!timestamp) return ''
-  return new Date(timestamp).toISOString().split('T')[0]
+function convertDateToString(date: string | null): string {
+  return date || ''
 }
 
 function convertTimeToString(time: string | null): string {
