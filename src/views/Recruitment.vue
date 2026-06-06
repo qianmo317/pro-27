@@ -69,7 +69,13 @@
           <n-input v-model:value="formData.name" placeholder="请输入姓名" />
         </n-form-item>
         <n-form-item label="应聘职位" path="position">
-          <n-input v-model:value="formData.position" placeholder="请输入应聘职位" />
+          <n-select 
+            v-model:value="formData.position" 
+            placeholder="请选择应聘职位" 
+            style="width: 100%;" 
+            :options="positionOptions"
+            filterable
+          />
         </n-form-item>
         <n-form-item label="工作经验" path="experience">
           <n-select v-model:value="formData.experience" placeholder="请选择" style="width: 100%;" :options="experienceOptions" />
@@ -168,6 +174,10 @@ const educationOptions = [
   { label: '硕士', value: '硕士' },
   { label: '博士', value: '博士' }
 ]
+
+const positionOptions = computed(() => 
+  recruitmentStore.publishedPositions.map(p => ({ label: p, value: p }))
+)
 
 const stages = [
   { key: 'screening', label: '简历筛选', color: '#7C3AED' },

@@ -283,3 +283,67 @@ export const TRANSFER_STATUS_LABELS: Record<EmployeeTransfer['status'], string> 
   effective: '已生效',
   cancelled: '已取消'
 }
+
+export type RecruitmentRequirementStatus = 'pending' | 'approved' | 'rejected' | 'published' | 'closed'
+export type RecruitmentUrgency = 'low' | 'medium' | 'high' | 'urgent'
+
+export interface RecruitmentRequirement {
+  id: string
+  positionName: string
+  headcount: number
+  urgency: RecruitmentUrgency
+  requirements: string
+  department: string
+  applicantId: string
+  applicantName: string
+  status: RecruitmentRequirementStatus
+  actualHiredCount?: number
+  closeReason?: string
+  reviewerId?: string
+  reviewerName?: string
+  reviewComment?: string
+  createdAt: string
+  reviewedAt?: string
+  publishedAt?: string
+  closedAt?: string
+}
+
+export const RECRUITMENT_STATUS_OPTIONS: { label: string; value: RecruitmentRequirementStatus; color: string }[] = [
+  { label: '待审核', value: 'pending', color: '#F59E0B' },
+  { label: '已通过', value: 'approved', color: '#3B82F6' },
+  { label: '已拒绝', value: 'rejected', color: '#EF4444' },
+  { label: '已发布', value: 'published', color: '#10B981' },
+  { label: '已关闭', value: 'closed', color: '#6B7280' }
+]
+
+export const RECRUITMENT_STATUS_LABELS: Record<RecruitmentRequirementStatus, string> = {
+  pending: '待审核',
+  approved: '已通过',
+  rejected: '已拒绝',
+  published: '已发布',
+  closed: '已关闭'
+}
+
+export const RECRUITMENT_URGENCY_OPTIONS: { label: string; value: RecruitmentUrgency; color: string }[] = [
+  { label: '普通', value: 'low', color: '#10B981' },
+  { label: '一般', value: 'medium', color: '#3B82F6' },
+  { label: '紧急', value: 'high', color: '#F59E0B' },
+  { label: '特急', value: 'urgent', color: '#EF4444' }
+]
+
+export const RECRUITMENT_URGENCY_LABELS: Record<RecruitmentUrgency, string> = {
+  low: '普通',
+  medium: '一般',
+  high: '紧急',
+  urgent: '特急'
+}
+
+export const DEPARTMENT_OPTIONS = [
+  { label: '技术部', value: '技术部' },
+  { label: '产品部', value: '产品部' },
+  { label: '市场部', value: '市场部' },
+  { label: '人力资源部', value: '人力资源部' },
+  { label: '财务部', value: '财务部' },
+  { label: '运营部', value: '运营部' },
+  { label: '设计部', value: '设计部' }
+]

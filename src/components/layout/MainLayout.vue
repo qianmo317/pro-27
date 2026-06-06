@@ -81,7 +81,8 @@ import {
   LogOut,
   Settings,
   Award,
-  ArrowRightLeft
+  ArrowRightLeft,
+  ClipboardList
 } from 'lucide-vue-next'
 import { useContractStore } from '@/stores/contract'
 import { useUserStore } from '@/stores/user'
@@ -103,6 +104,7 @@ const currentPageTitle = computed(() => {
     '/attendance': '考勤统计',
     '/salary': '薪资工资条',
     '/recruitment': '招聘看板',
+    '/recruitment-requirement': '招聘需求',
     '/training': '培训管理',
     '/organization': '组织架构',
     '/contracts': '合同管理',
@@ -152,9 +154,21 @@ const menuOptions: MenuOption[] = [
     icon: () => h(Wallet as any, { size: 20 }) as any
   },
   {
-    label: '招聘看板',
-    key: '/recruitment',
-    icon: () => h(Briefcase as any, { size: 20 }) as any
+    label: '招聘管理',
+    key: 'recruitment-group',
+    icon: () => h(Briefcase as any, { size: 20 }) as any,
+    children: [
+      {
+        label: '招聘看板',
+        key: '/recruitment',
+        icon: () => h(Briefcase as any, { size: 18 }) as any
+      },
+      {
+        label: '招聘需求',
+        key: '/recruitment-requirement',
+        icon: () => h(ClipboardList as any, { size: 18 }) as any
+      }
+    ]
   },
   {
     label: '培训管理',

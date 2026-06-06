@@ -46,6 +46,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '招聘看板' }
       },
       {
+        path: '/recruitment-requirement',
+        name: 'recruitment-requirement',
+        component: () => import('@/views/RecruitmentRequirement.vue'),
+        meta: { title: '招聘需求' }
+      },
+      {
         path: '/training',
         name: 'training',
         component: () => import('@/views/Training.vue'),

@@ -1,4 +1,4 @@
-import type { User, Employee, AttendanceRecord, SalaryRecord, Candidate, TrainingCourse, Department, Contract, Attachment, PerformancePlan, PerformanceAppraisal, KpiIndicator, EmployeeTransfer } from '@/types'
+import type { User, Employee, AttendanceRecord, SalaryRecord, Candidate, TrainingCourse, Department, Contract, Attachment, PerformancePlan, PerformanceAppraisal, KpiIndicator, EmployeeTransfer, RecruitmentRequirement } from '@/types'
 
 export const mockUsers: User[] = [
   {
@@ -830,6 +830,108 @@ export const mockEmployeeTransfers: EmployeeTransfer[] = [
     status: 'effective',
     createdAt: '2021-02-20',
     createdBy: '李人事'
+  }
+]
+
+export const mockRecruitmentRequirements: RecruitmentRequirement[] = [
+  {
+    id: 'req-1',
+    positionName: '高级前端工程师',
+    headcount: 2,
+    urgency: 'high',
+    requirements: '1. 5年以上前端开发经验\n2. 精通 Vue 3 和 TypeScript\n3. 有大型项目架构经验\n4. 熟悉性能优化和工程化',
+    department: '技术部',
+    applicantId: '9',
+    applicantName: '陈十一',
+    status: 'published',
+    actualHiredCount: 1,
+    reviewerId: '2',
+    reviewerName: '李人事',
+    reviewComment: '需求合理，同意发布',
+    createdAt: '2024-01-10',
+    reviewedAt: '2024-01-12',
+    publishedAt: '2024-01-12'
+  },
+  {
+    id: 'req-2',
+    positionName: '产品经理',
+    headcount: 1,
+    urgency: 'urgent',
+    requirements: '1. 3年以上To B产品经验\n2. 熟悉HR SaaS产品优先\n3. 具备良好的需求分析和文档能力\n4. 能够独立推动项目落地',
+    department: '产品部',
+    applicantId: '2',
+    applicantName: '李四',
+    status: 'pending',
+    createdAt: '2024-01-15'
+  },
+  {
+    id: 'req-3',
+    positionName: '后端工程师',
+    headcount: 3,
+    urgency: 'medium',
+    requirements: '1. 4年以上Java后端开发经验\n2. 熟练掌握 Spring Boot、MyBatis\n3. 熟悉 MySQL、Redis 等数据库\n4. 有微服务架构经验优先',
+    department: '技术部',
+    applicantId: '9',
+    applicantName: '陈十一',
+    status: 'approved',
+    reviewerId: '2',
+    reviewerName: '李人事',
+    reviewComment: '审批通过，待发布',
+    createdAt: '2024-01-08',
+    reviewedAt: '2024-01-10'
+  },
+  {
+    id: 'req-4',
+    positionName: 'UI设计师',
+    headcount: 1,
+    urgency: 'low',
+    requirements: '1. 2年以上UI设计经验\n2. 熟练使用 Figma、Sketch\n3. 有移动端和Web端设计经验\n4. 具备良好的审美和交互理解',
+    department: '设计部',
+    applicantId: '10',
+    applicantName: '林十二',
+    status: 'closed',
+    actualHiredCount: 1,
+    closeReason: '已完成招聘，候选人林十二已入职',
+    reviewerId: '2',
+    reviewerName: '李人事',
+    reviewComment: '同意发布',
+    createdAt: '2023-10-15',
+    reviewedAt: '2023-10-18',
+    publishedAt: '2023-10-18',
+    closedAt: '2024-05-20'
+  },
+  {
+    id: 'req-5',
+    positionName: '市场专员',
+    headcount: 2,
+    urgency: 'high',
+    requirements: '1. 2年以上B2B市场推广经验\n2. 熟悉线上线下营销渠道\n3. 具备文案撰写和活动策划能力\n4. 有行业资源优先',
+    department: '市场部',
+    applicantId: '4',
+    applicantName: '赵六',
+    status: 'rejected',
+    reviewerId: '2',
+    reviewerName: '李人事',
+    reviewComment: '当前编制紧张，建议先优化现有人员配置，Q2后再考虑',
+    createdAt: '2024-01-05',
+    reviewedAt: '2024-01-07'
+  },
+  {
+    id: 'req-6',
+    positionName: '运营经理',
+    headcount: 1,
+    urgency: 'medium',
+    requirements: '1. 5年以上互联网运营经验\n2. 有用户运营和活动运营经验\n3. 具备数据分析能力\n4. 带过团队优先',
+    department: '运营部',
+    applicantId: '8',
+    applicantName: '郑十',
+    status: 'published',
+    reviewerId: '2',
+    reviewerName: '李人事',
+    reviewComment: '需求合理，尽快发布',
+    createdAt: '2024-01-12',
+    reviewedAt: '2024-01-14',
+    publishedAt: '2024-01-14'
   }
 ]
 
