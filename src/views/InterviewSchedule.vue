@@ -388,7 +388,7 @@
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue'
 import { Plus, ChevronLeft, ChevronRight, MapPin, ThumbsUp, ThumbsDown, MessageSquare } from 'lucide-vue-next'
-import { useInterviewStore, INTERVIEW_ROUND_LABELS, INTERVIEW_STATUS_LABELS, INTERVIEW_RESULT_LABELS, INTERVIEW_RESULT_COLORS } from '@/stores/interview'
+import { useInterviewStore, INTERVIEW_ROUND_LABELS, INTERVIEW_STATUS_LABELS, INTERVIEW_RESULT_LABELS, INTERVIEW_RESULT_COLORS, getNextStage } from '@/stores/interview'
 import { useRecruitmentStore } from '@/stores/recruitment'
 import { useMessage } from 'naive-ui'
 import type { FormInst, FormRules, SelectOption } from 'naive-ui'
@@ -646,6 +646,16 @@ function submitEvaluation() {
         interviewerName: selectedInterview.value.interviewerName,
         ...evaluationForm
       })
+
+      if (evaluationForm.result === 'pass') {
+        const candidate = recruitmentStore.candidates.find(c => c.id === selectedInterview.value!.candidateId)
+        if (candidate) {
+          const nextStage = getNextStage(candidate.stage)
+          if (nextStage) {
+            recruitmentStore.moveCandidate(candidate.id, nextStage as any)
+          }
+        }
+      }
       
       message.success('评价提交成功，已同步到候选人看板')
       showEvaluationModal.value = false

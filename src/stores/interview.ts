@@ -7,7 +7,15 @@ import {
   mockInterviewers, 
   mockUsers 
 } from '@/mock/data'
-import { useRecruitmentStore } from './recruitment'
+
+export function getNextStage(currentStage: string): string | null {
+  const stages = ['screening', 'interview1', 'interview2', 'offer', 'rejected']
+  const currentIndex = stages.indexOf(currentStage)
+  if (currentIndex < stages.length - 2) {
+    return stages[currentIndex + 1]
+  }
+  return null
+}
 
 export { 
   INTERVIEW_ROUND_LABELS, 
@@ -151,18 +159,6 @@ export const useInterviewStore = defineStore('interview', () => {
     if (schedule) {
       schedule.result = data.result
       schedule.status = 'completed'
-    }
-
-    if (data.result === 'pass') {
-      const recruitmentStore = useRecruitmentStore()
-      const candidate = recruitmentStore.candidates.find(c => c.id === data.candidateId)
-      if (candidate) {
-        const currentStageIndex = ['screening', 'interview1', 'interview2', 'offer', 'rejected'].indexOf(candidate.stage)
-        const nextStages = ['screening', 'interview1', 'interview2', 'offer', 'rejected']
-        if (currentStageIndex < nextStages.length - 2) {
-          recruitmentStore.moveCandidate(data.candidateId, nextStages[currentStageIndex + 1] as any)
-        }
-      }
     }
 
     return newEvaluation

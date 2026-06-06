@@ -1124,14 +1124,14 @@ function generateMockInterviews(): InterviewSchedule[] {
   const interviews: InterviewSchedule[] = []
   
   const interviewData = [
-    { candidate: mockCandidates[2], round: 'first' as const, interviewer: mockInterviewers[0], dateOffset: 1, status: 'scheduled' as const },
-    { candidate: mockCandidates[3], round: 'first' as const, interviewer: mockInterviewers[1], dateOffset: 1, status: 'scheduled' as const },
-    { candidate: mockCandidates[4], round: 'second' as const, interviewer: mockInterviewers[8], dateOffset: 2, status: 'scheduled' as const },
-    { candidate: mockCandidates[5], round: 'second' as const, interviewer: mockInterviewers[9], dateOffset: 2, status: 'scheduled' as const },
-    { candidate: mockCandidates[6], round: 'final' as const, interviewer: mockInterviewers[8], dateOffset: -1, status: 'completed' as const },
-    { candidate: mockCandidates[7], round: 'final' as const, interviewer: mockInterviewers[4], dateOffset: -2, status: 'completed' as const },
-    { candidate: mockCandidates[0], round: 'first' as const, interviewer: mockInterviewers[2], dateOffset: 3, status: 'scheduled' as const },
-    { candidate: mockCandidates[1], round: 'first' as const, interviewer: mockInterviewers[1], dateOffset: 4, status: 'scheduled' as const },
+    { candidate: mockCandidates[2], round: 'first' as const, interviewer: mockInterviewers[0 % mockInterviewers.length], dateOffset: 1, status: 'scheduled' as const },
+    { candidate: mockCandidates[3], round: 'first' as const, interviewer: mockInterviewers[1 % mockInterviewers.length], dateOffset: 1, status: 'scheduled' as const },
+    { candidate: mockCandidates[4], round: 'second' as const, interviewer: mockInterviewers[2 % mockInterviewers.length], dateOffset: 2, status: 'scheduled' as const },
+    { candidate: mockCandidates[5], round: 'second' as const, interviewer: mockInterviewers[3 % mockInterviewers.length], dateOffset: 2, status: 'scheduled' as const },
+    { candidate: mockCandidates[6], round: 'final' as const, interviewer: mockInterviewers[4 % mockInterviewers.length], dateOffset: -1, status: 'completed' as const },
+    { candidate: mockCandidates[7], round: 'final' as const, interviewer: mockInterviewers[5 % mockInterviewers.length], dateOffset: -2, status: 'completed' as const },
+    { candidate: mockCandidates[0], round: 'first' as const, interviewer: mockInterviewers[6 % mockInterviewers.length], dateOffset: 3, status: 'scheduled' as const },
+    { candidate: mockCandidates[1], round: 'first' as const, interviewer: mockInterviewers[7 % mockInterviewers.length], dateOffset: 4, status: 'scheduled' as const },
   ]
   
   const timeSlots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00']
