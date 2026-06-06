@@ -86,6 +86,12 @@ const routes: RouteRecordRaw[] = [
         name: 'interview-schedule',
         component: () => import('@/views/InterviewSchedule.vue'),
         meta: { title: '面试日程' }
+      },
+      {
+        path: '/leave',
+        name: 'leave',
+        component: () => import('@/views/Leave.vue'),
+        meta: { title: '请假管理' }
       }
     ]
   }

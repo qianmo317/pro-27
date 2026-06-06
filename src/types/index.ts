@@ -27,7 +27,92 @@ export interface AttendanceRecord {
   date: string
   checkIn: string
   checkOut: string
-  status: 'normal' | 'late' | 'early' | 'absent'
+  status: 'normal' | 'late' | 'early' | 'absent' | 'leave'
+  leaveType?: LeaveType
+  leaveApplicationId?: string
+}
+
+export type LeaveType = 'personal' | 'sick' | 'annual' | 'compensatory' | 'marriage' | 'maternity' | 'other'
+
+export const LEAVE_TYPE_OPTIONS: { label: string; value: LeaveType }[] = [
+  { label: '事假', value: 'personal' },
+  { label: '病假', value: 'sick' },
+  { label: '年假', value: 'annual' },
+  { label: '调休', value: 'compensatory' },
+  { label: '婚假', value: 'marriage' },
+  { label: '产假/陪产假', value: 'maternity' },
+  { label: '其他', value: 'other' }
+]
+
+export const LEAVE_TYPE_LABELS: Record<LeaveType, string> = {
+  personal: '事假',
+  sick: '病假',
+  annual: '年假',
+  compensatory: '调休',
+  marriage: '婚假',
+  maternity: '产假/陪产假',
+  other: '其他'
+}
+
+export const LEAVE_TYPE_COLORS: Record<LeaveType, string> = {
+  personal: '#F59E0B',
+  sick: '#EF4444',
+  annual: '#10B981',
+  compensatory: '#3B82F6',
+  marriage: '#EC4899',
+  maternity: '#8B5CF6',
+  other: '#6B7280'
+}
+
+export type LeaveStatus = 'pending' | 'approved' | 'rejected'
+
+export const LEAVE_STATUS_OPTIONS: { label: string; value: LeaveStatus }[] = [
+  { label: '待审批', value: 'pending' },
+  { label: '已通过', value: 'approved' },
+  { label: '已驳回', value: 'rejected' }
+]
+
+export const LEAVE_STATUS_LABELS: Record<LeaveStatus, string> = {
+  pending: '待审批',
+  approved: '已通过',
+  rejected: '已驳回'
+}
+
+export const LEAVE_STATUS_COLORS: Record<LeaveStatus, string> = {
+  pending: '#F59E0B',
+  approved: '#10B981',
+  rejected: '#EF4444'
+}
+
+export interface LeaveApplication {
+  id: string
+  employeeId: string
+  employeeName: string
+  department: string
+  leaveType: LeaveType
+  startDate: string
+  endDate: string
+  startTime: string
+  endTime: string
+  totalDays: number
+  reason: string
+  status: LeaveStatus
+  approverId?: string
+  approverName?: string
+  approvalComment?: string
+  createdAt: string
+  approvedAt?: string
+}
+
+export interface EmployeeLeaveBalance {
+  employeeId: string
+  employeeName: string
+  annualLeaveTotal: number
+  annualLeaveUsed: number
+  annualLeaveRemaining: number
+  compensatoryLeaveTotal: number
+  compensatoryLeaveUsed: number
+  compensatoryLeaveRemaining: number
 }
 
 export interface SalaryRecord {

@@ -27,8 +27,9 @@ export const useAttendanceStore = defineStore('attendance', () => {
     const late = data.filter(r => r.status === 'late').length
     const early = data.filter(r => r.status === 'early').length
     const absent = data.filter(r => r.status === 'absent').length
-    const attendanceRate = total > 0 ? ((normal / total) * 100).toFixed(1) : '0'
-    return { total, normal, late, early, absent, attendanceRate }
+    const leave = data.filter(r => r.status === 'leave').length
+    const attendanceRate = total > 0 ? (((normal + leave) / total) * 100).toFixed(1) : '0'
+    return { total, normal, late, early, absent, leave, attendanceRate }
   })
 
   const chartData = computed(() => {

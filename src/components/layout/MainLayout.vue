@@ -83,7 +83,8 @@ import {
   Award,
   ArrowRightLeft,
   ClipboardList,
-  CalendarDays
+  CalendarDays,
+  CalendarOff
 } from 'lucide-vue-next'
 import { useContractStore } from '@/stores/contract'
 import { useUserStore } from '@/stores/user'
@@ -111,7 +112,8 @@ const currentPageTitle = computed(() => {
     '/organization': '组织架构',
     '/contracts': '合同管理',
     '/performance': '绩效考核',
-    '/transfer': '异动管理'
+    '/transfer': '异动管理',
+    '/leave': '请假管理'
   }
   return titles[route.path] || '仪表盘'
 })
@@ -149,6 +151,11 @@ const menuOptions: MenuOption[] = [
     label: '考勤统计',
     key: '/attendance',
     icon: () => h(CalendarCheck as any, { size: 20 }) as any
+  },
+  {
+    label: '请假管理',
+    key: '/leave',
+    icon: () => h(CalendarOff as any, { size: 20 }) as any
   },
   {
     label: '薪资工资条',

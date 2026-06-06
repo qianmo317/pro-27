@@ -1,4 +1,4 @@
-import type { User, Employee, AttendanceRecord, SalaryRecord, Candidate, TrainingCourse, Department, Contract, Attachment, PerformancePlan, PerformanceAppraisal, KpiIndicator, EmployeeTransfer, RecruitmentRequirement, InterviewSchedule, InterviewEvaluation, Interviewer } from '@/types'
+import type { User, Employee, AttendanceRecord, SalaryRecord, Candidate, TrainingCourse, Department, Contract, Attachment, PerformancePlan, PerformanceAppraisal, KpiIndicator, EmployeeTransfer, RecruitmentRequirement, InterviewSchedule, InterviewEvaluation, Interviewer, LeaveApplication, EmployeeLeaveBalance } from '@/types'
 
 export const mockUsers: User[] = [
   {
@@ -1211,5 +1211,165 @@ export const mockInterviewEvaluations: InterviewEvaluation[] = [
     overallComment: '候选人有3年HR相关工作经验，熟悉招聘流程和员工关系管理。沟通表达能力优秀，有良好的服务意识。对人力资源管理有自己的理解和想法。建议进一步考察其处理复杂问题的能力。',
     result: 'pending',
     createdAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString().split('T')[0]
+  }
+]
+
+export const mockLeaveBalances: EmployeeLeaveBalance[] = mockEmployees.map(emp => {
+  const totalAnnual = 10
+  const totalCompensatory = 5
+  const usedAnnual = Math.floor(Math.random() * 5)
+  const usedCompensatory = Math.floor(Math.random() * 3)
+  return {
+    employeeId: emp.id,
+    employeeName: emp.name,
+    annualLeaveTotal: totalAnnual,
+    annualLeaveUsed: usedAnnual,
+    annualLeaveRemaining: totalAnnual - usedAnnual,
+    compensatoryLeaveTotal: totalCompensatory,
+    compensatoryLeaveUsed: usedCompensatory,
+    compensatoryLeaveRemaining: totalCompensatory - usedCompensatory
+  }
+})
+
+export const mockLeaveApplications: LeaveApplication[] = [
+  {
+    id: 'leave-1',
+    employeeId: '1',
+    employeeName: '张三',
+    department: '技术部',
+    leaveType: 'annual',
+    startDate: '2024-01-15',
+    endDate: '2024-01-16',
+    startTime: '09:00',
+    endTime: '18:00',
+    totalDays: 2,
+    reason: '家里有事需要处理',
+    status: 'approved',
+    approverId: '9',
+    approverName: '陈十一',
+    approvalComment: '同意，请安排好工作交接',
+    createdAt: '2024-01-10',
+    approvedAt: '2024-01-11'
+  },
+  {
+    id: 'leave-2',
+    employeeId: '1',
+    employeeName: '张三',
+    department: '技术部',
+    leaveType: 'sick',
+    startDate: '2024-01-20',
+    endDate: '2024-01-20',
+    startTime: '09:00',
+    endTime: '18:00',
+    totalDays: 1,
+    reason: '感冒发烧，需要休息',
+    status: 'approved',
+    approverId: '9',
+    approverName: '陈十一',
+    approvalComment: '同意，注意身体',
+    createdAt: '2024-01-19',
+    approvedAt: '2024-01-19'
+  },
+  {
+    id: 'leave-3',
+    employeeId: '3',
+    employeeName: '王五',
+    department: '技术部',
+    leaveType: 'personal',
+    startDate: '2024-01-22',
+    endDate: '2024-01-23',
+    startTime: '09:00',
+    endTime: '18:00',
+    totalDays: 2,
+    reason: '需要处理个人事务',
+    status: 'pending',
+    createdAt: '2024-01-18'
+  },
+  {
+    id: 'leave-4',
+    employeeId: '4',
+    employeeName: '赵六',
+    department: '市场部',
+    leaveType: 'compensatory',
+    startDate: '2024-01-25',
+    endDate: '2024-01-25',
+    startTime: '13:00',
+    endTime: '18:00',
+    totalDays: 0.5,
+    reason: '上周加班调休半天',
+    status: 'pending',
+    createdAt: '2024-01-20'
+  },
+  {
+    id: 'leave-5',
+    employeeId: '2',
+    employeeName: '李四',
+    department: '产品部',
+    leaveType: 'annual',
+    startDate: '2024-02-01',
+    endDate: '2024-02-05',
+    startTime: '09:00',
+    endTime: '18:00',
+    totalDays: 5,
+    reason: '春节提前回家',
+    status: 'approved',
+    approverId: '9',
+    approverName: '陈十一',
+    approvalComment: '同意，假期愉快',
+    createdAt: '2024-01-15',
+    approvedAt: '2024-01-16'
+  },
+  {
+    id: 'leave-6',
+    employeeId: '10',
+    employeeName: '林十二',
+    department: '设计部',
+    leaveType: 'marriage',
+    startDate: '2024-02-10',
+    endDate: '2024-02-20',
+    startTime: '09:00',
+    endTime: '18:00',
+    totalDays: 11,
+    reason: '结婚，请婚假',
+    status: 'approved',
+    approverId: '9',
+    approverName: '陈十一',
+    approvalComment: '恭喜！新婚快乐！',
+    createdAt: '2024-01-20',
+    approvedAt: '2024-01-21'
+  },
+  {
+    id: 'leave-7',
+    employeeId: '7',
+    employeeName: '吴九',
+    department: '技术部',
+    leaveType: 'sick',
+    startDate: '2024-01-21',
+    endDate: '2024-01-21',
+    startTime: '09:00',
+    endTime: '12:00',
+    totalDays: 0.5,
+    reason: '早上身体不适，下午再去上班',
+    status: 'rejected',
+    approverId: '9',
+    approverName: '陈十一',
+    approvalComment: '今天有重要项目上线，请坚持一下，或改请明天',
+    createdAt: '2024-01-21',
+    approvedAt: '2024-01-21'
+  },
+  {
+    id: 'leave-8',
+    employeeId: '8',
+    employeeName: '郑十',
+    department: '运营部',
+    leaveType: 'annual',
+    startDate: '2024-02-08',
+    endDate: '2024-02-10',
+    startTime: '09:00',
+    endTime: '18:00',
+    totalDays: 3,
+    reason: '出去旅游放松一下',
+    status: 'pending',
+    createdAt: '2024-01-22'
   }
 ]

@@ -10,7 +10,7 @@
       />
     </div>
     
-    <n-grid :cols="4" :x-gap="20" :y-gap="20" class="stat-grid">
+    <n-grid :cols="5" :x-gap="20" :y-gap="20" class="stat-grid">
       <n-grid-item>
         <n-card class="stat-card card-gradient">
           <div class="stat-content">
@@ -34,6 +34,20 @@
             <div class="stat-info">
               <div class="stat-value">{{ statistics.normal }}</div>
               <div class="stat-label">正常打卡</div>
+            </div>
+          </div>
+        </n-card>
+      </n-grid-item>
+      
+      <n-grid-item>
+        <n-card class="stat-card" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%); color: white;">
+          <div class="stat-content">
+            <div class="stat-icon">
+              <CalendarOff :size="24" color="#fff" />
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ statistics.leave }}</div>
+              <div class="stat-label">请假</div>
             </div>
           </div>
         </n-card>
@@ -92,7 +106,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, h } from 'vue'
 import * as echarts from 'echarts'
-import { CalendarCheck, CheckCircle, Clock, XCircle } from 'lucide-vue-next'
+import { CalendarCheck, CheckCircle, Clock, XCircle, CalendarOff } from 'lucide-vue-next'
 import { useAttendanceStore } from '@/stores/attendance'
 import { NTag } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
@@ -142,15 +156,29 @@ const columns: DataTableColumns<AttendanceRecord> = [
         normal: 'success',
         late: 'warning',
         early: 'warning',
-        absent: 'error'
+        absent: 'error',
+        leave: 'info'
       }
       const labelMap: Record<string, string> = {
         normal: '正常',
         late: '迟到',
         early: '早退',
-        absent: '缺勤'
+        absent: '缺勤',
+        leave: '请假'
       }
-      return h(NTag as any, { type: typeMap[row.status], size: 'small' }, { default: () => labelMap[row.status] }) as any
+      const leaveTypeLabels: Record<string, string> = {
+        personal: '事假',
+        sick: '病假',
+        annual: '年假',
+        compensatory: '调休',
+        marriage: '婚假',
+        maternity: '产假/陪产假',
+        other: '其他'
+      }
+      const label = row.status === 'leave' && row.leaveType 
+        ? `${labelMap[row.status]}(${leaveTypeLabels[row.leaveType]})` 
+        : labelMap[row.status]
+      return h(NTag as any, { type: typeMap[row.status], size: 'small' }, { default: () => label }) as any
     }
   }
 ]

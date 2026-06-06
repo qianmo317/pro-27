@@ -283,6 +283,87 @@
               </div>
             </div>
           </n-tab-pane>
+
+          <n-tab-pane name="leave" tab="休假信息">
+            <div v-if="currentEmployee" class="leave-section">
+              <div class="section-header">
+                <span class="section-title">假期余额</span>
+              </div>
+              
+              <div v-if="employeeLeaveBalance" class="leave-balance">
+                <n-grid :cols="2" :x-gap="20" :y-gap="20">
+                  <n-grid-item>
+                    <n-card class="balance-card" style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%); color: white;">
+                      <div class="balance-content">
+                        <div class="balance-icon">
+                          <CalendarDays :size="28" color="#fff" />
+                        </div>
+                        <div class="balance-info">
+                          <div class="balance-label">年假</div>
+                          <div class="balance-value">剩余 <strong>{{ employeeLeaveBalance.annualLeaveRemaining }}</strong> 天</div>
+                          <div class="balance-detail">
+                            已用 {{ employeeLeaveBalance.annualLeaveUsed }} / 共 {{ employeeLeaveBalance.annualLeaveTotal }} 天
+                          </div>
+                        </div>
+                      </div>
+                    </n-card>
+                  </n-grid-item>
+                  <n-grid-item>
+                    <n-card class="balance-card" style="background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%); color: white;">
+                      <div class="balance-content">
+                        <div class="balance-icon">
+                          <Clock :size="28" color="#fff" />
+                        </div>
+                        <div class="balance-info">
+                          <div class="balance-label">调休</div>
+                          <div class="balance-value">剩余 <strong>{{ employeeLeaveBalance.compensatoryLeaveRemaining }}</strong> 天</div>
+                          <div class="balance-detail">
+                            已用 {{ employeeLeaveBalance.compensatoryLeaveUsed }} / 共 {{ employeeLeaveBalance.compensatoryLeaveTotal }} 天
+                          </div>
+                        </div>
+                      </div>
+                    </n-card>
+                  </n-grid-item>
+                </n-grid>
+              </div>
+
+              <div class="section-header" style="margin-top: 24px;">
+                <span class="section-title">请假历史</span>
+              </div>
+              
+              <div v-if="employeeLeaves.length > 0" class="leave-history">
+                <div 
+                  v-for="leave in employeeLeaves" 
+                  :key="leave.id" 
+                  class="leave-item"
+                >
+                  <div class="leave-header">
+                    <div class="leave-main">
+                      <n-tag :style="{ backgroundColor: getLeaveTypeColor(leave.leaveType), color: '#fff' }" size="small">
+                        {{ getLeaveTypeLabel(leave.leaveType) }}
+                      </n-tag>
+                      <span class="leave-dates">{{ leave.startDate }} ~ {{ leave.endDate }}</span>
+                      <span class="leave-days">{{ leave.totalDays }} 天</span>
+                    </div>
+                    <n-tag :style="{ backgroundColor: getLeaveStatusColor(leave.status), color: '#fff' }" size="small">
+                      {{ getLeaveStatusLabel(leave.status) }}
+                    </n-tag>
+                  </div>
+                  <div class="leave-reason">事由：{{ leave.reason }}</div>
+                  <div v-if="leave.approvalComment" class="leave-comment">
+                    审批意见：{{ leave.approvalComment }}
+                  </div>
+                  <div class="leave-footer">
+                    <span>申请时间：{{ leave.createdAt }}</span>
+                    <span v-if="leave.approverName">审批人：{{ leave.approverName }}</span>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="no-leave">
+                <n-empty description="暂无请假记录" />
+              </div>
+            </div>
+          </n-tab-pane>
         </n-tabs>
       </div>
       <template #footer>
@@ -479,22 +560,24 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, h, nextTick, onMounted } from 'vue'
-import { Plus, Search, Edit, Trash2, Eye, ArrowRightLeft } from 'lucide-vue-next'
+import { Plus, Search, Edit, Trash2, Eye, ArrowRightLeft, CalendarDays, Clock } from 'lucide-vue-next'
 import * as echarts from 'echarts'
 import { useEmployeeStore } from '@/stores/employee'
 import { useContractStore } from '@/stores/contract'
 import { usePerformanceStore } from '@/stores/performance'
 import { useEmployeeTransferStore } from '@/stores/employee-transfer'
+import { useLeaveStore } from '@/stores/leave'
 import { useMessage, useDialog, NTag, NSpace, NButton, NTimeline, NTimelineItem, NRow, NCol } from 'naive-ui'
 import type { FormInst, FormRules, DataTableColumns, DialogReactive } from 'naive-ui'
-import type { Employee, Contract, PerformanceAppraisal, PerformanceResultGrade, EmployeeTransfer, TransferType } from '@/types'
-import { PERFORMANCE_GRADE_LABELS, PERFORMANCE_GRADE_COLORS, TRANSFER_TYPE_OPTIONS, TRANSFER_TYPE_LABELS, TRANSFER_STATUS_OPTIONS, TRANSFER_TYPE_COLORS } from '@/types'
+import type { Employee, Contract, PerformanceAppraisal, PerformanceResultGrade, EmployeeTransfer, TransferType, LeaveApplication, LeaveType, LeaveStatus } from '@/types'
+import { PERFORMANCE_GRADE_LABELS, PERFORMANCE_GRADE_COLORS, TRANSFER_TYPE_OPTIONS, TRANSFER_TYPE_LABELS, TRANSFER_STATUS_OPTIONS, TRANSFER_TYPE_COLORS, LEAVE_TYPE_LABELS, LEAVE_TYPE_COLORS, LEAVE_STATUS_LABELS, LEAVE_STATUS_COLORS } from '@/types'
 import AttachmentManager from '@/components/AttachmentManager.vue'
 
 const employeeStore = useEmployeeStore()
 const contractStore = useContractStore()
 const performanceStore = usePerformanceStore()
 const transferStore = useEmployeeTransferStore()
+const leaveStore = useLeaveStore()
 const message = useMessage()
 const dialog = useDialog()
 
@@ -535,6 +618,17 @@ const employeeAppraisals = computed(() => {
 const employeeTransfers = computed(() => {
   if (!currentEmployee.value) return []
   return transferStore.getTransfersByEmployeeId(currentEmployee.value.id)
+})
+
+const employeeLeaveBalance = computed(() => {
+  if (!currentEmployee.value) return null
+  return leaveStore.getLeaveBalance(currentEmployee.value.id)
+})
+
+const employeeLeaves = computed(() => {
+  if (!currentEmployee.value) return []
+  return leaveStore.getApplicationsByEmployeeId(currentEmployee.value.id)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 })
 
 const trendChartRef = ref<HTMLElement | null>(null)
@@ -713,6 +807,22 @@ function getTransferTimelineType(transfer: EmployeeTransfer, index: number): any
   if (transfer.status === 'pending') return 'warning'
   if (transfer.status === 'cancelled') return 'default'
   return 'default'
+}
+
+function getLeaveTypeLabel(type: LeaveType): string {
+  return LEAVE_TYPE_LABELS[type]
+}
+
+function getLeaveTypeColor(type: LeaveType): string {
+  return LEAVE_TYPE_COLORS[type]
+}
+
+function getLeaveStatusLabel(status: LeaveStatus): string {
+  return LEAVE_STATUS_LABELS[status]
+}
+
+function getLeaveStatusColor(status: LeaveStatus): string {
+  return LEAVE_STATUS_COLORS[status]
 }
 
 function openAddTransferModal() {
@@ -1418,6 +1528,132 @@ function resetForm() {
 }
 
 .no-transfer {
+  padding: 40px 0;
+}
+
+.leave-section {
+  padding: 8px 0;
+}
+
+.leave-balance {
+  margin-bottom: 24px;
+}
+
+.balance-card {
+  border: none;
+}
+
+.balance-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.balance-icon {
+  width: 56px;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.balance-info {
+  flex: 1;
+}
+
+.balance-label {
+  font-size: 14px;
+  opacity: 0.9;
+  margin-bottom: 4px;
+}
+
+.balance-value {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.balance-value strong {
+  font-size: 28px;
+}
+
+.balance-detail {
+  font-size: 12px;
+  opacity: 0.8;
+  margin-top: 4px;
+}
+
+.leave-history {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.leave-item {
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.2s;
+}
+
+.leave-item:hover {
+  border-color: #7C3AED;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.1);
+}
+
+.leave-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.leave-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.leave-dates {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1E1B4B;
+}
+
+.leave-days {
+  font-size: 13px;
+  color: #7C3AED;
+  font-weight: 500;
+}
+
+.leave-reason {
+  font-size: 13px;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.leave-comment {
+  font-size: 13px;
+  color: #6B7280;
+  background: #F9FAFB;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.leave-footer {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: #9CA3AF;
+}
+
+.no-leave {
   padding: 40px 0;
 }
 </style>
