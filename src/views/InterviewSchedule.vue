@@ -544,6 +544,15 @@ const scheduleForm = reactive({
   remarks: ''
 })
 
+function convertDateToString(timestamp: number | null): string {
+  if (!timestamp) return ''
+  return new Date(timestamp).toISOString().split('T')[0]
+}
+
+function convertTimeToString(time: string | null): string {
+  return time || ''
+}
+
 const scheduleRules: FormRules = {
   candidateId: [{ required: true, message: '请选择候选人', trigger: 'change' }],
   round: [{ required: true, message: '请选择面试轮次', trigger: 'change' }],
@@ -684,14 +693,6 @@ function handleInterviewerChange(value: string, option: SelectOption) {
   }
 }
 
-function formatDate(timestamp: number): string {
-  return new Date(timestamp).toISOString().split('T')[0]
-}
-
-function formatTime(timeStr: string): string {
-  return timeStr
-}
-
 function submitSchedule() {
   scheduleFormRef.value?.validate((errors) => {
     if (!errors) {
@@ -709,9 +710,9 @@ function submitSchedule() {
         interviewerId: scheduleForm.interviewerId,
         interviewerName: scheduleForm.interviewerName,
         interviewerAvatar: scheduleForm.interviewerAvatar,
-        date: formatDate(scheduleForm.date),
-        startTime: formatTime(scheduleForm.startTime),
-        endTime: formatTime(scheduleForm.endTime),
+        date: convertDateToString(scheduleForm.date),
+        startTime: convertTimeToString(scheduleForm.startTime),
+        endTime: convertTimeToString(scheduleForm.endTime),
         location: scheduleForm.location,
         meetingLink: scheduleForm.meetingLink || undefined,
         remarks: scheduleForm.remarks || undefined

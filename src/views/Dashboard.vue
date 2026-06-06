@@ -201,8 +201,8 @@ const expiringContractsList = computed(() =>
 )
 
 const upcomingInterviews = computed(() => {
-  const currentUserId = userStore.currentUser?.id || '1'
-  return interviewStore.getUpcomingInterviewsByInterviewer(currentUserId, 5)
+  if (!userStore.currentUser) return []
+  return interviewStore.getUpcomingInterviewsByInterviewer(userStore.currentUser.id, 5)
 })
 
 const contractTypeLabels: Record<string, string> = {

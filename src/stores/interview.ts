@@ -7,6 +7,7 @@ import {
   mockInterviewers, 
   mockUsers 
 } from '@/mock/data'
+import { useUserStore } from './user'
 
 export function getNextStage(currentStage: string): string | null {
   const stages = ['screening', 'interview1', 'interview2', 'offer', 'rejected']
@@ -96,14 +97,18 @@ export const useInterviewStore = defineStore('interview', () => {
     meetingLink?: string
     remarks?: string
   }) {
-    const currentUser = mockUsers.find(u => u.role === 'hr') || mockUsers[1]
+    const userStore = useUserStore()
+    if (!userStore.currentUser) {
+      throw new Error('用户未登录，无法预约面试')
+    }
+    
     const newId = `int-${Date.now()}`
     const newSchedule: InterviewSchedule = {
       ...data,
       id: newId,
       status: 'scheduled',
       createdAt: new Date().toISOString().split('T')[0],
-      createdBy: currentUser.name
+      createdBy: userStore.currentUser.name
     }
     schedules.value.unshift(newSchedule)
     return newSchedule

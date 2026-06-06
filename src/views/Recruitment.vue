@@ -409,8 +409,13 @@ function handleInterviewerChange(value: string, option: SelectOption) {
   }
 }
 
-function formatDate(timestamp: number): string {
+function convertDateToString(timestamp: number | null): string {
+  if (!timestamp) return ''
   return new Date(timestamp).toISOString().split('T')[0]
+}
+
+function convertTimeToString(time: string | null): string {
+  return time || ''
 }
 
 function submitSchedule() {
@@ -430,9 +435,9 @@ function submitSchedule() {
         interviewerId: scheduleForm.interviewerId,
         interviewerName: scheduleForm.interviewerName,
         interviewerAvatar: scheduleForm.interviewerAvatar,
-        date: formatDate(scheduleForm.date),
-        startTime: scheduleForm.startTime,
-        endTime: scheduleForm.endTime,
+        date: convertDateToString(scheduleForm.date),
+        startTime: convertTimeToString(scheduleForm.startTime),
+        endTime: convertTimeToString(scheduleForm.endTime),
         location: scheduleForm.location,
         meetingLink: scheduleForm.meetingLink || undefined,
         remarks: scheduleForm.remarks || undefined
