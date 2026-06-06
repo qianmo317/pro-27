@@ -1,4 +1,4 @@
-import type { User, Employee, AttendanceRecord, SalaryRecord, Candidate, TrainingCourse, Department, Contract, Attachment, PerformancePlan, PerformanceAppraisal, KpiIndicator, EmployeeTransfer, RecruitmentRequirement } from '@/types'
+import type { User, Employee, AttendanceRecord, SalaryRecord, Candidate, TrainingCourse, Department, Contract, Attachment, PerformancePlan, PerformanceAppraisal, KpiIndicator, EmployeeTransfer, RecruitmentRequirement, InterviewSchedule, InterviewEvaluation, Interviewer } from '@/types'
 
 export const mockUsers: User[] = [
   {
@@ -1106,5 +1106,110 @@ export const mockAttachments: Attachment[] = [
     isSensitive: false,
     ownerType: 'training',
     ownerId: 'tc-2'
+  }
+]
+
+export const mockInterviewers: Interviewer[] = mockEmployees
+  .filter(e => e.status === 'active')
+  .map(e => ({
+    id: e.id,
+    name: e.name,
+    avatar: e.avatar,
+    department: e.department,
+    position: e.position
+  }))
+
+function generateMockInterviews(): InterviewSchedule[] {
+  const today = new Date()
+  const interviews: InterviewSchedule[] = []
+  
+  const interviewData = [
+    { candidate: mockCandidates[2], round: 'first' as const, interviewer: mockInterviewers[0], dateOffset: 1, status: 'scheduled' as const },
+    { candidate: mockCandidates[3], round: 'first' as const, interviewer: mockInterviewers[1], dateOffset: 1, status: 'scheduled' as const },
+    { candidate: mockCandidates[4], round: 'second' as const, interviewer: mockInterviewers[8], dateOffset: 2, status: 'scheduled' as const },
+    { candidate: mockCandidates[5], round: 'second' as const, interviewer: mockInterviewers[9], dateOffset: 2, status: 'scheduled' as const },
+    { candidate: mockCandidates[6], round: 'final' as const, interviewer: mockInterviewers[8], dateOffset: -1, status: 'completed' as const },
+    { candidate: mockCandidates[7], round: 'final' as const, interviewer: mockInterviewers[4], dateOffset: -2, status: 'completed' as const },
+    { candidate: mockCandidates[0], round: 'first' as const, interviewer: mockInterviewers[2], dateOffset: 3, status: 'scheduled' as const },
+    { candidate: mockCandidates[1], round: 'first' as const, interviewer: mockInterviewers[1], dateOffset: 4, status: 'scheduled' as const },
+  ]
+  
+  const timeSlots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00']
+  const locations = ['3楼会议室A', '3楼会议室B', '2楼小会议室', '线上会议']
+  
+  interviewData.forEach((data, index) => {
+    const interviewDate = new Date(today)
+    interviewDate.setDate(today.getDate() + data.dateOffset)
+    
+    const startTime = timeSlots[index % timeSlots.length]
+    const [startHour, startMin] = startTime.split(':').map(Number)
+    const endTime = `${String(startHour + 1).padStart(2, '0')}:${String(startMin).padStart(2, '0')}`
+    
+    const result = data.status === 'completed' ? (index % 2 === 0 ? 'pass' : 'pending') : undefined
+    
+    interviews.push({
+      id: `int-${index + 1}`,
+      candidateId: data.candidate.id,
+      candidateName: data.candidate.name,
+      candidateAvatar: data.candidate.avatar,
+      position: data.candidate.position,
+      round: data.round,
+      interviewerId: data.interviewer.id,
+      interviewerName: data.interviewer.name,
+      interviewerAvatar: data.interviewer.avatar,
+      date: interviewDate.toISOString().split('T')[0],
+      startTime,
+      endTime,
+      location: locations[index % locations.length],
+      meetingLink: index % 3 === 0 ? 'https://meeting.example.com/room/123' : undefined,
+      status: data.status,
+      result,
+      remarks: '请提前准备好简历和相关资料',
+      createdAt: new Date(today.getTime() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      createdBy: '李人事'
+    })
+  })
+  
+  return interviews
+}
+
+export const mockInterviewSchedules: InterviewSchedule[] = generateMockInterviews()
+
+export const mockInterviewEvaluations: InterviewEvaluation[] = [
+  {
+    id: 'eval-1',
+    scheduleId: 'int-5',
+    candidateId: 'can-7',
+    candidateName: '郑小军',
+    interviewerId: '9',
+    interviewerName: '陈十一',
+    overallScore: 88,
+    technicalAbility: 90,
+    communicationSkill: 85,
+    problemSolving: 88,
+    teamFit: 90,
+    strengths: '技术功底扎实，有丰富的微服务架构经验，沟通表达清晰，能够主动承担责任',
+    weaknesses: '对新技术的探索可以更深入一些',
+    overallComment: '候选人具备扎实的Java基础和丰富的项目经验，对微服务架构有深入理解。沟通能力良好，能够清晰地表达自己的想法。团队协作能力强，有过带领小团队的经验。整体表现优秀，建议录用。',
+    result: 'pass',
+    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  },
+  {
+    id: 'eval-2',
+    scheduleId: 'int-6',
+    candidateId: 'can-8',
+    candidateName: '孙小芳',
+    interviewerId: '5',
+    interviewerName: '孙七',
+    overallScore: 82,
+    technicalAbility: 75,
+    communicationSkill: 88,
+    problemSolving: 80,
+    teamFit: 85,
+    strengths: 'HR专业知识扎实，沟通能力强，有亲和力，善于处理人际关系',
+    weaknesses: '对劳动法的某些细节理解不够深入',
+    overallComment: '候选人有3年HR相关工作经验，熟悉招聘流程和员工关系管理。沟通表达能力优秀，有良好的服务意识。对人力资源管理有自己的理解和想法。建议进一步考察其处理复杂问题的能力。',
+    result: 'pending',
+    createdAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString().split('T')[0]
   }
 ]

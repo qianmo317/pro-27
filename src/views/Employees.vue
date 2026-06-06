@@ -919,6 +919,21 @@ function handleTransfer(employee: Employee) {
   showViewModal.value = true
 }
 
+function handleEdit(employee: Employee) {
+  currentEmployee.value = employee
+  editFormData.value = {
+    name: employee.name,
+    gender: employee.gender,
+    phone: employee.phone,
+    email: employee.email,
+    department: employee.department,
+    position: employee.position,
+    entryDate: employee.entryDate,
+    status: employee.status
+  }
+  showEditModal.value = true
+}
+
 function handleEditSubmit() {
   editFormRef.value?.validate((errors) => {
     if (!errors && currentEmployee.value) {

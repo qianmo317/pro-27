@@ -82,7 +82,8 @@ import {
   Settings,
   Award,
   ArrowRightLeft,
-  ClipboardList
+  ClipboardList,
+  CalendarDays
 } from 'lucide-vue-next'
 import { useContractStore } from '@/stores/contract'
 import { useUserStore } from '@/stores/user'
@@ -105,6 +106,7 @@ const currentPageTitle = computed(() => {
     '/salary': '薪资工资条',
     '/recruitment': '招聘看板',
     '/recruitment-requirement': '招聘需求',
+    '/interview-schedule': '面试日程',
     '/training': '培训管理',
     '/organization': '组织架构',
     '/contracts': '合同管理',
@@ -167,6 +169,11 @@ const menuOptions: MenuOption[] = [
         label: '招聘需求',
         key: '/recruitment-requirement',
         icon: () => h(ClipboardList as any, { size: 18 }) as any
+      },
+      {
+        label: '面试日程',
+        key: '/interview-schedule',
+        icon: () => h(CalendarDays as any, { size: 18 }) as any
       }
     ]
   },

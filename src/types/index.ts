@@ -347,3 +347,82 @@ export const DEPARTMENT_OPTIONS = [
   { label: '运营部', value: '运营部' },
   { label: '设计部', value: '设计部' }
 ]
+
+export type InterviewRound = 'first' | 'second' | 'third' | 'final'
+export type InterviewStatus = 'scheduled' | 'completed' | 'cancelled' | 'no_show'
+export type InterviewResult = 'pass' | 'fail' | 'pending'
+
+export const INTERVIEW_ROUND_LABELS: Record<InterviewRound, string> = {
+  first: '初试',
+  second: '复试',
+  third: '三面',
+  final: '终面'
+}
+
+export const INTERVIEW_STATUS_LABELS: Record<InterviewStatus, string> = {
+  scheduled: '待面试',
+  completed: '已完成',
+  cancelled: '已取消',
+  no_show: '未出席'
+}
+
+export const INTERVIEW_RESULT_LABELS: Record<InterviewResult, string> = {
+  pass: '通过',
+  fail: '不通过',
+  pending: '待定'
+}
+
+export const INTERVIEW_RESULT_COLORS: Record<InterviewResult, string> = {
+  pass: '#10B981',
+  fail: '#EF4444',
+  pending: '#F59E0B'
+}
+
+export interface InterviewSchedule {
+  id: string
+  candidateId: string
+  candidateName: string
+  candidateAvatar: string
+  position: string
+  round: InterviewRound
+  interviewerId: string
+  interviewerName: string
+  interviewerAvatar: string
+  date: string
+  startTime: string
+  endTime: string
+  location: string
+  meetingLink?: string
+  status: InterviewStatus
+  result?: InterviewResult
+  remarks?: string
+  createdAt: string
+  createdBy: string
+}
+
+export interface InterviewEvaluation {
+  id: string
+  scheduleId: string
+  candidateId: string
+  candidateName: string
+  interviewerId: string
+  interviewerName: string
+  overallScore: number
+  technicalAbility: number
+  communicationSkill: number
+  problemSolving: number
+  teamFit: number
+  strengths: string
+  weaknesses: string
+  overallComment: string
+  result: InterviewResult
+  createdAt: string
+}
+
+export interface Interviewer {
+  id: string
+  name: string
+  avatar: string
+  department: string
+  position: string
+}

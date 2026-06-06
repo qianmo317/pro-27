@@ -115,30 +115,125 @@
         </n-descriptions>
       </div>
       <template #footer>
-        <n-space justify="end">
-          <n-button @click="showDetailModal = false">关闭</n-button>
-        </n-space>
-      </template>
-    </n-modal>
-  </div>
-</template>
+          <n-space justify="end">
+            <n-button @click="showDetailModal = false">关闭</n-button>
+            <n-button type="primary" @click="openScheduleModal">
+              <template #icon>
+                <CalendarDays :size="16" />
+              </template>
+              预约面试
+            </n-button>
+          </n-space>
+        </template>
+      </n-modal>
+
+      <n-modal v-model:show="showScheduleModal" preset="card" title="预约面试" style="width: 550px;">
+        <n-form
+          ref="scheduleFormRef"
+          :model="scheduleForm"
+          :rules="scheduleRules"
+          label-placement="left"
+          label-width="100px"
+        >
+          <n-form-item label="候选人">
+            <n-input :value="selectedCandidate?.name" disabled />
+          </n-form-item>
+
+          <n-form-item label="面试轮次" path="round">
+            <n-select 
+              v-model:value="scheduleForm.round" 
+              placeholder="请选择面试轮次"
+              style="width: 100%;"
+              :options="roundOptions"
+            />
+          </n-form-item>
+
+          <n-form-item label="面试官" path="interviewerId">
+            <n-select 
+              v-model:value="scheduleForm.interviewerId" 
+              placeholder="请选择面试官"
+              style="width: 100%;"
+              :options="interviewerOptions"
+              filterable
+              @update:value="handleInterviewerChange"
+            />
+          </n-form-item>
+
+          <n-form-item label="面试日期" path="date">
+            <n-date-picker 
+              v-model:value="scheduleForm.date" 
+              type="date" 
+              style="width: 100%;"
+              :min-date="Date.now()"
+            />
+          </n-form-item>
+
+          <n-space>
+            <n-form-item label="开始时间" path="startTime">
+              <n-time-picker 
+                v-model:value="scheduleForm.startTime" 
+                format="HH:mm"
+                style="width: 150px;"
+              />
+            </n-form-item>
+            <n-form-item label="结束时间" path="endTime">
+              <n-time-picker 
+                v-model:value="scheduleForm.endTime" 
+                format="HH:mm"
+                style="width: 150px;"
+              />
+            </n-form-item>
+          </n-space>
+
+          <n-form-item label="面试地点" path="location">
+            <n-select 
+              v-model:value="scheduleForm.location" 
+              placeholder="请选择面试地点"
+              style="width: 100%;"
+              :options="locationOptions"
+              allow-input
+            />
+          </n-form-item>
+
+          <n-form-item label="会议链接" path="meetingLink">
+            <n-input v-model:value="scheduleForm.meetingLink" placeholder="线上会议链接（可选）" />
+          </n-form-item>
+
+          <n-form-item label="备注" path="remarks">
+            <n-input v-model:value="scheduleForm.remarks" type="textarea" :rows="2" placeholder="备注信息（可选）" />
+          </n-form-item>
+        </n-form>
+
+        <template #footer>
+          <n-space justify="end">
+            <n-button @click="showScheduleModal = false">取消</n-button>
+            <n-button type="primary" @click="submitSchedule">确认预约</n-button>
+          </n-space>
+        </template>
+      </n-modal>
+    </div>
+  </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
 import draggable from 'vuedraggable'
-import { Plus, Calendar } from 'lucide-vue-next'
+import { Plus, Calendar, CalendarDays } from 'lucide-vue-next'
 import { useRecruitmentStore, stageLabels, type StageType } from '@/stores/recruitment'
+import { useInterviewStore } from '@/stores/interview'
 import { useMessage } from 'naive-ui'
-import type { FormInst, FormRules } from 'naive-ui'
-import type { Candidate } from '@/types'
+import type { FormInst, FormRules, SelectOption } from 'naive-ui'
+import type { Candidate, InterviewRound } from '@/types'
 
 const recruitmentStore = useRecruitmentStore()
+const interviewStore = useInterviewStore()
 const message = useMessage()
 
 const showAddModal = ref(false)
 const showDetailModal = ref(false)
+const showScheduleModal = ref(false)
 const selectedCandidate = ref<Candidate | null>(null)
 const formRef = ref<FormInst | null>(null)
+const scheduleFormRef = ref<FormInst | null>(null)
 
 const stageTypeMap: Record<StageType, string> = {
   screening: 'info',
@@ -242,6 +337,109 @@ function handleAdd() {
         education: '',
         appliedDate: new Date().toISOString().split('T')[0]
       }
+    }
+  })
+}
+
+const roundOptions: SelectOption[] = [
+  { label: '初试', value: 'first' },
+  { label: '复试', value: 'second' },
+  { label: '三面', value: 'third' },
+  { label: '终面', value: 'final' }
+]
+
+const locationOptions: SelectOption[] = [
+  { label: '3楼会议室A', value: '3楼会议室A' },
+  { label: '3楼会议室B', value: '3楼会议室B' },
+  { label: '2楼小会议室', value: '2楼小会议室' },
+  { label: '1楼大会议室', value: '1楼大会议室' },
+  { label: '线上会议', value: '线上会议' }
+]
+
+const interviewerOptions = computed(() =>
+  interviewStore.interviewers.map(i => ({
+    label: `${i.name} - ${i.department} ${i.position}`,
+    value: i.id,
+    data: i
+  }))
+)
+
+const scheduleForm = reactive({
+  round: 'first' as InterviewRound,
+  interviewerId: '',
+  interviewerName: '',
+  interviewerAvatar: '',
+  date: null as number | null,
+  startTime: null as string | null,
+  endTime: null as string | null,
+  location: '',
+  meetingLink: '',
+  remarks: ''
+})
+
+const scheduleRules: FormRules = {
+  round: [{ required: true, message: '请选择面试轮次', trigger: 'change' }],
+  interviewerId: [{ required: true, message: '请选择面试官', trigger: 'change' }],
+  date: [{ required: true, message: '请选择面试日期', trigger: 'change' }],
+  startTime: [{ required: true, message: '请选择开始时间', trigger: 'change' }],
+  endTime: [{ required: true, message: '请选择结束时间', trigger: 'change' }],
+  location: [{ required: true, message: '请选择面试地点', trigger: 'change' }]
+}
+
+function openScheduleModal() {
+  scheduleForm.round = 'first'
+  scheduleForm.interviewerId = ''
+  scheduleForm.interviewerName = ''
+  scheduleForm.interviewerAvatar = ''
+  scheduleForm.date = null
+  scheduleForm.startTime = null
+  scheduleForm.endTime = null
+  scheduleForm.location = ''
+  scheduleForm.meetingLink = ''
+  scheduleForm.remarks = ''
+  showDetailModal.value = false
+  showScheduleModal.value = true
+}
+
+function handleInterviewerChange(value: string, option: SelectOption) {
+  if (option && option.data) {
+    const data = option.data as { name: string; avatar: string }
+    scheduleForm.interviewerName = data.name
+    scheduleForm.interviewerAvatar = data.avatar
+  }
+}
+
+function formatDate(timestamp: number): string {
+  return new Date(timestamp).toISOString().split('T')[0]
+}
+
+function submitSchedule() {
+  scheduleFormRef.value?.validate((errors) => {
+    if (!errors && selectedCandidate.value) {
+      if (!scheduleForm.date || !scheduleForm.startTime || !scheduleForm.endTime) {
+        message.error('请完整填写日期和时间')
+        return
+      }
+      
+      interviewStore.scheduleInterview({
+        candidateId: selectedCandidate.value.id,
+        candidateName: selectedCandidate.value.name,
+        candidateAvatar: selectedCandidate.value.avatar,
+        position: selectedCandidate.value.position,
+        round: scheduleForm.round,
+        interviewerId: scheduleForm.interviewerId,
+        interviewerName: scheduleForm.interviewerName,
+        interviewerAvatar: scheduleForm.interviewerAvatar,
+        date: formatDate(scheduleForm.date),
+        startTime: scheduleForm.startTime,
+        endTime: scheduleForm.endTime,
+        location: scheduleForm.location,
+        meetingLink: scheduleForm.meetingLink || undefined,
+        remarks: scheduleForm.remarks || undefined
+      })
+      
+      message.success('面试预约成功')
+      showScheduleModal.value = false
     }
   })
 }

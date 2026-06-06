@@ -80,6 +80,12 @@ const routes: RouteRecordRaw[] = [
         name: 'transfer',
         component: () => import('@/views/Transfer.vue'),
         meta: { title: '异动管理' }
+      },
+      {
+        path: '/interview-schedule',
+        name: 'interview-schedule',
+        component: () => import('@/views/InterviewSchedule.vue'),
+        meta: { title: '面试日程' }
       }
     ]
   }

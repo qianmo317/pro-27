@@ -135,23 +135,27 @@
       </n-grid-item>
       
       <n-grid-item>
-        <n-card title="待处理招聘" class="list-card">
-          <n-list>
-            <n-list-item v-for="can in pendingCandidates" :key="can.id">
+        <n-card title="我的面试日程" class="list-card">
+          <n-list v-if="upcomingInterviews.length > 0">
+            <n-list-item v-for="interview in upcomingInterviews" :key="interview.id">
               <template #prefix>
-                <n-avatar round :src="can.avatar" :size="40" />
+                <div class="interview-icon">
+                  <CalendarDays :size="20" color="#7C3AED" />
+                </div>
               </template>
               <div class="employee-item">
-                <span class="employee-name">{{ can.name }}</span>
-                <span class="employee-position">{{ can.position }}</span>
+                <span class="employee-name">{{ interview.candidateName }}</span>
+                <span class="employee-position">{{ interview.position }} · {{ INTERVIEW_ROUND_LABELS[interview.round] }}</span>
               </div>
               <template #suffix>
-                <n-tag size="small" type="info">
-                  {{ stageLabels[can.stage] }}
-                </n-tag>
+                <div class="interview-time-info">
+                  <div class="interview-date">{{ formatInterviewDate(interview.date) }}</div>
+                  <div class="interview-hour">{{ interview.startTime }}</div>
+                </div>
               </template>
             </n-list-item>
           </n-list>
+          <n-empty v-else description="暂无面试安排" />
         </n-card>
       </n-grid-item>
     </n-grid>
@@ -161,12 +165,14 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import * as echarts from 'echarts'
-import { Users, UserCheck, Briefcase, GraduationCap, FileText, AlertTriangle } from 'lucide-vue-next'
+import { Users, UserCheck, Briefcase, GraduationCap, FileText, AlertTriangle, CalendarDays } from 'lucide-vue-next'
 import { useEmployeeStore } from '@/stores/employee'
 import { useAttendanceStore } from '@/stores/attendance'
 import { useRecruitmentStore } from '@/stores/recruitment'
 import { useTrainingStore } from '@/stores/training'
 import { useContractStore } from '@/stores/contract'
+import { useInterviewStore, INTERVIEW_ROUND_LABELS } from '@/stores/interview'
+import { useUserStore } from '@/stores/user'
 import { stageLabels } from '@/stores/recruitment'
 
 const employeeStore = useEmployeeStore()
@@ -174,6 +180,8 @@ const attendanceStore = useAttendanceStore()
 const recruitmentStore = useRecruitmentStore()
 const trainingStore = useTrainingStore()
 const contractStore = useContractStore()
+const interviewStore = useInterviewStore()
+const userStore = useUserStore()
 
 const chartRef = ref<HTMLDivElement | null>(null)
 const pieChartRef = ref<HTMLDivElement | null>(null)
@@ -192,6 +200,11 @@ const expiringContractsList = computed(() =>
   contractStore.expiringContracts.slice(0, 5)
 )
 
+const upcomingInterviews = computed(() => {
+  const currentUserId = userStore.currentUser?.id || '1'
+  return interviewStore.getUpcomingInterviewsByInterviewer(currentUserId, 5)
+})
+
 const contractTypeLabels: Record<string, string> = {
   fulltime: '全职',
   parttime: '兼职',
@@ -203,6 +216,22 @@ function getDaysRemaining(endDate: string): number {
   const end = new Date(endDate)
   const diff = end.getTime() - now.getTime()
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
+}
+
+function formatInterviewDate(dateStr: string): string {
+  const today = new Date().toISOString().split('T')[0]
+  const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  
+  if (dateStr === today) return '今天'
+  if (dateStr === tomorrow) return '明天'
+  
+  const date = new Date(dateStr)
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+  const weekDay = weekDays[date.getDay()]
+  
+  return `${month}月${day}日 ${weekDay}`
 }
 
 onMounted(() => {
@@ -391,5 +420,31 @@ function initPieChart() {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.interview-icon {
+  width: 40px;
+  height: 40px;
+  background: #EDE9FE;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.interview-time-info {
+  text-align: right;
+}
+
+.interview-date {
+  font-size: 12px;
+  color: #7C3AED;
+  font-weight: 600;
+}
+
+.interview-hour {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1E1B4B;
 }
 </style>
