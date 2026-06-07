@@ -78,6 +78,9 @@
         <n-form-item label="职位" path="position">
           <n-input v-model:value="formData.position" placeholder="请输入职位" />
         </n-form-item>
+        <n-form-item label="出生日期" path="birthday">
+          <n-date-picker v-model:value="formData.birthday" type="date" style="width: 100%;" />
+        </n-form-item>
         <n-form-item label="入职日期" path="entryDate">
           <n-date-picker v-model:value="formData.entryDate" type="date" style="width: 100%;" />
         </n-form-item>
@@ -112,7 +115,9 @@
           <n-descriptions-item label="性别">{{ currentEmployee.gender === 'male' ? '男' : '女' }}</n-descriptions-item>
           <n-descriptions-item label="电话">{{ currentEmployee.phone }}</n-descriptions-item>
           <n-descriptions-item label="邮箱">{{ currentEmployee.email }}</n-descriptions-item>
+          <n-descriptions-item label="出生日期">{{ currentEmployee.birthday || '未设置' }}</n-descriptions-item>
           <n-descriptions-item label="入职日期">{{ currentEmployee.entryDate }}</n-descriptions-item>
+          <n-descriptions-item label="工龄">{{ calculateWorkYears(currentEmployee.entryDate) }} 年</n-descriptions-item>
         </n-descriptions>
 
         <n-tabs v-model:value="activeDetailTab" type="line" style="margin-top: 20px;">
@@ -471,6 +476,9 @@
         </n-form-item>
         <n-form-item label="职位" path="position">
           <n-input v-model:value="editFormData.position" placeholder="请输入职位" />
+        </n-form-item>
+        <n-form-item label="出生日期" path="birthday">
+          <n-date-picker v-model:value="editFormData.birthday" type="date" style="width: 100%;" />
         </n-form-item>
         <n-form-item label="入职日期" path="entryDate">
           <n-date-picker v-model:value="editFormData.entryDate" type="date" style="width: 100%;" />
@@ -892,6 +900,7 @@ const editFormData = ref<Partial<Employee>>({
   email: '',
   department: '',
   position: '',
+  birthday: null,
   entryDate: null,
   status: 'probation'
 })
@@ -903,6 +912,7 @@ const formData = ref<Partial<Employee>>({
   email: '',
   department: '',
   position: '',
+  birthday: null,
   entryDate: null,
   status: 'probation'
 })
@@ -966,6 +976,11 @@ const columns: DataTableColumns<Employee> = [
   {
     title: '职位',
     key: 'position'
+  },
+  {
+    title: '出生日期',
+    key: 'birthday',
+    render: (row) => row.birthday || '未设置'
   },
   {
     title: '入职日期',
@@ -1035,6 +1050,7 @@ function handleEdit(employee: Employee) {
     email: employee.email,
     department: employee.department,
     position: employee.position,
+    birthday: employee.birthday,
     entryDate: employee.entryDate,
     status: employee.status
   }
@@ -1048,9 +1064,14 @@ function handleEditSubmit() {
         ? formatDate(editFormData.value.entryDate as number)
         : editFormData.value.entryDate || currentEmployee.value.entryDate
       
+      const birthday = typeof editFormData.value.birthday === 'number'
+        ? formatDate(editFormData.value.birthday as number)
+        : editFormData.value.birthday
+      
       employeeStore.updateEmployee(currentEmployee.value.id, {
         ...editFormData.value,
-        entryDate
+        entryDate,
+        birthday
       })
       message.success('编辑成功')
       showEditModal.value = false
@@ -1079,9 +1100,14 @@ function handleAdd() {
         ? formatDate(formData.value.entryDate as number)
         : formData.value.entryDate || ''
       
+      const birthday = typeof formData.value.birthday === 'number'
+        ? formatDate(formData.value.birthday as number)
+        : formData.value.birthday
+      
       employeeStore.addEmployee({
         ...formData.value,
         entryDate,
+        birthday,
         avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`
       } as Omit<Employee, 'id'>)
       message.success('新增成功')
@@ -1089,6 +1115,17 @@ function handleAdd() {
       resetForm()
     }
   })
+}
+
+function calculateWorkYears(entryDate: string): number {
+  const entry = new Date(entryDate)
+  const now = new Date()
+  let years = now.getFullYear() - entry.getFullYear()
+  const monthDiff = now.getMonth() - entry.getMonth()
+  if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < entry.getDate())) {
+    years--
+  }
+  return Math.max(0, years)
 }
 
 function resetForm() {
@@ -1099,6 +1136,7 @@ function resetForm() {
     email: '',
     department: '',
     position: '',
+    birthday: null,
     entryDate: null,
     status: 'probation'
   }

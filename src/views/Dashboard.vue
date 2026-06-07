@@ -104,6 +104,24 @@
       </n-grid-item>
     </n-grid>
     
+    <n-grid :cols="2" :x-gap="20" :y-gap="20" style="margin-top: 20px;">
+      <n-grid-item>
+        <CareReminderCard
+          type="birthday"
+          @view-detail="handleViewEmployeeDetail"
+          @blessing-sent="handleBlessingSent"
+        />
+      </n-grid-item>
+      
+      <n-grid-item>
+        <CareReminderCard
+          type="anniversary"
+          @view-detail="handleViewEmployeeDetail"
+          @blessing-sent="handleBlessingSent"
+        />
+      </n-grid-item>
+    </n-grid>
+    
     <n-grid :cols="3" :x-gap="20" :y-gap="20" style="margin-top: 20px;">
       <n-grid-item>
         <n-card title="最近入职员工" class="list-card">
@@ -175,13 +193,70 @@
         </n-card>
       </n-grid-item>
     </n-grid>
+    
+    <n-modal v-model:show="showEmployeeDetailModal" preset="card" title="员工详情" style="width: 700px;">
+      <div v-if="selectedEmployee" class="employee-detail">
+        <div class="detail-header">
+          <div class="detail-avatar">
+            <img :src="selectedEmployee.avatar" :alt="selectedEmployee.name" />
+          </div>
+          <div class="detail-info">
+            <div class="detail-name">{{ selectedEmployee.name }}</div>
+            <div class="detail-position">{{ selectedEmployee.department }} · {{ selectedEmployee.position }}</div>
+            <n-tag :type="selectedEmployee.status === 'active' ? 'success' : selectedEmployee.status === 'probation' ? 'warning' : 'error'" size="small">
+              {{ selectedEmployee.status === 'active' ? '正式' : selectedEmployee.status === 'probation' ? '试用' : '离职' }}
+            </n-tag>
+          </div>
+        </div>
+
+        <n-descriptions :column="2" bordered class="detail-desc">
+          <n-descriptions-item label="性别">{{ selectedEmployee.gender === 'male' ? '男' : '女' }}</n-descriptions-item>
+          <n-descriptions-item label="电话">{{ selectedEmployee.phone }}</n-descriptions-item>
+          <n-descriptions-item label="邮箱">{{ selectedEmployee.email }}</n-descriptions-item>
+          <n-descriptions-item label="出生日期">{{ selectedEmployee.birthday || '未设置' }}</n-descriptions-item>
+          <n-descriptions-item label="入职日期">{{ selectedEmployee.entryDate }}</n-descriptions-item>
+          <n-descriptions-item label="工龄">{{ calculateWorkYears(selectedEmployee.entryDate) }} 年</n-descriptions-item>
+        </n-descriptions>
+        
+        <div v-if="employeeMessages.length > 0" class="messages-section">
+          <div class="section-title">收到的祝福</div>
+          <n-list>
+            <n-list-item v-for="msg in employeeMessages" :key="msg.id">
+              <template #prefix>
+                <div :class="['msg-icon', msg.type === 'birthday' ? 'birthday' : 'anniversary']">
+                  <Heart :size="16" />
+                </div>
+              </template>
+              <div class="msg-content">
+                <div class="msg-sender">
+                  <span class="sender-name">{{ msg.senderName }}</span>
+                  <n-tag size="small" type="info">{{ formatMessageTime(msg.createdAt) }}</n-tag>
+                </div>
+                <div class="msg-text">{{ msg.content }}</div>
+              </div>
+              <template #suffix>
+                <n-tag size="small" :type="msg.type === 'birthday' ? 'error' : 'primary'">
+                  {{ msg.type === 'birthday' ? '生日' : '周年' }}
+                </n-tag>
+              </template>
+            </n-list-item>
+          </n-list>
+        </div>
+      </div>
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="showEmployeeDetailModal = false">关闭</n-button>
+        </n-space>
+      </template>
+    </n-modal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import * as echarts from 'echarts'
-import { Users, UserCheck, Briefcase, GraduationCap, FileText, AlertTriangle, CalendarDays, Clock, CalendarOff } from 'lucide-vue-next'
+import { useMessage } from 'naive-ui'
+import { Users, UserCheck, Briefcase, GraduationCap, FileText, AlertTriangle, CalendarDays, Clock, CalendarOff, Heart } from 'lucide-vue-next'
 import { useEmployeeStore } from '@/stores/employee'
 import { useAttendanceStore } from '@/stores/attendance'
 import { useRecruitmentStore } from '@/stores/recruitment'
@@ -191,7 +266,10 @@ import { useInterviewStore, INTERVIEW_ROUND_LABELS } from '@/stores/interview'
 import { useUserStore } from '@/stores/user'
 import { useLeaveStore } from '@/stores/leave'
 import { useOvertimeStore } from '@/stores/overtime'
+import { useCareStore } from '@/stores/care'
 import { stageLabels } from '@/stores/recruitment'
+import CareReminderCard from '@/components/CareReminderCard.vue'
+import type { Employee } from '@/types'
 
 const employeeStore = useEmployeeStore()
 const attendanceStore = useAttendanceStore()
@@ -202,9 +280,18 @@ const interviewStore = useInterviewStore()
 const userStore = useUserStore()
 const leaveStore = useLeaveStore()
 const overtimeStore = useOvertimeStore()
+const careStore = useCareStore()
+const message = useMessage()
 
 const chartRef = ref<HTMLDivElement | null>(null)
 const pieChartRef = ref<HTMLDivElement | null>(null)
+const showEmployeeDetailModal = ref(false)
+const selectedEmployee = ref<Employee | null>(null)
+
+const employeeMessages = computed(() => {
+  if (!selectedEmployee.value) return []
+  return careStore.getMessagesForEmployee(selectedEmployee.value.id)
+})
 
 const recentEmployees = computed(() => 
   [...employeeStore.employees]
@@ -265,10 +352,64 @@ function formatInterviewDate(dateStr: string): string {
   return `${month}月${day}日 ${weekDay}`
 }
 
+function handleViewEmployeeDetail(employee: Employee) {
+  selectedEmployee.value = employee
+  showEmployeeDetailModal.value = true
+}
+
+function handleBlessingSent(employee: Employee, content: string) {
+  message.success(`已向 ${employee.name} 发送祝福`)
+}
+
+function calculateWorkYears(entryDate: string): number {
+  const entry = new Date(entryDate)
+  const now = new Date()
+  let years = now.getFullYear() - entry.getFullYear()
+  const monthDiff = now.getMonth() - entry.getMonth()
+  if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < entry.getDate())) {
+    years--
+  }
+  return Math.max(0, years)
+}
+
+function formatMessageTime(isoString: string): string {
+  const date = new Date(isoString)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / (1000 * 60))
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+  
+  if (diffMins < 1) return '刚刚'
+  if (diffMins < 60) return `${diffMins}分钟前`
+  if (diffHours < 24) return `${diffHours}小时前`
+  if (diffDays < 7) return `${diffDays}天前`
+  
+  return `${date.getMonth() + 1}/${date.getDate()}`
+}
+
+function performDailyScan() {
+  if (careStore.shouldScanToday()) {
+    const newReminders = careStore.scanForUpcomingEvents()
+    if (newReminders.length > 0) {
+      const birthdayCount = newReminders.filter(r => r.type === 'birthday').length
+      const anniversaryCount = newReminders.filter(r => r.type === 'anniversary').length
+      const parts: string[] = []
+      if (birthdayCount > 0) parts.push(`${birthdayCount} 位员工即将过生日`)
+      if (anniversaryCount > 0) parts.push(`${anniversaryCount} 位员工即将入职周年`)
+      message.info(parts.join('，'))
+    }
+  }
+}
+
 onMounted(() => {
+  careStore.loadSettings()
   contractStore.updateContractStatus()
   initLineChart()
   initPieChart()
+  setTimeout(() => {
+    performDailyScan()
+  }, 500)
 })
 
 function initLineChart() {
@@ -477,5 +618,106 @@ function initPieChart() {
   font-size: 14px;
   font-weight: 600;
   color: #1E1B4B;
+}
+
+.employee-detail {
+  padding: 8px 0;
+}
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.detail-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #F3F4F6;
+}
+
+.detail-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.detail-info {
+  flex: 1;
+}
+
+.detail-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1E1B4B;
+  margin-bottom: 4px;
+}
+
+.detail-position {
+  font-size: 15px;
+  color: #6B7280;
+  margin-bottom: 8px;
+}
+
+.detail-desc {
+  margin-bottom: 20px;
+}
+
+.messages-section {
+  margin-top: 20px;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1E1B4B;
+  margin-bottom: 12px;
+}
+
+.msg-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.msg-icon.birthday {
+  background: linear-gradient(135deg, #EC4899 0%, #F472B6 100%);
+}
+
+.msg-icon.anniversary {
+  background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);
+}
+
+.msg-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.msg-sender {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.sender-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1E1B4B;
+}
+
+.msg-text {
+  font-size: 14px;
+  color: #4B5563;
+  line-height: 1.6;
 }
 </style>

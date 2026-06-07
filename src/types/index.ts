@@ -17,7 +17,44 @@ export interface Employee {
   department: string
   position: string
   entryDate: string
+  birthday?: string
   status: 'active' | 'inactive' | 'probation'
+}
+
+export interface CareReminder {
+  id: string
+  employeeId: string
+  employeeName: string
+  employeeAvatar: string
+  employeeDepartment: string
+  employeePosition: string
+  type: 'birthday' | 'anniversary'
+  date: string
+  daysRemaining: number
+  years?: number
+  isRead: boolean
+  createdAt: string
+}
+
+export interface CareSettings {
+  birthdayReminderEnabled: boolean
+  birthdayAdvanceDays: number
+  anniversaryReminderEnabled: boolean
+  anniversaryAdvanceDays: number
+  autoScanEnabled: boolean
+  scanTime: string
+}
+
+export interface CareMessage {
+  id: string
+  receiverId: string
+  receiverName: string
+  senderId: string
+  senderName: string
+  type: 'birthday' | 'anniversary'
+  content: string
+  createdAt: string
+  isRead: boolean
 }
 
 export interface AttendanceRecord {
