@@ -423,6 +423,44 @@ export const RECRUITMENT_URGENCY_LABELS: Record<RecruitmentUrgency, string> = {
   urgent: '特急'
 }
 
+export type OvertimeStatus = 'pending' | 'approved' | 'rejected'
+
+export const OVERTIME_STATUS_OPTIONS: { label: string; value: OvertimeStatus }[] = [
+  { label: '待审批', value: 'pending' },
+  { label: '已通过', value: 'approved' },
+  { label: '已驳回', value: 'rejected' }
+]
+
+export const OVERTIME_STATUS_LABELS: Record<OvertimeStatus, string> = {
+  pending: '待审批',
+  approved: '已通过',
+  rejected: '已驳回'
+}
+
+export const OVERTIME_STATUS_COLORS: Record<OvertimeStatus, string> = {
+  pending: '#F59E0B',
+  approved: '#10B981',
+  rejected: '#EF4444'
+}
+
+export interface OvertimeApplication {
+  id: string
+  employeeId: string
+  employeeName: string
+  department: string
+  overtimeDate: string
+  startTime: string
+  endTime: string
+  totalHours: number
+  reason: string
+  status: OvertimeStatus
+  approverId?: string
+  approverName?: string
+  approvalComment?: string
+  createdAt: string
+  approvedAt?: string
+}
+
 export const DEPARTMENT_OPTIONS = [
   { label: '技术部', value: '技术部' },
   { label: '产品部', value: '产品部' },

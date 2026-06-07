@@ -1,4 +1,4 @@
-import type { User, Employee, AttendanceRecord, SalaryRecord, Candidate, TrainingCourse, Department, Contract, Attachment, PerformancePlan, PerformanceAppraisal, KpiIndicator, EmployeeTransfer, RecruitmentRequirement, InterviewSchedule, InterviewEvaluation, Interviewer, LeaveApplication, EmployeeLeaveBalance } from '@/types'
+import type { User, Employee, AttendanceRecord, SalaryRecord, Candidate, TrainingCourse, Department, Contract, Attachment, PerformancePlan, PerformanceAppraisal, KpiIndicator, EmployeeTransfer, RecruitmentRequirement, InterviewSchedule, InterviewEvaluation, Interviewer, LeaveApplication, EmployeeLeaveBalance, OvertimeApplication } from '@/types'
 
 export const mockUsers: User[] = [
   {
@@ -1386,5 +1386,119 @@ export const mockLeaveApplications: LeaveApplication[] = [
     reason: '出去旅游放松一下',
     status: 'pending',
     createdAt: '2024-01-22'
+  }
+]
+
+export const mockOvertimeApplications: OvertimeApplication[] = [
+  {
+    id: 'overtime-1',
+    employeeId: '1',
+    employeeName: '张三',
+    department: '技术部',
+    overtimeDate: '2024-01-10',
+    startTime: '18:00',
+    endTime: '21:00',
+    totalHours: 3,
+    reason: '项目上线紧急修复Bug',
+    status: 'approved',
+    approverId: '9',
+    approverName: '陈十一',
+    approvalComment: '同意，辛苦了',
+    createdAt: '2024-01-10',
+    approvedAt: '2024-01-11'
+  },
+  {
+    id: 'overtime-2',
+    employeeId: '1',
+    employeeName: '张三',
+    department: '技术部',
+    overtimeDate: '2024-01-15',
+    startTime: '18:00',
+    endTime: '22:00',
+    totalHours: 4,
+    reason: '新版本发布加班',
+    status: 'approved',
+    approverId: '9',
+    approverName: '陈十一',
+    approvalComment: '同意，注意休息',
+    createdAt: '2024-01-15',
+    approvedAt: '2024-01-16'
+  },
+  {
+    id: 'overtime-3',
+    employeeId: '3',
+    employeeName: '王五',
+    department: '技术部',
+    overtimeDate: '2024-01-12',
+    startTime: '18:00',
+    endTime: '20:00',
+    totalHours: 2,
+    reason: '配合测试团队完成功能验收',
+    status: 'approved',
+    approverId: '9',
+    approverName: '陈十一',
+    approvalComment: '同意',
+    createdAt: '2024-01-12',
+    approvedAt: '2024-01-13'
+  },
+  {
+    id: 'overtime-4',
+    employeeId: '3',
+    employeeName: '王五',
+    department: '技术部',
+    overtimeDate: '2024-01-20',
+    startTime: '09:00',
+    endTime: '18:00',
+    totalHours: 8,
+    reason: '周末加班赶项目进度',
+    status: 'pending',
+    createdAt: '2024-01-20'
+  },
+  {
+    id: 'overtime-5',
+    employeeId: '2',
+    employeeName: '李四',
+    department: '产品部',
+    overtimeDate: '2024-01-18',
+    startTime: '18:00',
+    endTime: '20:30',
+    totalHours: 2.5,
+    reason: '准备产品评审会议材料',
+    status: 'approved',
+    approverId: '9',
+    approverName: '陈十一',
+    approvalComment: '同意',
+    createdAt: '2024-01-18',
+    approvedAt: '2024-01-19'
+  },
+  {
+    id: 'overtime-6',
+    employeeId: '7',
+    employeeName: '吴九',
+    department: '技术部',
+    overtimeDate: '2024-01-22',
+    startTime: '18:00',
+    endTime: '21:30',
+    totalHours: 3.5,
+    reason: '回归测试，确保上线质量',
+    status: 'rejected',
+    approverId: '9',
+    approverName: '陈十一',
+    approvalComment: '测试工作应在工作时间内完成，建议优化测试计划',
+    createdAt: '2024-01-22',
+    approvedAt: '2024-01-23'
+  },
+  {
+    id: 'overtime-7',
+    employeeId: '4',
+    employeeName: '赵六',
+    department: '市场部',
+    overtimeDate: '2024-01-25',
+    startTime: '18:00',
+    endTime: '20:00',
+    totalHours: 2,
+    reason: '准备市场活动方案',
+    status: 'pending',
+    createdAt: '2024-01-25'
   }
 ]

@@ -92,6 +92,12 @@ const routes: RouteRecordRaw[] = [
         name: 'leave',
         component: () => import('@/views/Leave.vue'),
         meta: { title: '请假管理' }
+      },
+      {
+        path: '/overtime',
+        name: 'overtime',
+        component: () => import('@/views/Overtime.vue'),
+        meta: { title: '加班管理' }
       }
     ]
   }

@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="page-title">仪表盘</div>
     
-    <n-grid :cols="5" :x-gap="20" :y-gap="20" class="stat-grid">
+    <n-grid :cols="4" :x-gap="20" :y-gap="20" class="stat-grid">
       <n-grid-item>
         <n-card class="stat-card card-gradient">
           <div class="stat-content">
@@ -58,16 +58,32 @@
           </div>
         </n-card>
       </n-grid-item>
-      
+    </n-grid>
+    
+    <n-grid :cols="2" :x-gap="20" :y-gap="20" style="margin-top: 20px;">
       <n-grid-item>
-        <n-card class="stat-card" style="background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%); color: white;">
+        <n-card class="stat-card" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%); color: white;">
           <div class="stat-content">
             <div class="stat-icon">
-              <GraduationCap :size="28" color="#fff" />
+              <Clock :size="28" color="#fff" />
             </div>
             <div class="stat-info">
-              <div class="stat-value">{{ trainingStore.ongoingCourses.length }}</div>
-              <div class="stat-label">进行中培训</div>
+              <div class="stat-value">{{ myMonthlyOvertimeHours }} 小时</div>
+              <div class="stat-label">本月加班时长</div>
+            </div>
+          </div>
+        </n-card>
+      </n-grid-item>
+      
+      <n-grid-item>
+        <n-card class="stat-card" style="background: linear-gradient(135deg, #EC4899 0%, #F472B6 100%); color: white;">
+          <div class="stat-content">
+            <div class="stat-icon">
+              <CalendarOff :size="28" color="#fff" />
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ myCompensatoryLeaveRemaining }} 天</div>
+              <div class="stat-label">剩余调休天数</div>
             </div>
           </div>
         </n-card>
@@ -165,7 +181,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import * as echarts from 'echarts'
-import { Users, UserCheck, Briefcase, GraduationCap, FileText, AlertTriangle, CalendarDays } from 'lucide-vue-next'
+import { Users, UserCheck, Briefcase, GraduationCap, FileText, AlertTriangle, CalendarDays, Clock, CalendarOff } from 'lucide-vue-next'
 import { useEmployeeStore } from '@/stores/employee'
 import { useAttendanceStore } from '@/stores/attendance'
 import { useRecruitmentStore } from '@/stores/recruitment'
@@ -173,6 +189,8 @@ import { useTrainingStore } from '@/stores/training'
 import { useContractStore } from '@/stores/contract'
 import { useInterviewStore, INTERVIEW_ROUND_LABELS } from '@/stores/interview'
 import { useUserStore } from '@/stores/user'
+import { useLeaveStore } from '@/stores/leave'
+import { useOvertimeStore } from '@/stores/overtime'
 import { stageLabels } from '@/stores/recruitment'
 
 const employeeStore = useEmployeeStore()
@@ -182,6 +200,8 @@ const trainingStore = useTrainingStore()
 const contractStore = useContractStore()
 const interviewStore = useInterviewStore()
 const userStore = useUserStore()
+const leaveStore = useLeaveStore()
+const overtimeStore = useOvertimeStore()
 
 const chartRef = ref<HTMLDivElement | null>(null)
 const pieChartRef = ref<HTMLDivElement | null>(null)
@@ -203,6 +223,17 @@ const expiringContractsList = computed(() =>
 const upcomingInterviews = computed(() => {
   if (!userStore.currentUser) return []
   return interviewStore.getUpcomingInterviewsByInterviewer(userStore.currentUser.id, 5)
+})
+
+const myMonthlyOvertimeHours = computed(() => {
+  if (!userStore.currentUser) return 0
+  return overtimeStore.getCurrentMonthOvertimeHours(userStore.currentUser.id)
+})
+
+const myCompensatoryLeaveRemaining = computed(() => {
+  if (!userStore.currentUser) return 0
+  const balance = leaveStore.getLeaveBalance(userStore.currentUser.id)
+  return balance?.compensatoryLeaveRemaining || 0
 })
 
 const contractTypeLabels: Record<string, string> = {

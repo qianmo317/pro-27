@@ -89,6 +89,15 @@ export const useLeaveStore = defineStore('leave', () => {
   function approveApplication(applicationId: string, approverId: string, approverName: string, comment: string) {
     const index = applications.value.findIndex(a => a.id === applicationId)
     if (index !== -1) {
+      const application = applications.value[index]
+      
+      if (application.leaveType === 'compensatory') {
+        const balance = balances.value.find(b => b.employeeId === application.employeeId)
+        if (!balance || balance.compensatoryLeaveRemaining < application.totalDays) {
+          return { error: '调休余额不足', application: null }
+        }
+      }
+      
       applications.value[index].status = 'approved'
       applications.value[index].approverId = approverId
       applications.value[index].approverName = approverName
@@ -99,9 +108,9 @@ export const useLeaveStore = defineStore('leave', () => {
       
       updateLeaveBalance(applications.value[index])
       
-      return applications.value[index]
+      return { error: null, application: applications.value[index] }
     }
-    return null
+    return { error: '申请不存在', application: null }
   }
 
   function rejectApplication(applicationId: string, approverId: string, approverName: string, comment: string) {
