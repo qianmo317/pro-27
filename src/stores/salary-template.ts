@@ -3,6 +3,27 @@ import { ref, computed } from 'vue'
 import type { SalaryTemplate, TemplateType, SalaryRecord } from '@/types'
 import { mockSalaryTemplates } from '@/mock/data'
 
+function calculateIncomeTax(taxableIncome: number): number {
+  if (taxableIncome <= 0) return 0
+  let tax = 0
+  if (taxableIncome <= 3000) {
+    tax = taxableIncome * 0.03
+  } else if (taxableIncome <= 12000) {
+    tax = 3000 * 0.03 + (taxableIncome - 3000) * 0.10
+  } else if (taxableIncome <= 25000) {
+    tax = 3000 * 0.03 + 9000 * 0.10 + (taxableIncome - 12000) * 0.20
+  } else if (taxableIncome <= 35000) {
+    tax = 3000 * 0.03 + 9000 * 0.10 + 13000 * 0.20 + (taxableIncome - 25000) * 0.25
+  } else if (taxableIncome <= 55000) {
+    tax = 3000 * 0.03 + 9000 * 0.10 + 13000 * 0.20 + 10000 * 0.25 + (taxableIncome - 35000) * 0.30
+  } else if (taxableIncome <= 80000) {
+    tax = 3000 * 0.03 + 9000 * 0.10 + 13000 * 0.20 + 10000 * 0.25 + 20000 * 0.30 + (taxableIncome - 55000) * 0.35
+  } else {
+    tax = 3000 * 0.03 + 9000 * 0.10 + 13000 * 0.20 + 10000 * 0.25 + 20000 * 0.30 + 25000 * 0.35 + (taxableIncome - 80000) * 0.45
+  }
+  return Math.round(tax)
+}
+
 function calculateSalaryFromTemplate(
   template: SalaryTemplate,
   performanceMultiplier: number = 1.0
@@ -13,7 +34,7 @@ function calculateSalaryFromTemplate(
   const socialSecurity = Math.round(grossSalary * template.socialSecurityRate)
   const housingFund = Math.round(grossSalary * template.housingFundRate)
   const taxableIncome = Math.max(0, grossSalary - socialSecurity - housingFund - template.taxThreshold)
-  const incomeTax = taxableIncome > 0 ? Math.round(taxableIncome * 0.03) : 0
+  const incomeTax = calculateIncomeTax(taxableIncome)
   const otherDeduction = 0
   const totalDeduction = socialSecurity + housingFund + incomeTax + otherDeduction
   const netSalary = grossSalary - totalDeduction

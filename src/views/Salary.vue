@@ -614,7 +614,18 @@ const batchFormData = reactive({
 
 const createFormRules: FormRules = {
   employeeId: [{ required: true, message: '请选择员工', trigger: 'change' }],
-  month: [{ required: true, message: '请选择月份', trigger: 'change' }]
+  month: [
+    { required: true, message: '请选择月份', trigger: 'change' },
+    {
+      validator: (_rule, value) => {
+        if (typeof value === 'string' && /^\d{4}-\d{2}$/.test(value)) {
+          return true
+        }
+        return new Error('请选择有效的月份')
+      },
+      trigger: 'change'
+    }
+  ]
 }
 
 const batchFormRules: FormRules = {

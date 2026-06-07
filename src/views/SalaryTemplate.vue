@@ -423,7 +423,18 @@ const formData = reactive<Partial<SalaryTemplate>>({
 const formRules: FormRules = {
   name: [{ required: true, message: '请输入模板名称', trigger: 'blur' }],
   type: [{ required: true, message: '请选择模板类型', trigger: 'change' }],
-  baseSalary: [{ required: true, message: '请输入基本工资', trigger: 'blur' }]
+  baseSalary: [
+    { required: true, message: '请输入基本工资', trigger: 'blur' },
+    {
+      validator: (_rule, value) => {
+        if (typeof value === 'number' && !isNaN(value) && value >= 0) {
+          return true
+        }
+        return new Error('请输入有效的基本工资')
+      },
+      trigger: 'blur'
+    }
+  ]
 }
 
 watch(keyword, val => templateStore.setKeywordFilter(val))
