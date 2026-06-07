@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import type { Employee, CareReminder, CareSettings, CareMessage } from '@/types'
 import { useEmployeeStore } from '@/stores/employee'
 import { useUserStore } from '@/stores/user'
+import { getDaysUntilNextAnniversary, formatDate } from '@/lib/utils'
 
 const DEFAULT_SETTINGS: CareSettings = {
   birthdayReminderEnabled: true,
@@ -11,24 +12,6 @@ const DEFAULT_SETTINGS: CareSettings = {
   anniversaryAdvanceDays: 7,
   autoScanEnabled: true,
   scanTime: '09:00'
-}
-
-function getDaysUntilNextAnniversary(dateStr: string, fromDate: Date = new Date()): { days: number; years: number; nextDate: Date } {
-  const date = new Date(dateStr)
-  const thisYear = fromDate.getFullYear()
-  
-  let nextDate = new Date(thisYear, date.getMonth(), date.getDate())
-  
-  if (nextDate < fromDate) {
-    nextDate = new Date(thisYear + 1, date.getMonth(), date.getDate())
-  }
-  
-  const diffTime = nextDate.getTime() - fromDate.getTime()
-  const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-  
-  const years = nextDate.getFullYear() - date.getFullYear()
-  
-  return { days, years, nextDate }
 }
 
 function isWithinThisWeek(date: Date, fromDate: Date = new Date()): boolean {
@@ -56,6 +39,8 @@ export const useCareStore = defineStore('care', () => {
   const reminders = ref<CareReminder[]>([])
   const messages = ref<CareMessage[]>([])
   const lastScanDate = ref<string | null>(null)
+  const lastScanTime = ref<string | null>(null)
+  let scanTimer: ReturnType<typeof setTimeout> | null = null
   
   const activeEmployees = computed(() => 
     employeeStore.employees.filter(e => e.status !== 'inactive')
@@ -72,11 +57,12 @@ export const useCareStore = defineStore('care', () => {
     return activeEmployees.value
       .filter(emp => emp.birthday)
       .map(emp => {
-        const { days, years, nextDate } = getDaysUntilNextAnniversary(emp.birthday!, today)
+        const { days, years, nextDate, currentAge } = getDaysUntilNextAnniversary(emp.birthday!, today)
         return {
           employee: emp,
           daysRemaining: days,
-          age: years,
+          age: currentAge,
+          upcomingAge: years,
           date: nextDate
         }
       })
@@ -88,11 +74,12 @@ export const useCareStore = defineStore('care', () => {
     const today = new Date()
     return activeEmployees.value
       .map(emp => {
-        const { days, years, nextDate } = getDaysUntilNextAnniversary(emp.entryDate, today)
+        const { days, years, nextDate, currentAge } = getDaysUntilNextAnniversary(emp.entryDate, today)
         return {
           employee: emp,
           daysRemaining: days,
-          years,
+          years: currentAge,
+          upcomingYears: years,
           date: nextDate
         }
       })
@@ -106,11 +93,12 @@ export const useCareStore = defineStore('care', () => {
     return activeEmployees.value
       .filter(emp => emp.birthday)
       .map(emp => {
-        const { days, years, nextDate } = getDaysUntilNextAnniversary(emp.birthday!, today)
+        const { days, years, nextDate, currentAge } = getDaysUntilNextAnniversary(emp.birthday!, today)
         return {
           employee: emp,
           daysRemaining: days,
-          age: years,
+          age: currentAge,
+          upcomingAge: years,
           date: nextDate
         }
       })
@@ -123,11 +111,12 @@ export const useCareStore = defineStore('care', () => {
     const advanceDays = settings.value.anniversaryAdvanceDays
     return activeEmployees.value
       .map(emp => {
-        const { days, years, nextDate } = getDaysUntilNextAnniversary(emp.entryDate, today)
+        const { days, years, nextDate, currentAge } = getDaysUntilNextAnniversary(emp.entryDate, today)
         return {
           employee: emp,
           daysRemaining: days,
-          years,
+          years: currentAge,
+          upcomingYears: years,
           date: nextDate
         }
       })
@@ -138,6 +127,9 @@ export const useCareStore = defineStore('care', () => {
   function updateSettings(newSettings: Partial<CareSettings>) {
     settings.value = { ...settings.value, ...newSettings }
     localStorage.setItem('careSettings', JSON.stringify(settings.value))
+    if (newSettings.scanTime || newSettings.autoScanEnabled !== undefined) {
+      restartAutoScan()
+    }
   }
   
   function loadSettings() {
@@ -152,6 +144,10 @@ export const useCareStore = defineStore('care', () => {
     const lastScan = localStorage.getItem('lastCareScanDate')
     if (lastScan) {
       lastScanDate.value = lastScan
+    }
+    const lastScanT = localStorage.getItem('lastCareScanTime')
+    if (lastScanT) {
+      lastScanTime.value = lastScanT
     }
     const savedReminders = localStorage.getItem('careReminders')
     if (savedReminders) {
@@ -171,9 +167,44 @@ export const useCareStore = defineStore('care', () => {
     }
   }
   
+  function calculateNextScanTime(): number {
+    const now = new Date()
+    const [hours, minutes] = settings.value.scanTime.split(':').map(Number)
+    const nextScan = new Date(now)
+    nextScan.setHours(hours, minutes, 0, 0)
+    if (nextScan <= now) {
+      nextScan.setDate(nextScan.getDate() + 1)
+    }
+    return nextScan.getTime() - now.getTime()
+  }
+  
+  function startAutoScan() {
+    if (!settings.value.autoScanEnabled) return
+    stopAutoScan()
+    
+    const delay = calculateNextScanTime()
+    scanTimer = setTimeout(() => {
+      scanForUpcomingEvents()
+      startAutoScan()
+    }, delay)
+  }
+  
+  function stopAutoScan() {
+    if (scanTimer) {
+      clearTimeout(scanTimer)
+      scanTimer = null
+    }
+  }
+  
+  function restartAutoScan() {
+    stopAutoScan()
+    startAutoScan()
+  }
+  
   function scanForUpcomingEvents(): CareReminder[] {
     const today = new Date()
     const todayStr = today.toISOString().split('T')[0]
+    const timeStr = `${today.getHours().toString().padStart(2, '0')}:${today.getMinutes().toString().padStart(2, '0')}`
     const newReminders: CareReminder[] = []
     
     if (settings.value.birthdayReminderEnabled) {
@@ -194,7 +225,7 @@ export const useCareStore = defineStore('care', () => {
             type: 'birthday',
             date: item.date.toISOString().split('T')[0],
             daysRemaining: item.daysRemaining,
-            years: item.age,
+            years: item.upcomingAge,
             isRead: false,
             createdAt: todayStr
           })
@@ -220,7 +251,7 @@ export const useCareStore = defineStore('care', () => {
             type: 'anniversary',
             date: item.date.toISOString().split('T')[0],
             daysRemaining: item.daysRemaining,
-            years: item.years,
+            years: item.upcomingYears,
             isRead: false,
             createdAt: todayStr
           })
@@ -230,16 +261,29 @@ export const useCareStore = defineStore('care', () => {
     
     reminders.value = [...reminders.value, ...newReminders]
     lastScanDate.value = todayStr
+    lastScanTime.value = timeStr
     localStorage.setItem('careReminders', JSON.stringify(reminders.value))
     localStorage.setItem('lastCareScanDate', lastScanDate.value)
+    localStorage.setItem('lastCareScanTime', lastScanTime.value)
     
     return newReminders
   }
   
   function shouldScanToday(): boolean {
     if (!settings.value.autoScanEnabled) return false
-    const todayStr = new Date().toISOString().split('T')[0]
-    return lastScanDate.value !== todayStr
+    const now = new Date()
+    const todayStr = now.toISOString().split('T')[0]
+    const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
+    
+    if (lastScanDate.value !== todayStr) {
+      return currentTime >= settings.value.scanTime
+    }
+    
+    if (lastScanDate.value === todayStr && lastScanTime.value) {
+      return lastScanTime.value < settings.value.scanTime && currentTime >= settings.value.scanTime
+    }
+    
+    return false
   }
   
   function markReminderAsRead(reminderId: string) {
@@ -291,15 +335,6 @@ export const useCareStore = defineStore('care', () => {
     }
   }
   
-  function formatDate(date: Date | string): string {
-    const d = typeof date === 'string' ? new Date(date) : date
-    const month = d.getMonth() + 1
-    const day = d.getDate()
-    const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
-    const weekDay = weekDays[d.getDay()]
-    return `${month}月${day}日 ${weekDay}`
-  }
-  
   function getDaysLabel(days: number): string {
     if (days === 0) return '今天'
     if (days === 1) return '明天'
@@ -312,6 +347,7 @@ export const useCareStore = defineStore('care', () => {
     reminders,
     messages,
     lastScanDate,
+    lastScanTime,
     activeEmployees,
     unreadReminders,
     unreadReminderCount,
@@ -321,6 +357,9 @@ export const useCareStore = defineStore('care', () => {
     upcomingAnniversaries,
     updateSettings,
     loadSettings,
+    startAutoScan,
+    stopAutoScan,
+    restartAutoScan,
     scanForUpcomingEvents,
     shouldScanToday,
     markReminderAsRead,

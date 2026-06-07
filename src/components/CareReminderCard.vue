@@ -183,10 +183,11 @@ interface Props {
 type ReminderItem = {
   employee: Employee
   daysRemaining: number
-  years?: number
-  age?: number
   date: Date
-}
+} & (
+  | { age: number; upcomingAge: number; years?: never; upcomingYears?: never }
+  | { years: number; upcomingYears: number; age?: never; upcomingAge?: never }
+)
 
 const props = defineProps<Props>()
 const emit = defineEmits<{
@@ -282,8 +283,8 @@ function saveSettings() {
 }
 
 function getYears(item: ReminderItem): number | undefined {
-  if ('age' in item) return item.age
-  if ('years' in item) return item.years
+  if ('upcomingAge' in item) return item.upcomingAge
+  if ('upcomingYears' in item) return item.upcomingYears
   return undefined
 }
 

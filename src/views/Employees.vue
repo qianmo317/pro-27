@@ -115,7 +115,12 @@
           <n-descriptions-item label="性别">{{ currentEmployee.gender === 'male' ? '男' : '女' }}</n-descriptions-item>
           <n-descriptions-item label="电话">{{ currentEmployee.phone }}</n-descriptions-item>
           <n-descriptions-item label="邮箱">{{ currentEmployee.email }}</n-descriptions-item>
-          <n-descriptions-item label="出生日期">{{ currentEmployee.birthday || '未设置' }}</n-descriptions-item>
+          <n-descriptions-item label="出生日期">
+            {{ currentEmployee.birthday || '未设置' }}
+            <span v-if="currentEmployee.birthday" class="age-tag">
+              ({{ calculateAge(currentEmployee.birthday) }} 岁)
+            </span>
+          </n-descriptions-item>
           <n-descriptions-item label="入职日期">{{ currentEmployee.entryDate }}</n-descriptions-item>
           <n-descriptions-item label="工龄">{{ calculateWorkYears(currentEmployee.entryDate) }} 年</n-descriptions-item>
         </n-descriptions>
@@ -576,6 +581,7 @@ import type { FormInst, FormRules, DataTableColumns, DialogReactive } from 'naiv
 import type { Employee, Contract, PerformanceAppraisal, PerformanceResultGrade, EmployeeTransfer, TransferType, LeaveApplication, LeaveType, LeaveStatus } from '@/types'
 import { PERFORMANCE_GRADE_LABELS, PERFORMANCE_GRADE_COLORS, TRANSFER_TYPE_OPTIONS, TRANSFER_TYPE_LABELS, TRANSFER_STATUS_OPTIONS, TRANSFER_TYPE_COLORS, LEAVE_TYPE_LABELS, LEAVE_TYPE_COLORS, LEAVE_STATUS_LABELS, LEAVE_STATUS_COLORS } from '@/types'
 import AttachmentManager from '@/components/AttachmentManager.vue'
+import { calculateWorkYears, calculateAge } from '@/lib/utils'
 
 const employeeStore = useEmployeeStore()
 const contractStore = useContractStore()
@@ -1115,17 +1121,6 @@ function handleAdd() {
       resetForm()
     }
   })
-}
-
-function calculateWorkYears(entryDate: string): number {
-  const entry = new Date(entryDate)
-  const now = new Date()
-  let years = now.getFullYear() - entry.getFullYear()
-  const monthDiff = now.getMonth() - entry.getMonth()
-  if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < entry.getDate())) {
-    years--
-  }
-  return Math.max(0, years)
 }
 
 function resetForm() {
@@ -1690,5 +1685,11 @@ function resetForm() {
 
 .no-leave {
   padding: 40px 0;
+}
+
+.age-tag {
+  color: #6B7280;
+  font-size: 13px;
+  margin-left: 4px;
 }
 </style>

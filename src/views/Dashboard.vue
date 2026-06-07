@@ -253,7 +253,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import * as echarts from 'echarts'
 import { useMessage } from 'naive-ui'
 import { Users, UserCheck, Briefcase, GraduationCap, FileText, AlertTriangle, CalendarDays, Clock, CalendarOff, Heart } from 'lucide-vue-next'
@@ -270,6 +270,7 @@ import { useCareStore } from '@/stores/care'
 import { stageLabels } from '@/stores/recruitment'
 import CareReminderCard from '@/components/CareReminderCard.vue'
 import type { Employee } from '@/types'
+import { calculateWorkYears } from '@/lib/utils'
 
 const employeeStore = useEmployeeStore()
 const attendanceStore = useAttendanceStore()
@@ -361,17 +362,6 @@ function handleBlessingSent(employee: Employee, content: string) {
   message.success(`已向 ${employee.name} 发送祝福`)
 }
 
-function calculateWorkYears(entryDate: string): number {
-  const entry = new Date(entryDate)
-  const now = new Date()
-  let years = now.getFullYear() - entry.getFullYear()
-  const monthDiff = now.getMonth() - entry.getMonth()
-  if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < entry.getDate())) {
-    years--
-  }
-  return Math.max(0, years)
-}
-
 function formatMessageTime(isoString: string): string {
   const date = new Date(isoString)
   const now = new Date()
@@ -409,7 +399,12 @@ onMounted(() => {
   initPieChart()
   setTimeout(() => {
     performDailyScan()
+    careStore.startAutoScan()
   }, 500)
+})
+
+onUnmounted(() => {
+  careStore.stopAutoScan()
 })
 
 function initLineChart() {
