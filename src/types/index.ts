@@ -67,7 +67,67 @@ export interface AttendanceRecord {
   status: 'normal' | 'late' | 'early' | 'absent' | 'leave'
   leaveType?: LeaveType
   leaveApplicationId?: string
+  correction?: AttendanceCorrection
 }
+
+export type AttendanceCorrectionType = 'makeup' | 'explain'
+export type AttendanceCorrectionStatus = 'pending' | 'approved' | 'rejected'
+
+export interface AttendanceCorrection {
+  id: string
+  type: AttendanceCorrectionType
+  reason: string
+  makeupCheckIn?: string
+  makeupCheckOut?: string
+  status: AttendanceCorrectionStatus
+  applicantId: string
+  applicantName: string
+  applicationTime: string
+  approverId?: string
+  approverName?: string
+  approvalComment?: string
+  approvalTime?: string
+}
+
+export const CORRECTION_TYPE_OPTIONS: { label: string; value: AttendanceCorrectionType }[] = [
+  { label: '补卡', value: 'makeup' },
+  { label: '情况说明', value: 'explain' }
+]
+
+export const CORRECTION_TYPE_LABELS: Record<AttendanceCorrectionType, string> = {
+  makeup: '补卡',
+  explain: '情况说明'
+}
+
+export const CORRECTION_STATUS_OPTIONS: { label: string; value: AttendanceCorrectionStatus }[] = [
+  { label: '待审批', value: 'pending' },
+  { label: '已通过', value: 'approved' },
+  { label: '已驳回', value: 'rejected' }
+]
+
+export const CORRECTION_STATUS_LABELS: Record<AttendanceCorrectionStatus, string> = {
+  pending: '待审批',
+  approved: '已通过',
+  rejected: '已驳回'
+}
+
+export const CORRECTION_STATUS_COLORS: Record<AttendanceCorrectionStatus, string> = {
+  pending: '#F59E0B',
+  approved: '#10B981',
+  rejected: '#EF4444'
+}
+
+export type AttendanceAbnormalFilter = 'all' | 'normal' | 'late' | 'early' | 'absent' | 'pending' | 'corrected'
+
+export const ABNORMAL_FILTER_OPTIONS: { label: string; value: AttendanceAbnormalFilter }[] = [
+  { label: '全部', value: 'all' },
+  { label: '正常', value: 'normal' },
+  { label: '迟到', value: 'late' },
+  { label: '早退', value: 'early' },
+  { label: '缺勤', value: 'absent' },
+  { label: '待审批', value: 'pending' },
+  { label: '已修正', value: 'corrected' }
+]
 
 export type LeaveType = 'personal' | 'sick' | 'annual' | 'compensatory' | 'marriage' | 'maternity' | 'other'
 

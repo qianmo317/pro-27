@@ -1,4 +1,4 @@
-import type { User, Employee, AttendanceRecord, SalaryRecord, Candidate, TrainingCourse, Department, Contract, Attachment, PerformancePlan, PerformanceAppraisal, KpiIndicator, EmployeeTransfer, RecruitmentRequirement, InterviewSchedule, InterviewEvaluation, Interviewer, LeaveApplication, EmployeeLeaveBalance, OvertimeApplication, SalaryTemplate } from '@/types'
+import type { User, Employee, AttendanceRecord, SalaryRecord, Candidate, TrainingCourse, Department, Contract, Attachment, PerformancePlan, PerformanceAppraisal, KpiIndicator, EmployeeTransfer, RecruitmentRequirement, InterviewSchedule, InterviewEvaluation, Interviewer, LeaveApplication, EmployeeLeaveBalance, OvertimeApplication, SalaryTemplate, AttendanceCorrection } from '@/types'
 
 export const mockUsers: User[] = [
   {
@@ -55,19 +55,73 @@ export const mockEmployees: Employee[] = [
   { id: '25', name: '孙廿七', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sunnianqi', gender: 'male', phone: '13800138025', email: 'sunnianqi@company.com', department: '人力资源部', position: '招聘专员', entryDate: '2022-03-30', birthday: '1994-11-11', status: 'active' }
 ]
 
+function generateCorrection(
+  recordId: string,
+  status: 'pending' | 'approved' | 'rejected',
+  type: 'makeup' | 'explain',
+  employee: Employee,
+  date: string
+): any {
+  const correctionBase = {
+    id: `corr-${recordId}`,
+    type,
+    reason: type === 'makeup'
+      ? '因地铁故障导致迟到，实际已在8:50到达公司'
+      : '因处理紧急客户问题，提前下班并已完成工作交接',
+    applicantId: employee.id,
+    applicantName: employee.name,
+    applicationTime: `${date} 09:30:00`,
+    status
+  }
+
+  if (type === 'makeup') {
+    ;(correctionBase as any).makeupCheckIn = '08:50'
+    ;(correctionBase as any).makeupCheckOut = '18:00'
+  }
+
+  if (status !== 'pending') {
+    const approver = mockEmployees.find(e => e.department === employee.department && e.position.includes('经理')) || mockEmployees[0]
+    ;(correctionBase as any).approverId = approver.id
+    ;(correctionBase as any).approverName = approver.name
+    ;(correctionBase as any).approvalComment = status === 'approved' ? '情况属实，同意修正' : '理由不充分，请提供更多证明材料'
+    ;(correctionBase as any).approvalTime = `${date} 14:00:00`
+  }
+
+  return correctionBase
+}
+
 export const mockAttendanceRecords: AttendanceRecord[] = Array.from({ length: 30 }, (_, i) => {
   const date = new Date(2024, 0, i + 1)
   const day = date.getDay()
   if (day === 0 || day === 6) return null
-  return {
+
+  const employee = mockEmployees[i % mockEmployees.length]
+  const dateStr = date.toISOString().split('T')[0]
+  const statuses: AttendanceRecord['status'][] = ['normal', 'late', 'early', 'absent']
+  const status = statuses[Math.floor(Math.random() * 4)]
+
+  const record: AttendanceRecord = {
     id: `att-${i}`,
-    employeeId: mockEmployees[i % mockEmployees.length].id,
-    employeeName: mockEmployees[i % mockEmployees.length].name,
-    date: date.toISOString().split('T')[0],
+    employeeId: employee.id,
+    employeeName: employee.name,
+    date: dateStr,
     checkIn: `${8 + Math.floor(Math.random() * 2)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
     checkOut: `${17 + Math.floor(Math.random() * 3)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
-    status: ['normal', 'late', 'early', 'absent'][Math.floor(Math.random() * 4)] as AttendanceRecord['status']
+    status
   }
+
+  if (status !== 'normal' && status !== 'leave') {
+    const rand = Math.random()
+    if (rand < 0.3) {
+      record.correction = generateCorrection(record.id, 'approved', rand < 0.15 ? 'makeup' : 'explain', employee, dateStr)
+    } else if (rand < 0.5) {
+      record.correction = generateCorrection(record.id, 'pending', rand < 0.4 ? 'makeup' : 'explain', employee, dateStr)
+    } else if (rand < 0.6) {
+      record.correction = generateCorrection(record.id, 'rejected', rand < 0.55 ? 'makeup' : 'explain', employee, dateStr)
+    }
+  }
+
+  return record
 }).filter(Boolean) as AttendanceRecord[]
 
 function calculateIncomeTax(taxableIncome: number): number {
