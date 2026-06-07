@@ -316,6 +316,7 @@
             value-format="YYYY-MM"
             placeholder="请选择月份"
             style="width: 100%;"
+            @update:value="handleMonthChange"
           />
         </n-form-item>
 
@@ -613,12 +614,30 @@ const batchFormData = reactive({
 })
 
 const createFormRules: FormRules = {
-  employeeId: [{ required: true, message: '请选择员工', trigger: 'change' }],
-  month: [
-    { required: true, message: '请选择月份', trigger: 'change' },
+  employeeId: [
     {
       validator: (_rule, value) => {
-        if (typeof value === 'string' && /^\d{4}-\d{2}$/.test(value)) {
+        if (value && value !== '') {
+          return true
+        }
+        return new Error('请选择员工')
+      },
+      trigger: 'change'
+    }
+  ],
+  month: [
+    {
+      validator: (_rule, value) => {
+        if (value === null || value === undefined || value === '') {
+          return new Error('请选择月份')
+        }
+        let monthStr = value
+        if (value instanceof Date) {
+          const year = value.getFullYear()
+          const month = String(value.getMonth() + 1).padStart(2, '0')
+          monthStr = `${year}-${month}`
+        }
+        if (typeof monthStr === 'string' && /^\d{4}-\d{2}$/.test(monthStr)) {
           return true
         }
         return new Error('请选择有效的月份')
@@ -819,6 +838,24 @@ function handleTemplateSelect(templateId: string) {
   }
 }
 
+function handleMonthChange(value: string | number | Date | null) {
+  if (value === null || value === undefined) return
+  if (value instanceof Date) {
+    const year = value.getFullYear()
+    const month = String(value.getMonth() + 1).padStart(2, '0')
+    createFormData.month = `${year}-${month}`
+  } else if (typeof value === 'number') {
+    const date = new Date(value)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    createFormData.month = `${year}-${month}`
+  } else if (typeof value === 'string') {
+    if (/^\d{4}-\d{2}$/.test(value)) {
+      createFormData.month = value
+    }
+  }
+}
+
 function applyTemplate(template: SalaryTemplate) {
   const calculated = templateStore.calculateSalary(template, createFormData.performanceMultiplier)
   Object.assign(createFormData, calculated)
@@ -847,7 +884,24 @@ function recalculateNet() {
   createFormData.netSalary = createFormData.grossSalary - createFormData.totalDeduction
 }
 
+function normalizeMonth(value: any): string {
+  if (value instanceof Date) {
+    const year = value.getFullYear()
+    const month = String(value.getMonth() + 1).padStart(2, '0')
+    return `${year}-${month}`
+  } else if (typeof value === 'number') {
+    const date = new Date(value)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    return `${year}-${month}`
+  } else if (typeof value === 'string' && /^\d{4}-\d{2}$/.test(value)) {
+    return value
+  }
+  return value
+}
+
 function handleCreateSave() {
+  createFormData.month = normalizeMonth(createFormData.month)
   createFormRef.value?.validate(errors => {
     if (!errors) {
       const employee = employeeStore.employees.find(e => e.id === createFormData.employeeId)
