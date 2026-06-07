@@ -90,6 +90,24 @@ export const useEmployeeStore = defineStore('employee', () => {
     }
   }
 
+  function isPhoneExists(phone: string, excludeId?: string): boolean {
+    return employees.value.some(e => e.phone === phone && e.id !== excludeId)
+  }
+
+  function isEmailExists(email: string, excludeId?: string): boolean {
+    return employees.value.some(e => e.email === email && e.id !== excludeId)
+  }
+
+  function batchAddEmployees(employeeList: Omit<Employee, 'id'>[]): Employee[] {
+    const maxId = Math.max(...employees.value.map(e => Number(e.id)))
+    const newEmployees: Employee[] = employeeList.map((emp, index) => ({
+      ...emp,
+      id: String(maxId + index + 1)
+    }))
+    employees.value.push(...newEmployees)
+    return newEmployees
+  }
+
   return {
     employees,
     searchKeyword,
@@ -110,6 +128,9 @@ export const useEmployeeStore = defineStore('employee', () => {
     getEmployeeById,
     addEmployee,
     updateEmployee,
-    deleteEmployee
+    deleteEmployee,
+    isPhoneExists,
+    isEmailExists,
+    batchAddEmployees
   }
 })

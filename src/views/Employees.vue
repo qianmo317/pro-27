@@ -2,12 +2,26 @@
   <div class="page-container">
     <div class="page-header">
       <div class="page-title">员工花名册</div>
-      <n-button type="primary" @click="showAddModal = true">
-        <template #icon>
-          <Plus :size="16" />
-        </template>
-        新增员工
-      </n-button>
+      <n-space>
+        <n-button @click="handleExport">
+          <template #icon>
+            <Download :size="16" />
+          </template>
+          批量导出
+        </n-button>
+        <n-button @click="showBatchImport = true">
+          <template #icon>
+            <Upload :size="16" />
+          </template>
+          批量导入
+        </n-button>
+        <n-button type="primary" @click="showAddModal = true">
+          <template #icon>
+            <Plus :size="16" />
+          </template>
+          新增员工
+        </n-button>
+      </n-space>
     </div>
     
     <n-card class="filter-card">
@@ -564,12 +578,56 @@
         </n-space>
       </template>
     </n-modal>
+
+    <BatchImport
+      v-model:show="showBatchImport"
+      title="批量导入员工"
+      :columns="employeeImportColumns"
+      template-file-name="员工信息"
+      :example-data="employeeExampleData"
+      :validate-fn="validateEmployees"
+      :on-import="handleBatchImport"
+      @success="handleImportSuccess"
+    />
+
+    <n-modal v-model:show="showImportResult" preset="card" title="导入结果" style="width: 600px;">
+      <div class="import-result-modal">
+        <n-result
+          v-if="importResultData.successCount > 0"
+          status="success"
+          :title="`成功导入 ${importResultData.successCount} 条数据`"
+        />
+        <n-result
+          v-else
+          status="warning"
+          title="导入失败"
+          sub-title="所有数据均存在错误，请检查后重试"
+        />
+        <div v-if="importResultData.errors.length > 0" class="error-list">
+          <div class="section-title">错误明细（{{ importResultData.errors.length }} 条）</div>
+          <div class="error-table">
+            <n-data-table
+              :columns="importErrorColumns"
+              :data="importResultData.errors"
+              :bordered="false"
+              size="small"
+              :max-height="300"
+            />
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="showImportResult = false">关闭</n-button>
+        </n-space>
+      </template>
+    </n-modal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, h, nextTick, onMounted } from 'vue'
-import { Plus, Search, Edit, Trash2, Eye, ArrowRightLeft, CalendarDays, Clock } from 'lucide-vue-next'
+import { Plus, Search, Edit, Trash2, Eye, ArrowRightLeft, CalendarDays, Clock, Download, Upload } from 'lucide-vue-next'
 import * as echarts from 'echarts'
 import { useEmployeeStore } from '@/stores/employee'
 import { useContractStore } from '@/stores/contract'
@@ -579,9 +637,11 @@ import { useLeaveStore } from '@/stores/leave'
 import { useMessage, useDialog, NTag, NSpace, NButton, NTimeline, NTimelineItem, NRow, NCol } from 'naive-ui'
 import type { FormInst, FormRules, DataTableColumns, DialogReactive } from 'naive-ui'
 import type { Employee, Contract, PerformanceAppraisal, PerformanceResultGrade, EmployeeTransfer, TransferType, LeaveApplication, LeaveType, LeaveStatus } from '@/types'
-import { PERFORMANCE_GRADE_LABELS, PERFORMANCE_GRADE_COLORS, TRANSFER_TYPE_OPTIONS, TRANSFER_TYPE_LABELS, TRANSFER_STATUS_OPTIONS, TRANSFER_TYPE_COLORS, LEAVE_TYPE_LABELS, LEAVE_TYPE_COLORS, LEAVE_STATUS_LABELS, LEAVE_STATUS_COLORS } from '@/types'
+import { PERFORMANCE_GRADE_LABELS, PERFORMANCE_GRADE_COLORS, TRANSFER_TYPE_OPTIONS, TRANSFER_TYPE_LABELS, TRANSFER_STATUS_OPTIONS, TRANSFER_TYPE_COLORS, LEAVE_TYPE_LABELS, LEAVE_TYPE_COLORS, LEAVE_STATUS_LABELS, LEAVE_STATUS_COLORS, DEPARTMENT_OPTIONS } from '@/types'
 import AttachmentManager from '@/components/AttachmentManager.vue'
+import BatchImport from '@/components/BatchImport.vue'
 import { calculateWorkYears, calculateAge } from '@/lib/utils'
+import { exportToExcel, validatePhone, validateEmail, type ExcelColumn } from '@/lib/excel'
 
 const employeeStore = useEmployeeStore()
 const contractStore = useContractStore()
@@ -607,8 +667,154 @@ const showAddModal = ref(false)
 const showViewModal = ref(false)
 const showEditModal = ref(false)
 const showAddTransferModal = ref(false)
+const showBatchImport = ref(false)
+const showImportResult = ref(false)
 const currentEmployee = ref<Employee | null>(null)
 const activeDetailTab = ref('contract')
+
+const importResultData = ref({
+  successCount: 0,
+  errors: [] as { row: number; message: string; data: Partial<Employee> }[]
+})
+
+const genderOptions = [
+  { label: '男', value: 'male' },
+  { label: '女', value: 'female' }
+]
+
+const statusOptions = [
+  { label: '正式', value: 'active' },
+  { label: '试用', value: 'probation' },
+  { label: '离职', value: 'inactive' }
+]
+
+const employeeImportColumns: ExcelColumn<Employee>[] = [
+  { key: 'name', title: '姓名', required: true, type: 'string' },
+  { key: 'gender', title: '性别', required: true, type: 'select', options: genderOptions },
+  { key: 'phone', title: '手机号', required: true, type: 'string' },
+  { key: 'email', title: '邮箱', required: true, type: 'string' },
+  { key: 'department', title: '部门', required: true, type: 'select', options: DEPARTMENT_OPTIONS },
+  { key: 'position', title: '职位', required: true, type: 'string' },
+  { key: 'birthday', title: '出生日期', type: 'string' },
+  { key: 'entryDate', title: '入职日期', required: true, type: 'string' },
+  { key: 'status', title: '状态', required: true, type: 'select', options: statusOptions }
+]
+
+const employeeExampleData: Partial<Employee>[] = [
+  {
+    name: '示例员工',
+    gender: 'male',
+    phone: '13800138000',
+    email: 'example@company.com',
+    department: '技术部',
+    position: '前端工程师',
+    birthday: '1995-01-01',
+    entryDate: '2024-01-01',
+    status: 'probation'
+  }
+]
+
+const importErrorColumns: DataTableColumns = [
+  { title: '行号', key: 'row', width: 80 },
+  { title: '姓名', key: 'name', render: (row: any) => row.data?.name || '' },
+  { title: '错误信息', key: 'message', render: (row: any) => h('span', { style: { color: '#EF4444' } }, row.message) }
+]
+
+const employeeExportColumns: ExcelColumn<Employee>[] = [
+  { key: 'id', title: '员工编号' },
+  { key: 'name', title: '姓名' },
+  {
+    key: 'gender',
+    title: '性别',
+    formatter: (value: string) => (value === 'male' ? '男' : '女')
+  },
+  { key: 'phone', title: '手机号' },
+  { key: 'email', title: '邮箱' },
+  { key: 'department', title: '部门' },
+  { key: 'position', title: '职位' },
+  { key: 'birthday', title: '出生日期' },
+  { key: 'entryDate', title: '入职日期' },
+  {
+    key: 'status',
+    title: '状态',
+    formatter: (value: string) => {
+      const map: Record<string, string> = { active: '正式', probation: '试用', inactive: '离职' }
+      return map[value] || value
+    }
+  }
+]
+
+async function validateEmployees(data: Partial<Employee>[]) {
+  const success: Partial<Employee>[] = []
+  const errors: { row: number; message: string; data: Partial<Employee> }[] = []
+
+  const phoneSet = new Set<string>()
+  const emailSet = new Set<string>()
+
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i]
+    const rowNum = i + 2
+    let hasError = false
+    let errorMessage = ''
+
+    if (row.phone) {
+      if (!validatePhone(row.phone)) {
+        hasError = true
+        errorMessage = `手机号 "${row.phone}" 格式不正确`
+      } else if (employeeStore.isPhoneExists(row.phone)) {
+        hasError = true
+        errorMessage = `手机号 "${row.phone}" 已存在`
+      } else if (phoneSet.has(row.phone)) {
+        hasError = true
+        errorMessage = `手机号 "${row.phone}" 在导入文件中重复`
+      }
+    }
+
+    if (!hasError && row.email) {
+      if (!validateEmail(row.email)) {
+        hasError = true
+        errorMessage = `邮箱 "${row.email}" 格式不正确`
+      } else if (employeeStore.isEmailExists(row.email)) {
+        hasError = true
+        errorMessage = `邮箱 "${row.email}" 已存在`
+      } else if (emailSet.has(row.email)) {
+        hasError = true
+        errorMessage = `邮箱 "${row.email}" 在导入文件中重复`
+      }
+    }
+
+    if (hasError) {
+      errors.push({ row: rowNum, message: errorMessage, data: row })
+    } else {
+      if (row.phone) phoneSet.add(row.phone)
+      if (row.email) emailSet.add(row.email)
+      success.push(row)
+    }
+  }
+
+  return { success, errors }
+}
+
+function handleBatchImport(data: Partial<Employee>[]) {
+  const employees = data.map(emp => ({
+    ...emp,
+    avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}-${Math.random()}`
+  })) as Omit<Employee, 'id'>[]
+
+  employeeStore.batchAddEmployees(employees)
+}
+
+function handleImportSuccess(result: { successCount: number; errors: any[] }) {
+  importResultData.value = result
+  showImportResult.value = true
+}
+
+function handleExport() {
+  const dataToExport = employeeStore.filteredEmployees
+  const dateStr = new Date().toISOString().split('T')[0]
+  exportToExcel(dataToExport, employeeExportColumns, `员工花名册_${dateStr}`)
+  message.success(`成功导出 ${dataToExport.length} 条数据`)
+}
 
 const employeeContracts = computed(() => {
   if (!currentEmployee.value) return []
@@ -934,17 +1140,6 @@ const formRules: FormRules = {
 
 const departments = computed(() => employeeStore.departments)
 const departmentOptions = computed(() => employeeStore.departments.map(dept => ({ label: dept, value: dept })))
-
-const genderOptions = [
-  { label: '男', value: 'male' },
-  { label: '女', value: 'female' }
-]
-
-const statusOptions = [
-  { label: '正式', value: 'active' },
-  { label: '试用', value: 'probation' },
-  { label: '离职', value: 'inactive' }
-]
 
 watch([searchKeyword, filterDepartment, filterStatus], () => {
   employeeStore.setSearchKeyword(searchKeyword.value)
@@ -1691,5 +1886,26 @@ function resetForm() {
   color: #6B7280;
   font-size: 13px;
   margin-left: 4px;
+}
+
+.import-result-modal {
+  text-align: left;
+}
+
+.import-result-modal .error-list {
+  margin-top: 20px;
+}
+
+.import-result-modal .section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1E1B4B;
+  margin-bottom: 12px;
+}
+
+.import-result-modal .error-table {
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  overflow: hidden;
 }
 </style>
