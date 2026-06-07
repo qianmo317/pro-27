@@ -126,14 +126,21 @@
           
           <n-data-table
             :columns="myColumns"
-            :data="filteredMyApplications"
+            :data="paginatedMyApplications"
             :bordered="false"
             size="large"
             :pagination="{
               page: myCurrentPage,
-              pageSize: 10,
+              pageSize: myPageSize,
               itemCount: filteredMyApplications.length,
-              onUpdatePage: (page) => myCurrentPage = page
+              showSizePicker: true,
+              pageSizes: [10, 20, 50, 100],
+              showQuickJumper: true,
+              onUpdatePage: (page) => myCurrentPage = page,
+              onUpdatePageSize: (size) => {
+                myPageSize = size
+                myCurrentPage = 1
+              }
             }"
           />
         </n-card>
@@ -160,14 +167,21 @@
           
           <n-data-table
             :columns="approveColumns"
-            :data="filteredApproveApplications"
+            :data="paginatedApproveApplications"
             :bordered="false"
             size="large"
             :pagination="{
               page: approveCurrentPage,
-              pageSize: 10,
+              pageSize: approvePageSize,
               itemCount: filteredApproveApplications.length,
-              onUpdatePage: (page) => approveCurrentPage = page
+              showSizePicker: true,
+              pageSizes: [10, 20, 50, 100],
+              showQuickJumper: true,
+              onUpdatePage: (page) => approveCurrentPage = page,
+              onUpdatePageSize: (size) => {
+                approvePageSize = size
+                approveCurrentPage = 1
+              }
             }"
           />
         </n-card>
@@ -338,6 +352,7 @@ const myBalance = computed(() => leaveStore.getLeaveBalance('3'))
 const myFilterStatus = ref('')
 const myFilterType = ref('')
 const myCurrentPage = ref(1)
+const myPageSize = ref(10)
 
 const filteredMyApplications = computed(() => {
   let data = leaveStore.applications.filter(a => a.employeeId === '3')
@@ -350,9 +365,15 @@ const filteredMyApplications = computed(() => {
   return data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 })
 
+const paginatedMyApplications = computed(() => {
+  const start = (myCurrentPage.value - 1) * myPageSize.value
+  return filteredMyApplications.value.slice(start, start + myPageSize.value)
+})
+
 const approveFilterStatus = ref('')
 const approveFilterType = ref('')
 const approveCurrentPage = ref(1)
+const approvePageSize = ref(10)
 
 const filteredApproveApplications = computed(() => {
   let data = leaveStore.applications
@@ -363,6 +384,11 @@ const filteredApproveApplications = computed(() => {
     data = data.filter(a => a.leaveType === approveFilterType.value)
   }
   return data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+})
+
+const paginatedApproveApplications = computed(() => {
+  const start = (approveCurrentPage.value - 1) * approvePageSize.value
+  return filteredApproveApplications.value.slice(start, start + approvePageSize.value)
 })
 
 const showApproveModal = ref(false)

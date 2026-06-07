@@ -49,7 +49,11 @@
           page: employeeStore.currentPage,
           pageSize: employeeStore.pageSize,
           itemCount: employeeStore.total,
-          onUpdatePage: (page) => employeeStore.setCurrentPage(page)
+          showSizePicker: true,
+          pageSizes: [10, 20, 50, 100],
+          showQuickJumper: true,
+          onUpdatePage: (page) => employeeStore.setCurrentPage(page),
+          onUpdatePageSize: (size) => employeeStore.setPageSize(size)
         }"
         :bordered="false"
         size="large"

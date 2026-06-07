@@ -16,6 +16,10 @@ export const stageLabels: Record<StageType, string> = {
 export const useRecruitmentStore = defineStore('recruitment', () => {
   const candidates = ref<Candidate[]>([...mockCandidates])
   const requirements = ref<RecruitmentRequirement[]>([...mockRecruitmentRequirements])
+  const currentPage = ref(1)
+  const pageSize = ref(10)
+  const filterStatus = ref<RecruitmentRequirementStatus | null>(null)
+  const filterUrgency = ref<RecruitmentUrgency | null>(null)
 
   const screeningCandidates = computed(() => 
     candidates.value.filter(c => c.stage === 'screening')
@@ -69,6 +73,39 @@ export const useRecruitmentStore = defineStore('recruitment', () => {
     })
   }
 
+  const filteredRequirements = computed(() => {
+    return getRequirementsByFilters(
+      filterStatus.value || undefined,
+      filterUrgency.value || undefined
+    ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  })
+
+  const paginatedRequirements = computed(() => {
+    const start = (currentPage.value - 1) * pageSize.value
+    return filteredRequirements.value.slice(start, start + pageSize.value)
+  })
+
+  const total = computed(() => filteredRequirements.value.length)
+
+  function setFilterStatus(status: RecruitmentRequirementStatus | null) {
+    filterStatus.value = status
+    currentPage.value = 1
+  }
+
+  function setFilterUrgency(urgency: RecruitmentUrgency | null) {
+    filterUrgency.value = urgency
+    currentPage.value = 1
+  }
+
+  function setCurrentPage(page: number) {
+    currentPage.value = page
+  }
+
+  function setPageSize(size: number) {
+    pageSize.value = size
+    currentPage.value = 1
+  }
+
   function addRequirement(requirement: Omit<RecruitmentRequirement, 'id' | 'status' | 'createdAt' | 'applicantId' | 'applicantName'>) {
     const currentUser = mockUsers.find(u => u.role === 'employee') || mockUsers[2]
     const newId = `req-${Date.now()}`
@@ -119,6 +156,10 @@ export const useRecruitmentStore = defineStore('recruitment', () => {
   return {
     candidates,
     requirements,
+    currentPage,
+    pageSize,
+    filterStatus,
+    filterUrgency,
     screeningCandidates,
     interview1Candidates,
     interview2Candidates,
@@ -127,6 +168,9 @@ export const useRecruitmentStore = defineStore('recruitment', () => {
     pendingRequirements,
     publishedRequirements,
     publishedPositions,
+    filteredRequirements,
+    paginatedRequirements,
+    total,
     moveCandidate,
     addCandidate,
     getStageCandidates,
@@ -135,6 +179,10 @@ export const useRecruitmentStore = defineStore('recruitment', () => {
     reviewRequirement,
     publishRequirement,
     closeRequirement,
-    getRequirementById
+    getRequirementById,
+    setFilterStatus,
+    setFilterUrgency,
+    setCurrentPage,
+    setPageSize
   }
 })

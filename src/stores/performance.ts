@@ -228,6 +228,16 @@ export const usePerformanceStore = defineStore('performance', () => {
     planCurrentPage.value = page
   }
 
+  function setPageSize(size: number) {
+    pageSize.value = size
+    currentPage.value = 1
+  }
+
+  function setPlanPageSize(size: number) {
+    planPageSize.value = size
+    planCurrentPage.value = 1
+  }
+
   function generateAppraisalsForPlan(planId: string, employees: { id: string; name: string; department: string; supervisorId: string; supervisorName: string }[]) {
     const plan = plans.value.find(p => p.id === planId)
     if (!plan) return
@@ -310,6 +320,8 @@ export const usePerformanceStore = defineStore('performance', () => {
     setFilterStatus,
     setCurrentPage,
     setPlanCurrentPage,
+    setPageSize,
+    setPlanPageSize,
     generateAppraisalsForPlan
   }
 })

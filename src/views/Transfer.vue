@@ -130,7 +130,11 @@
           page: transferStore.currentPage,
           pageSize: transferStore.pageSize,
           itemCount: transferStore.total,
-          onUpdatePage: (page) => transferStore.setCurrentPage(page)
+          showSizePicker: true,
+          pageSizes: [10, 20, 50, 100],
+          showQuickJumper: true,
+          onUpdatePage: (page) => transferStore.setCurrentPage(page),
+          onUpdatePageSize: (size) => transferStore.setPageSize(size)
         }"
         :bordered="false"
         size="large"

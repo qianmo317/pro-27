@@ -56,6 +56,11 @@ export const useAttendanceStore = defineStore('attendance', () => {
     currentPage.value = page
   }
 
+  function setPageSize(size: number) {
+    pageSize.value = size
+    currentPage.value = 1
+  }
+
   return {
     records,
     selectedMonth,
@@ -67,6 +72,7 @@ export const useAttendanceStore = defineStore('attendance', () => {
     statistics,
     chartData,
     setSelectedMonth,
-    setCurrentPage
+    setCurrentPage,
+    setPageSize
   }
 })

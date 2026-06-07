@@ -96,7 +96,11 @@
           page: attendanceStore.currentPage,
           pageSize: attendanceStore.pageSize,
           itemCount: attendanceStore.total,
-          onUpdatePage: (page) => attendanceStore.setCurrentPage(page)
+          showSizePicker: true,
+          pageSizes: [10, 20, 50, 100],
+          showQuickJumper: true,
+          onUpdatePage: (page) => attendanceStore.setCurrentPage(page),
+          onUpdatePageSize: (size) => attendanceStore.setPageSize(size)
         }"
       />
     </n-card>

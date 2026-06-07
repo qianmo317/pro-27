@@ -33,8 +33,17 @@
     <n-card class="table-card" :bordered="false">
       <n-data-table
         :columns="columns"
-        :data="filteredRequirements"
-        :pagination="pagination"
+        :data="recruitmentStore.paginatedRequirements"
+        :pagination="{
+          page: recruitmentStore.currentPage,
+          pageSize: recruitmentStore.pageSize,
+          itemCount: recruitmentStore.total,
+          showSizePicker: true,
+          pageSizes: [10, 20, 50, 100],
+          showQuickJumper: true,
+          onUpdatePage: (page) => recruitmentStore.setCurrentPage(page),
+          onUpdatePageSize: (size) => recruitmentStore.setPageSize(size)
+        }"
         :row-key="rowKey"
       />
     </n-card>
@@ -201,7 +210,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, h } from 'vue'
+import { ref, reactive, computed, h, watch } from 'vue'
 import { Plus, Eye, CheckCircle, XCircle, Send, XSquare } from 'lucide-vue-next'
 import { useRecruitmentStore } from '@/stores/recruitment'
 import { useMessage } from 'naive-ui'
@@ -214,6 +223,11 @@ const message = useMessage()
 
 const filterStatus = ref<RecruitmentRequirementStatus | null>(null)
 const filterUrgency = ref<RecruitmentUrgency | null>(null)
+
+watch([filterStatus, filterUrgency], () => {
+  recruitmentStore.setFilterStatus(filterStatus.value)
+  recruitmentStore.setFilterUrgency(filterUrgency.value)
+})
 
 const showAddModal = ref(false)
 const showDetailModal = ref(false)
@@ -276,18 +290,6 @@ const closeFormRules: FormRules = {
   actualHiredCount: [{ required: true, message: '请输入实际录用人数', trigger: 'blur', type: 'number' }],
   closeReason: [{ required: true, message: '请输入关闭原因', trigger: 'blur' }]
 }
-
-const filteredRequirements = computed(() => {
-  return recruitmentStore.getRequirementsByFilters(
-    filterStatus.value || undefined,
-    filterUrgency.value || undefined
-  )
-})
-
-const pagination = reactive({
-  pageSize: 10,
-  showSizePicker: false
-})
 
 const rowKey: DataTableCreateRowKey<RecruitmentRequirement> = (row) => row.id
 
@@ -422,6 +424,8 @@ const columns: DataTableColumns<RecruitmentRequirement> = [
 function resetFilters() {
   filterStatus.value = null
   filterUrgency.value = null
+  recruitmentStore.setFilterStatus(null)
+  recruitmentStore.setFilterUrgency(null)
 }
 
 function viewDetail(row: RecruitmentRequirement) {

@@ -177,6 +177,11 @@ export const useLeaveStore = defineStore('leave', () => {
     currentPage.value = page
   }
 
+  function setPageSize(size: number) {
+    pageSize.value = size
+    currentPage.value = 1
+  }
+
   return {
     applications,
     balances,
@@ -200,6 +205,7 @@ export const useLeaveStore = defineStore('leave', () => {
     updateLeaveBalance,
     setFilterStatus,
     setFilterType,
-    setCurrentPage
+    setCurrentPage,
+    setPageSize
   }
 })

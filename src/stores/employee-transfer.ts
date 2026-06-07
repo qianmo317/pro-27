@@ -130,6 +130,11 @@ export const useEmployeeTransferStore = defineStore('employeeTransfer', () => {
     currentPage.value = page
   }
 
+  function setPageSize(size: number) {
+    pageSize.value = size
+    currentPage.value = 1
+  }
+
   function getStatistics() {
     const totalCount = transfers.value.length
     const effectiveCount = transfers.value.filter(t => t.status === 'effective').length
@@ -179,6 +184,7 @@ export const useEmployeeTransferStore = defineStore('employeeTransfer', () => {
     setFilterStartDate,
     setFilterEndDate,
     setCurrentPage,
+    setPageSize,
     getStatistics
   }
 })

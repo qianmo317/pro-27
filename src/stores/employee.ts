@@ -51,6 +51,11 @@ export const useEmployeeStore = defineStore('employee', () => {
     currentPage.value = page
   }
 
+  function setPageSize(size: number) {
+    pageSize.value = size
+    currentPage.value = 1
+  }
+
   function getEmployeeById(id: string): Employee | undefined {
     return employees.value.find(e => e.id === id)
   }
@@ -89,6 +94,7 @@ export const useEmployeeStore = defineStore('employee', () => {
     setFilterDepartment,
     setFilterStatus,
     setCurrentPage,
+    setPageSize,
     getEmployeeById,
     addEmployee,
     updateEmployee,

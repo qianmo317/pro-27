@@ -100,7 +100,11 @@
                 page: performanceStore.planCurrentPage,
                 pageSize: performanceStore.planPageSize,
                 itemCount: performanceStore.planTotal,
-                onUpdatePage: (page) => performanceStore.setPlanCurrentPage(page)
+                showSizePicker: true,
+                pageSizes: [10, 20, 50, 100],
+                showQuickJumper: true,
+                onUpdatePage: (page) => performanceStore.setPlanCurrentPage(page),
+                onUpdatePageSize: (size) => performanceStore.setPlanPageSize(size)
               }"
               :bordered="false"
               size="large"
@@ -166,7 +170,11 @@
                 page: performanceStore.currentPage,
                 pageSize: performanceStore.pageSize,
                 itemCount: performanceStore.appraisalTotal,
-                onUpdatePage: (page) => performanceStore.setCurrentPage(page)
+                showSizePicker: true,
+                pageSizes: [10, 20, 50, 100],
+                showQuickJumper: true,
+                onUpdatePage: (page) => performanceStore.setCurrentPage(page),
+                onUpdatePageSize: (size) => performanceStore.setPageSize(size)
               }"
               :bordered="false"
               size="large"
