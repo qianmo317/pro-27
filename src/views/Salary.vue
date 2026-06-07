@@ -502,7 +502,7 @@
           <n-form-item label="选择部门" path="departments">
             <n-select
               v-model:value="batchFormData.departments"
-              :options="DEPARTMENT_OPTIONS"
+              :options="organizationStore.departmentOptions"
               multiple
               max-tag-count="5"
               placeholder="请选择要生成工资条的部门"
@@ -555,12 +555,12 @@ import { useSalaryStore } from '@/stores/salary'
 import { useSalaryTemplateStore } from '@/stores/salary-template'
 import { useEmployeeStore } from '@/stores/employee'
 import { usePerformanceStore } from '@/stores/performance'
+import { useOrganizationStore } from '@/stores/organization'
 import { useMessage, useDialog } from 'naive-ui'
 import type { SalaryRecord, PerformanceAppraisal, SalaryTemplate, Employee } from '@/types'
 import {
   PERFORMANCE_GRADE_LABELS,
-  PERFORMANCE_GRADE_COLORS,
-  DEPARTMENT_OPTIONS
+  PERFORMANCE_GRADE_COLORS
 } from '@/types'
 import type { FormInst, FormRules, DropdownOption, SelectOption } from 'naive-ui'
 
@@ -568,6 +568,7 @@ const salaryStore = useSalaryStore()
 const templateStore = useSalaryTemplateStore()
 const employeeStore = useEmployeeStore()
 const performanceStore = usePerformanceStore()
+const organizationStore = useOrganizationStore()
 const message = useMessage()
 const dialog = useDialog()
 

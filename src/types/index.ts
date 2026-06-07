@@ -277,9 +277,11 @@ export interface Department {
   name: string
   parentId: string | null
   manager: string
+  managerId?: string
   employeeCount: number
   children?: Department[]
   employees?: Employee[]
+  position?: { x: number; y: number }
 }
 
 export interface Contract {

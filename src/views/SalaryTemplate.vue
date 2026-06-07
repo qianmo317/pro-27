@@ -191,7 +191,7 @@
         <n-form-item label="适用部门" path="applicableDepartment">
           <n-select
             v-model:value="formData.applicableDepartment"
-            :options="DEPARTMENT_OPTIONS"
+            :options="organizationStore.departmentOptions"
             placeholder="请选择适用部门"
             clearable
           />
@@ -381,11 +381,12 @@ import {
   TEMPLATE_TYPE_COLORS,
   TEMPLATE_STATUS_OPTIONS,
   TEMPLATE_STATUS_LABELS,
-  DEPARTMENT_OPTIONS,
   POSITION_LEVEL_OPTIONS
 } from '@/types'
+import { useOrganizationStore } from '@/stores/organization'
 
 const templateStore = useSalaryTemplateStore()
+const organizationStore = useOrganizationStore()
 const message = useMessage()
 const dialog = useDialog()
 

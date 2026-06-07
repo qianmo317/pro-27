@@ -380,93 +380,86 @@ export const mockTrainingCourses: TrainingCourse[] = [
   { id: 'tc-6', title: '新员工入职培训', description: '公司文化、规章制度、办公软件使用等', instructor: 'HR 部', startDate: '2024-01-05', endDate: '2024-01-07', status: 'completed', participants: 15 }
 ]
 
-function buildDepartmentTree(): Department[] {
+const nameToIdMap: Record<string, string> = {}
+mockEmployees.forEach(emp => {
+  nameToIdMap[emp.name] = emp.id
+})
+
+export const flatDepartments: Omit<Department, 'children' | 'employees' | 'employeeCount'>[] = [
+  { id: 'dept-1', name: '总公司', parentId: null, manager: '陈十一', managerId: nameToIdMap['陈十一'] },
+  { id: 'dept-2', name: '技术部', parentId: 'dept-1', manager: '陈十一', managerId: nameToIdMap['陈十一'] },
+  { id: 'dept-3', name: '产品部', parentId: 'dept-1', manager: '李四', managerId: nameToIdMap['李四'] },
+  { id: 'dept-4', name: '市场部', parentId: 'dept-1', manager: '赵六', managerId: nameToIdMap['赵六'] },
+  { id: 'dept-5', name: '人力资源部', parentId: 'dept-1', manager: '孙七', managerId: nameToIdMap['孙七'] },
+  { id: 'dept-6', name: '前端组', parentId: 'dept-2', manager: '张三', managerId: nameToIdMap['张三'] },
+  { id: 'dept-7', name: '后端组', parentId: 'dept-2', manager: '王五', managerId: nameToIdMap['王五'] },
+  { id: 'dept-8', name: '测试组', parentId: 'dept-2', manager: '吴九', managerId: nameToIdMap['吴九'] },
+  { id: 'dept-9', name: '财务部', parentId: 'dept-1', manager: '周八', managerId: nameToIdMap['周八'] },
+  { id: 'dept-10', name: '运营部', parentId: 'dept-1', manager: '郑十', managerId: nameToIdMap['郑十'] },
+  { id: 'dept-11', name: '设计部', parentId: 'dept-1', manager: '林十二', managerId: nameToIdMap['林十二'] }
+]
+
+function buildDepartmentTree(
+  depts: Omit<Department, 'children' | 'employees' | 'employeeCount'>[],
+  emps: Employee[]
+): Department[] {
+  const deptMap: Record<string, Department> = {}
   const deptEmployees: Record<string, Employee[]> = {}
-  mockEmployees.forEach(emp => {
+
+  emps.forEach(emp => {
     if (!deptEmployees[emp.department]) {
       deptEmployees[emp.department] = []
     }
     deptEmployees[emp.department].push(emp)
   })
 
-  const departments: Department[] = [
-    {
-      id: 'dept-1',
-      name: '总公司',
-      parentId: null,
-      manager: '陈十一',
-      employeeCount: mockEmployees.length,
-      employees: mockEmployees,
-      children: [
-        {
-          id: 'dept-2',
-          name: '技术部',
-          parentId: 'dept-1',
-          manager: '陈十一',
-          employeeCount: (deptEmployees['技术部'] || []).length,
-          employees: deptEmployees['技术部'] || [],
-          children: [
-            { id: 'dept-6', name: '前端组', parentId: 'dept-2', manager: '张三', employeeCount: 1, employees: deptEmployees['技术部']?.filter(e => e.position.includes('前端')) || [] },
-            { id: 'dept-7', name: '后端组', parentId: 'dept-2', manager: '王五', employeeCount: 1, employees: deptEmployees['技术部']?.filter(e => e.position.includes('后端') || e.position.includes('架构')) || [] },
-            { id: 'dept-8', name: '测试组', parentId: 'dept-2', manager: '吴九', employeeCount: 1, employees: deptEmployees['技术部']?.filter(e => e.position.includes('测试')) || [] }
-          ]
-        },
-        {
-          id: 'dept-3',
-          name: '产品部',
-          parentId: 'dept-1',
-          manager: '李四',
-          employeeCount: (deptEmployees['产品部'] || []).length,
-          employees: deptEmployees['产品部'] || []
-        },
-        {
-          id: 'dept-4',
-          name: '市场部',
-          parentId: 'dept-1',
-          manager: '赵六',
-          employeeCount: (deptEmployees['市场部'] || []).length,
-          employees: deptEmployees['市场部'] || []
-        },
-        {
-          id: 'dept-5',
-          name: '人力资源部',
-          parentId: 'dept-1',
-          manager: '孙七',
-          employeeCount: (deptEmployees['人力资源部'] || []).length,
-          employees: deptEmployees['人力资源部'] || []
-        },
-        {
-          id: 'dept-9',
-          name: '财务部',
-          parentId: 'dept-1',
-          manager: '周八',
-          employeeCount: (deptEmployees['财务部'] || []).length,
-          employees: deptEmployees['财务部'] || []
-        },
-        {
-          id: 'dept-10',
-          name: '运营部',
-          parentId: 'dept-1',
-          manager: '郑十',
-          employeeCount: (deptEmployees['运营部'] || []).length,
-          employees: deptEmployees['运营部'] || []
-        },
-        {
-          id: 'dept-11',
-          name: '设计部',
-          parentId: 'dept-1',
-          manager: '林十二',
-          employeeCount: (deptEmployees['设计部'] || []).length,
-          employees: deptEmployees['设计部'] || []
-        }
-      ]
+  depts.forEach(dept => {
+    deptMap[dept.id] = {
+      ...dept,
+      employeeCount: 0,
+      employees: [],
+      children: []
     }
-  ]
+  })
 
-  return departments
+  function getSubDepartments(parentId: string | null): string[] {
+    const result: string[] = []
+    function collect(pid: string | null) {
+      depts.forEach(d => {
+        if (d.parentId === pid) {
+          result.push(d.id)
+          collect(d.id)
+        }
+      })
+    }
+    collect(parentId)
+    return result
+  }
+
+  depts.forEach(dept => {
+    const subDeptIds = getSubDepartments(dept.id)
+    const subDeptNames = [dept.name, ...subDeptIds.map(id => deptMap[id]?.name).filter(Boolean)]
+    const deptEmps = emps.filter(e => subDeptNames.includes(e.department))
+    deptMap[dept.id].employees = deptEmps
+    deptMap[dept.id].employeeCount = deptEmps.length
+  })
+
+  const rootDepartments: Department[] = []
+  depts.forEach(dept => {
+    if (dept.parentId === null) {
+      rootDepartments.push(deptMap[dept.id])
+    } else if (deptMap[dept.parentId]) {
+      if (!deptMap[dept.parentId].children) {
+        deptMap[dept.parentId].children = []
+      }
+      deptMap[dept.parentId].children!.push(deptMap[dept.id])
+    }
+  })
+
+  return rootDepartments
 }
 
-export const mockDepartments: Department[] = buildDepartmentTree()
+export const mockDepartments: Department[] = buildDepartmentTree(flatDepartments, mockEmployees)
 
 export const mockContracts: Contract[] = [
   {

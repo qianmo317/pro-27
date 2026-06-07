@@ -205,12 +205,14 @@
 import { ref, reactive, computed, h, watch } from 'vue'
 import { Plus, Eye, CheckCircle, XCircle, Send, XSquare } from 'lucide-vue-next'
 import { useRecruitmentStore } from '@/stores/recruitment'
+import { useOrganizationStore } from '@/stores/organization'
 import { useMessage } from 'naive-ui'
 import type { FormInst, FormRules, DataTableColumns, DataTableCreateRowKey } from 'naive-ui'
 import type { RecruitmentRequirement, RecruitmentRequirementStatus, RecruitmentUrgency } from '@/types'
-import { RECRUITMENT_STATUS_OPTIONS, RECRUITMENT_URGENCY_OPTIONS, DEPARTMENT_OPTIONS, RECRUITMENT_STATUS_LABELS, RECRUITMENT_URGENCY_LABELS } from '@/types'
+import { RECRUITMENT_STATUS_OPTIONS, RECRUITMENT_URGENCY_OPTIONS, RECRUITMENT_STATUS_LABELS, RECRUITMENT_URGENCY_LABELS } from '@/types'
 
 const recruitmentStore = useRecruitmentStore()
+const organizationStore = useOrganizationStore()
 const message = useMessage()
 
 const filterStatus = ref<RecruitmentRequirementStatus | null>(null)
@@ -246,7 +248,7 @@ const urgencyOptions = RECRUITMENT_URGENCY_OPTIONS.map(opt => ({
   value: opt.value
 }))
 
-const departmentOptions = DEPARTMENT_OPTIONS
+const departmentOptions = computed(() => organizationStore.departmentOptions)
 
 const addFormData = reactive({
   positionName: '',

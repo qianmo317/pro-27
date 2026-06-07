@@ -637,7 +637,8 @@ import { useLeaveStore } from '@/stores/leave'
 import { useMessage, useDialog, NTag, NSpace, NButton, NTimeline, NTimelineItem, NRow, NCol } from 'naive-ui'
 import type { FormInst, FormRules, DataTableColumns, DialogReactive } from 'naive-ui'
 import type { Employee, Contract, PerformanceAppraisal, PerformanceResultGrade, EmployeeTransfer, TransferType, LeaveApplication, LeaveType, LeaveStatus } from '@/types'
-import { PERFORMANCE_GRADE_LABELS, PERFORMANCE_GRADE_COLORS, TRANSFER_TYPE_OPTIONS, TRANSFER_TYPE_LABELS, TRANSFER_STATUS_OPTIONS, TRANSFER_TYPE_COLORS, LEAVE_TYPE_LABELS, LEAVE_TYPE_COLORS, LEAVE_STATUS_LABELS, LEAVE_STATUS_COLORS, DEPARTMENT_OPTIONS } from '@/types'
+import { PERFORMANCE_GRADE_LABELS, PERFORMANCE_GRADE_COLORS, TRANSFER_TYPE_OPTIONS, TRANSFER_TYPE_LABELS, TRANSFER_STATUS_OPTIONS, TRANSFER_TYPE_COLORS, LEAVE_TYPE_LABELS, LEAVE_TYPE_COLORS, LEAVE_STATUS_LABELS, LEAVE_STATUS_COLORS } from '@/types'
+import { useOrganizationStore } from '@/stores/organization'
 import AttachmentManager from '@/components/AttachmentManager.vue'
 import BatchImport from '@/components/BatchImport.vue'
 import { calculateWorkYears, calculateAge } from '@/lib/utils'
@@ -648,6 +649,7 @@ const contractStore = useContractStore()
 const performanceStore = usePerformanceStore()
 const transferStore = useEmployeeTransferStore()
 const leaveStore = useLeaveStore()
+const organizationStore = useOrganizationStore()
 const message = useMessage()
 const dialog = useDialog()
 
@@ -688,17 +690,17 @@ const statusOptions = [
   { label: '离职', value: 'inactive' }
 ]
 
-const employeeImportColumns: ExcelColumn<Employee>[] = [
+const employeeImportColumns = computed<ExcelColumn<Employee>[]>(() => [
   { key: 'name', title: '姓名', required: true, type: 'string' },
   { key: 'gender', title: '性别', required: true, type: 'select', options: genderOptions },
   { key: 'phone', title: '手机号', required: true, type: 'string' },
   { key: 'email', title: '邮箱', required: true, type: 'string' },
-  { key: 'department', title: '部门', required: true, type: 'select', options: DEPARTMENT_OPTIONS },
+  { key: 'department', title: '部门', required: true, type: 'select', options: organizationStore.departmentOptions },
   { key: 'position', title: '职位', required: true, type: 'string' },
   { key: 'birthday', title: '出生日期', type: 'string' },
   { key: 'entryDate', title: '入职日期', required: true, type: 'string' },
   { key: 'status', title: '状态', required: true, type: 'select', options: statusOptions }
-]
+])
 
 const employeeExampleData: Partial<Employee>[] = [
   {
@@ -1139,7 +1141,7 @@ const formRules: FormRules = {
 }
 
 const departments = computed(() => employeeStore.departments)
-const departmentOptions = computed(() => employeeStore.departments.map(dept => ({ label: dept, value: dept })))
+const departmentOptions = computed(() => organizationStore.departmentOptions)
 
 watch([searchKeyword, filterDepartment, filterStatus], () => {
   employeeStore.setSearchKeyword(searchKeyword.value)
