@@ -331,7 +331,7 @@ const formRules: FormRules = {
   afterDepartment: [{ required: true, message: '请选择异动后部门', trigger: 'change' }],
   afterPosition: [{ required: true, message: '请输入异动后职位', trigger: 'blur' }],
   reason: [{ required: true, message: '请输入异动原因', trigger: 'blur' }],
-  effectiveDate: [{ required: true, message: '请选择生效日期', trigger: ['change', 'blur'] }]
+  effectiveDate: [{ required: true, type: 'number', message: '请选择生效日期', trigger: ['change', 'blur'] }]
 }
 
 function formatDate(timestamp: number | null): string {

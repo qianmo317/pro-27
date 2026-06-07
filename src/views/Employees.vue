@@ -793,7 +793,7 @@ const transferFormRules: FormRules = {
   afterDepartment: [{ required: true, message: '请选择异动后部门', trigger: 'change' }],
   afterPosition: [{ required: true, message: '请输入异动后职位', trigger: 'blur' }],
   reason: [{ required: true, message: '请输入异动原因', trigger: 'blur' }],
-  effectiveDate: [{ required: true, message: '请选择生效日期', trigger: ['change', 'blur'] }]
+  effectiveDate: [{ required: true, type: 'number', message: '请选择生效日期', trigger: ['change', 'blur'] }]
 }
 
 function getTransferTypeLabel(type: TransferType): string {
@@ -917,7 +917,7 @@ const formRules: FormRules = {
   email: [{ required: true, message: '请输入邮箱', trigger: 'blur' }],
   department: [{ required: true, message: '请选择部门', trigger: 'change' }],
   position: [{ required: true, message: '请输入职位', trigger: 'blur' }],
-  entryDate: [{ required: true, message: '请选择入职日期', trigger: ['change', 'blur'] }]
+  entryDate: [{ required: true, type: 'number', message: '请选择入职日期', trigger: ['change', 'blur'] }]
 }
 
 const departments = computed(() => employeeStore.departments)

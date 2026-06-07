@@ -310,10 +310,10 @@ const formData = ref({
 
 const formRules: FormRules = {
   leaveType: [{ required: true, message: '请选择请假类型', trigger: 'change' }],
-  startDate: [{ required: true, message: '请选择开始日期', trigger: ['change', 'blur'] }],
-  endDate: [{ required: true, message: '请选择结束日期', trigger: ['change', 'blur'] }],
-  startTime: [{ required: true, message: '请选择开始时间', trigger: ['change', 'blur'] }],
-  endTime: [{ required: true, message: '请选择结束时间', trigger: ['change', 'blur'] }],
+  startDate: [{ required: true, type: 'number', message: '请选择开始日期', trigger: ['change', 'blur'] }],
+  endDate: [{ required: true, type: 'number', message: '请选择结束日期', trigger: ['change', 'blur'] }],
+  startTime: [{ required: true, type: 'number', message: '请选择开始时间', trigger: ['change', 'blur'] }],
+  endTime: [{ required: true, type: 'number', message: '请选择结束时间', trigger: ['change', 'blur'] }],
   reason: [{ required: true, message: '请输入请假事由', trigger: 'blur' }]
 }
 

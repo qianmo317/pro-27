@@ -320,7 +320,8 @@ const formRules: FormRules = {
   type: [{ required: true, message: '请选择合同类型', trigger: 'change' }],
   startDate: [
     { 
-      required: true, 
+      required: true,
+      type: 'number',
       validator: (_rule, value) => {
         if (value === null || value === undefined || value === '') {
           return new Error('请选择开始日期')
@@ -332,7 +333,8 @@ const formRules: FormRules = {
   ],
   endDate: [
     { 
-      required: true, 
+      required: true,
+      type: 'number',
       validator: createDateRangeValidator(() => formData.value.startDate),
       trigger: ['change', 'blur'] 
     }
@@ -356,7 +358,8 @@ const editFormRules: FormRules = {
   type: [{ required: true, message: '请选择合同类型', trigger: 'change' }],
   startDate: [
     { 
-      required: true, 
+      required: true,
+      type: 'number',
       validator: (_rule, value) => {
         if (value === null || value === undefined || value === '') {
           return new Error('请选择开始日期')
@@ -368,7 +371,8 @@ const editFormRules: FormRules = {
   ],
   endDate: [
     { 
-      required: true, 
+      required: true,
+      type: 'number',
       validator: createDateRangeValidator(() => editFormData.value.startDate),
       trigger: ['change', 'blur'] 
     }

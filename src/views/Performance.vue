@@ -521,8 +521,8 @@ const planFormRules: FormRules = {
   name: [{ required: true, message: '请输入计划名称', trigger: 'blur' }],
   cycleType: [{ required: true, message: '请选择考核周期', trigger: 'change' }],
   period: [{ required: true, message: '请输入周期标识', trigger: 'blur' }],
-  startDate: [{ required: true, message: '请选择开始日期', trigger: ['change', 'blur'] }],
-  endDate: [{ required: true, message: '请选择结束日期', trigger: ['change', 'blur'] }],
+  startDate: [{ required: true, type: 'number', message: '请选择开始日期', trigger: ['change', 'blur'] }],
+  endDate: [{ required: true, type: 'number', message: '请选择结束日期', trigger: ['change', 'blur'] }],
   department: [{ required: true, message: '请选择适用部门', trigger: 'change' }]
 }
 
