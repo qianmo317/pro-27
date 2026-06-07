@@ -86,7 +86,8 @@ import {
   CalendarDays,
   CalendarOff,
   Clock,
-  Layers
+  Layers,
+  BarChart3
 } from 'lucide-vue-next'
 import { useContractStore } from '@/stores/contract'
 import { useUserStore } from '@/stores/user'
@@ -106,6 +107,7 @@ const currentPageTitle = computed(() => {
     '/dashboard': '仪表盘',
     '/employees': '员工花名册',
     '/attendance': '考勤统计',
+    '/workhours-report': '工时统计报表',
     '/salary': '薪资工资条',
     '/salary-template': '薪资结构模板',
     '/recruitment': '招聘看板',
@@ -165,6 +167,11 @@ const menuOptions: MenuOption[] = [
     label: '加班管理',
     key: '/overtime',
     icon: () => h(Clock as any, { size: 20 }) as any
+  },
+  {
+    label: '工时统计报表',
+    key: '/workhours-report',
+    icon: () => h(BarChart3 as any, { size: 20 }) as any
   },
   {
     label: '薪资管理',

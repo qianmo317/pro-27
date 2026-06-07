@@ -496,6 +496,75 @@ export const PERFORMANCE_GRADE_SALARY_SUGGESTION: Record<PerformanceResultGrade,
   needs_improvement: '建议不调薪，制定绩效改进计划'
 }
 
+export interface WorkHoursEmployeeStat {
+  employeeId: string
+  employeeName: string
+  department: string
+  position: string
+  actualWorkHours: number
+  plannedWorkHours: number
+  overtimeHours: number
+  leaveHours: number
+  attendanceRate: number
+  consecutiveOvertimeDays: number
+  isOverworked: boolean
+  dailyRecords: WorkHoursDailyRecord[]
+}
+
+export interface WorkHoursDailyRecord {
+  date: string
+  checkIn: string
+  checkOut: string
+  workHours: number
+  overtimeHours: number
+  leaveHours: number
+  status: 'normal' | 'late' | 'early' | 'absent' | 'leave' | 'weekend' | 'holiday'
+}
+
+export interface WorkHoursDepartmentStat {
+  department: string
+  employeeCount: number
+  totalActualWorkHours: number
+  totalPlannedWorkHours: number
+  totalOvertimeHours: number
+  totalLeaveHours: number
+  avgActualWorkHours: number
+  avgOvertimeHours: number
+  overworkedEmployeeCount: number
+}
+
+export interface WorkHoursPlanVsActual {
+  date: string
+  plannedHours: number
+  actualHours: number
+}
+
+export interface OverworkedEmployee {
+  employeeId: string
+  employeeName: string
+  department: string
+  avatar: string
+  consecutiveDays: number
+  totalOvertimeHours: number
+  overtimeDates: string[]
+  riskLevel: 'low' | 'medium' | 'high'
+}
+
+export const WORK_HOURS_DASHBOARD_OPTIONS = [
+  { label: '按员工统计', value: 'employee' },
+  { label: '按部门统计', value: 'department' }
+]
+
+export const OVERTIME_RISK_LEVELS: Record<string, { label: string; color: string }> = {
+  low: { label: '低风险', color: '#F59E0B' },
+  medium: { label: '中风险', color: '#F97316' },
+  high: { label: '高风险', color: '#EF4444' }
+}
+
+export const STANDARD_WORK_HOURS_PER_DAY = 8
+export const STANDARD_WORK_DAYS_PER_MONTH = 22
+export const DEFAULT_CONSECUTIVE_OVERTIME_THRESHOLD = 3
+
 export type TransferType = 'department_change' | 'promotion' | 'demotion' | 'salary_adjustment' | 'transfer_out' | 'transfer_in'
 
 export interface EmployeeTransfer {

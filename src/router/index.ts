@@ -104,6 +104,12 @@ const routes: RouteRecordRaw[] = [
         name: 'overtime',
         component: () => import('@/views/Overtime.vue'),
         meta: { title: '加班管理' }
+      },
+      {
+        path: '/workhours-report',
+        name: 'workhours-report',
+        component: () => import('@/views/WorkHoursReport.vue'),
+        meta: { title: '工时统计报表' }
       }
     ]
   }
