@@ -40,6 +40,17 @@ export const useEmployeeTransferStore = defineStore('employeeTransfer', () => {
 
   const total = computed(() => filteredTransfers.value.length)
 
+  const pagination = computed(() => ({
+    page: currentPage.value,
+    pageSize: pageSize.value,
+    itemCount: total.value,
+    showSizePicker: true,
+    pageSizes: [10, 20, 50, 100],
+    showQuickJumper: true,
+    onUpdatePage: (page: number) => setCurrentPage(page),
+    onUpdatePageSize: (size: number) => setPageSize(size)
+  }))
+
   function getTransfersByEmployeeId(employeeId: string): EmployeeTransfer[] {
     return transfers.value
       .filter(t => t.employeeId === employeeId)
@@ -171,6 +182,7 @@ export const useEmployeeTransferStore = defineStore('employeeTransfer', () => {
     filteredTransfers,
     paginatedTransfers,
     total,
+    pagination,
     getTransfersByEmployeeId,
     addTransfer,
     updateTransfer,

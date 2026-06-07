@@ -128,20 +128,9 @@
             :columns="myColumns"
             :data="paginatedMyApplications"
             :bordered="false"
+            remote
             size="large"
-            :pagination="{
-              page: myCurrentPage,
-              pageSize: myPageSize,
-              itemCount: filteredMyApplications.length,
-              showSizePicker: true,
-              pageSizes: [10, 20, 50, 100],
-              showQuickJumper: true,
-              onUpdatePage: (page) => myCurrentPage = page,
-              onUpdatePageSize: (size) => {
-                myPageSize = size
-                myCurrentPage = 1
-              }
-            }"
+            :pagination="myPagination"
           />
         </n-card>
       </n-tab-pane>
@@ -169,20 +158,9 @@
             :columns="approveColumns"
             :data="paginatedApproveApplications"
             :bordered="false"
+            remote
             size="large"
-            :pagination="{
-              page: approveCurrentPage,
-              pageSize: approvePageSize,
-              itemCount: filteredApproveApplications.length,
-              showSizePicker: true,
-              pageSizes: [10, 20, 50, 100],
-              showQuickJumper: true,
-              onUpdatePage: (page) => approveCurrentPage = page,
-              onUpdatePageSize: (size) => {
-                approvePageSize = size
-                approveCurrentPage = 1
-              }
-            }"
+            :pagination="approvePagination"
           />
         </n-card>
       </n-tab-pane>
@@ -390,6 +368,38 @@ const paginatedApproveApplications = computed(() => {
   const start = (approveCurrentPage.value - 1) * approvePageSize.value
   return filteredApproveApplications.value.slice(start, start + approvePageSize.value)
 })
+
+const myPagination = computed(() => ({
+  page: myCurrentPage.value,
+  pageSize: myPageSize.value,
+  itemCount: filteredMyApplications.value.length,
+  showSizePicker: true,
+  pageSizes: [10, 20, 50, 100],
+  showQuickJumper: true,
+  onUpdatePage: (page: number) => {
+    myCurrentPage.value = page
+  },
+  onUpdatePageSize: (size: number) => {
+    myPageSize.value = size
+    myCurrentPage.value = 1
+  }
+}))
+
+const approvePagination = computed(() => ({
+  page: approveCurrentPage.value,
+  pageSize: approvePageSize.value,
+  itemCount: filteredApproveApplications.value.length,
+  showSizePicker: true,
+  pageSizes: [10, 20, 50, 100],
+  showQuickJumper: true,
+  onUpdatePage: (page: number) => {
+    approveCurrentPage.value = page
+  },
+  onUpdatePageSize: (size: number) => {
+    approvePageSize.value = size
+    approveCurrentPage.value = 1
+  }
+}))
 
 const showApproveModal = ref(false)
 const showDetailModal = ref(false)

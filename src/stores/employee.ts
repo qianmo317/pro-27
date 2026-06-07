@@ -30,6 +30,17 @@ export const useEmployeeStore = defineStore('employee', () => {
 
   const total = computed(() => filteredEmployees.value.length)
 
+  const pagination = computed(() => ({
+    page: currentPage.value,
+    pageSize: pageSize.value,
+    itemCount: total.value,
+    showSizePicker: true,
+    pageSizes: [10, 20, 50, 100],
+    showQuickJumper: true,
+    onUpdatePage: (page: number) => setCurrentPage(page),
+    onUpdatePageSize: (size: number) => setPageSize(size)
+  }))
+
   const departments = computed(() => [...new Set(employees.value.map(e => e.department))])
 
   function setSearchKeyword(keyword: string) {
@@ -89,6 +100,7 @@ export const useEmployeeStore = defineStore('employee', () => {
     filteredEmployees,
     paginatedEmployees,
     total,
+    pagination,
     departments,
     setSearchKeyword,
     setFilterDepartment,

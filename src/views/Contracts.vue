@@ -53,8 +53,9 @@
       <n-data-table
         :columns="columns"
         :data="contractStore.paginatedContracts"
-        :pagination="pagination"
+        :pagination="contractStore.pagination"
         :bordered="false"
+        remote
         size="large"
       />
     </n-card>
@@ -263,16 +264,7 @@ const employeeOptions = computed(() =>
   }))
 )
 
-const pagination = computed(() => ({
-  page: contractStore.currentPage,
-  pageSize: contractStore.pageSize,
-  itemCount: contractStore.total,
-  showSizePicker: true,
-  pageSizes: [10, 20, 50, 100],
-  showQuickJumper: true,
-  onUpdatePage: (page: number) => contractStore.setCurrentPage(page),
-  onUpdatePageSize: (size: number) => contractStore.setPageSize(size)
-}))
+
 
 const formData = ref<Partial<Contract>>({
   employeeId: '',

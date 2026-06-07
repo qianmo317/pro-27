@@ -20,6 +20,17 @@ export const useAttendanceStore = defineStore('attendance', () => {
 
   const total = computed(() => monthlyRecords.value.length)
 
+  const pagination = computed(() => ({
+    page: currentPage.value,
+    pageSize: pageSize.value,
+    itemCount: total.value,
+    showSizePicker: true,
+    pageSizes: [10, 20, 50, 100],
+    showQuickJumper: true,
+    onUpdatePage: (page: number) => setCurrentPage(page),
+    onUpdatePageSize: (size: number) => setPageSize(size)
+  }))
+
   const statistics = computed(() => {
     const data = monthlyRecords.value
     const total = data.length
@@ -69,6 +80,7 @@ export const useAttendanceStore = defineStore('attendance', () => {
     monthlyRecords,
     paginatedRecords,
     total,
+    pagination,
     statistics,
     chartData,
     setSelectedMonth,

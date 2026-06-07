@@ -45,17 +45,9 @@
       <n-data-table
         :columns="columns"
         :data="employeeStore.paginatedEmployees"
-        :pagination="{
-          page: employeeStore.currentPage,
-          pageSize: employeeStore.pageSize,
-          itemCount: employeeStore.total,
-          showSizePicker: true,
-          pageSizes: [10, 20, 50, 100],
-          showQuickJumper: true,
-          onUpdatePage: (page) => employeeStore.setCurrentPage(page),
-          onUpdatePageSize: (size) => employeeStore.setPageSize(size)
-        }"
+        :pagination="employeeStore.pagination"
         :bordered="false"
+        remote
         size="large"
       />
     </n-card>

@@ -87,6 +87,17 @@ export const useRecruitmentStore = defineStore('recruitment', () => {
 
   const total = computed(() => filteredRequirements.value.length)
 
+  const pagination = computed(() => ({
+    page: currentPage.value,
+    pageSize: pageSize.value,
+    itemCount: total.value,
+    showSizePicker: true,
+    pageSizes: [10, 20, 50, 100],
+    showQuickJumper: true,
+    onUpdatePage: (page: number) => setCurrentPage(page),
+    onUpdatePageSize: (size: number) => setPageSize(size)
+  }))
+
   function setFilterStatus(status: RecruitmentRequirementStatus | null) {
     filterStatus.value = status
     currentPage.value = 1
@@ -171,6 +182,7 @@ export const useRecruitmentStore = defineStore('recruitment', () => {
     filteredRequirements,
     paginatedRequirements,
     total,
+    pagination,
     moveCandidate,
     addCandidate,
     getStageCandidates,

@@ -56,6 +56,28 @@ export const usePerformanceStore = defineStore('performance', () => {
 
   const appraisalTotal = computed(() => filteredAppraisals.value.length)
 
+  const planPagination = computed(() => ({
+    page: planCurrentPage.value,
+    pageSize: planPageSize.value,
+    itemCount: planTotal.value,
+    showSizePicker: true,
+    pageSizes: [10, 20, 50, 100],
+    showQuickJumper: true,
+    onUpdatePage: (page: number) => setPlanCurrentPage(page),
+    onUpdatePageSize: (size: number) => setPlanPageSize(size)
+  }))
+
+  const appraisalPagination = computed(() => ({
+    page: currentPage.value,
+    pageSize: pageSize.value,
+    itemCount: appraisalTotal.value,
+    showSizePicker: true,
+    pageSizes: [10, 20, 50, 100],
+    showQuickJumper: true,
+    onUpdatePage: (page: number) => setCurrentPage(page),
+    onUpdatePageSize: (size: number) => setPageSize(size)
+  }))
+
   const periods = computed(() => [...new Set(plans.value.map(p => p.period))].sort().reverse())
 
   const departments = computed(() => [...new Set(plans.value.map(p => p.department).filter(d => d !== '全公司'))])
@@ -295,9 +317,11 @@ export const usePerformanceStore = defineStore('performance', () => {
     filteredPlans,
     paginatedPlans,
     planTotal,
+    planPagination,
     filteredAppraisals,
     paginatedAppraisals,
     appraisalTotal,
+    appraisalPagination,
     periods,
     departments,
     activePlans,

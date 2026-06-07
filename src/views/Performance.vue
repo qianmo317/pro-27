@@ -96,17 +96,9 @@
             <n-data-table
               :columns="planColumns"
               :data="performanceStore.paginatedPlans"
-              :pagination="{
-                page: performanceStore.planCurrentPage,
-                pageSize: performanceStore.planPageSize,
-                itemCount: performanceStore.planTotal,
-                showSizePicker: true,
-                pageSizes: [10, 20, 50, 100],
-                showQuickJumper: true,
-                onUpdatePage: (page) => performanceStore.setPlanCurrentPage(page),
-                onUpdatePageSize: (size) => performanceStore.setPlanPageSize(size)
-              }"
+              :pagination="performanceStore.planPagination"
               :bordered="false"
+              remote
               size="large"
             />
           </n-card>
@@ -166,17 +158,9 @@
             <n-data-table
               :columns="appraisalColumns"
               :data="performanceStore.paginatedAppraisals"
-              :pagination="{
-                page: performanceStore.currentPage,
-                pageSize: performanceStore.pageSize,
-                itemCount: performanceStore.appraisalTotal,
-                showSizePicker: true,
-                pageSizes: [10, 20, 50, 100],
-                showQuickJumper: true,
-                onUpdatePage: (page) => performanceStore.setCurrentPage(page),
-                onUpdatePageSize: (size) => performanceStore.setPageSize(size)
-              }"
+              :pagination="performanceStore.appraisalPagination"
               :bordered="false"
+              remote
               size="large"
             />
           </n-card>

@@ -34,17 +34,9 @@
       <n-data-table
         :columns="columns"
         :data="recruitmentStore.paginatedRequirements"
-        :pagination="{
-          page: recruitmentStore.currentPage,
-          pageSize: recruitmentStore.pageSize,
-          itemCount: recruitmentStore.total,
-          showSizePicker: true,
-          pageSizes: [10, 20, 50, 100],
-          showQuickJumper: true,
-          onUpdatePage: (page) => recruitmentStore.setCurrentPage(page),
-          onUpdatePageSize: (size) => recruitmentStore.setPageSize(size)
-        }"
+        :pagination="recruitmentStore.pagination"
         :row-key="rowKey"
+        remote
       />
     </n-card>
 

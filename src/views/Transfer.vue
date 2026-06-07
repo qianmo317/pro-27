@@ -126,17 +126,9 @@
       <n-data-table
         :columns="columns"
         :data="transferStore.paginatedTransfers"
-        :pagination="{
-          page: transferStore.currentPage,
-          pageSize: transferStore.pageSize,
-          itemCount: transferStore.total,
-          showSizePicker: true,
-          pageSizes: [10, 20, 50, 100],
-          showQuickJumper: true,
-          onUpdatePage: (page) => transferStore.setCurrentPage(page),
-          onUpdatePageSize: (size) => transferStore.setPageSize(size)
-        }"
+        :pagination="transferStore.pagination"
         :bordered="false"
+        remote
         size="large"
       />
     </n-card>

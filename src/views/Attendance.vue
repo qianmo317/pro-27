@@ -91,17 +91,9 @@
         :columns="columns"
         :data="attendanceStore.paginatedRecords"
         :bordered="false"
+        remote
         size="large"
-        :pagination="{
-          page: attendanceStore.currentPage,
-          pageSize: attendanceStore.pageSize,
-          itemCount: attendanceStore.total,
-          showSizePicker: true,
-          pageSizes: [10, 20, 50, 100],
-          showQuickJumper: true,
-          onUpdatePage: (page) => attendanceStore.setCurrentPage(page),
-          onUpdatePageSize: (size) => attendanceStore.setPageSize(size)
-        }"
+        :pagination="attendanceStore.pagination"
       />
     </n-card>
   </div>

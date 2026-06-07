@@ -58,6 +58,17 @@ export const useContractStore = defineStore('contract', () => {
 
   const total = computed(() => filteredContracts.value.length)
 
+  const pagination = computed(() => ({
+    page: currentPage.value,
+    pageSize: pageSize.value,
+    itemCount: total.value,
+    showSizePicker: true,
+    pageSizes: [10, 20, 50, 100],
+    showQuickJumper: true,
+    onUpdatePage: (page: number) => setCurrentPage(page),
+    onUpdatePageSize: (size: number) => setPageSize(size)
+  }))
+
   const expiringContracts = computed(() => {
     return contracts.value.filter(con => con.status === 'expiring')
   })
@@ -199,6 +210,7 @@ export const useContractStore = defineStore('contract', () => {
     filteredContracts,
     paginatedContracts,
     total,
+    pagination,
     expiringContracts,
     expiringCount,
     getContractsByEmployeeId,
