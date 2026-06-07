@@ -40,6 +40,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '薪资工资条' }
       },
       {
+        path: '/salary-template',
+        name: 'salary-template',
+        component: () => import('@/views/SalaryTemplate.vue'),
+        meta: { title: '薪资结构模板' }
+      },
+      {
         path: '/recruitment',
         name: 'recruitment',
         component: () => import('@/views/Recruitment.vue'),

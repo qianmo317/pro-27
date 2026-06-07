@@ -85,7 +85,8 @@ import {
   ClipboardList,
   CalendarDays,
   CalendarOff,
-  Clock
+  Clock,
+  Layers
 } from 'lucide-vue-next'
 import { useContractStore } from '@/stores/contract'
 import { useUserStore } from '@/stores/user'
@@ -106,6 +107,7 @@ const currentPageTitle = computed(() => {
     '/employees': '员工花名册',
     '/attendance': '考勤统计',
     '/salary': '薪资工资条',
+    '/salary-template': '薪资结构模板',
     '/recruitment': '招聘看板',
     '/recruitment-requirement': '招聘需求',
     '/interview-schedule': '面试日程',
@@ -165,9 +167,21 @@ const menuOptions: MenuOption[] = [
     icon: () => h(Clock as any, { size: 20 }) as any
   },
   {
-    label: '薪资工资条',
-    key: '/salary',
-    icon: () => h(Wallet as any, { size: 20 }) as any
+    label: '薪资管理',
+    key: 'salary-group',
+    icon: () => h(Wallet as any, { size: 20 }) as any,
+    children: [
+      {
+        label: '薪资工资条',
+        key: '/salary',
+        icon: () => h(Wallet as any, { size: 18 }) as any
+      },
+      {
+        label: '薪资结构模板',
+        key: '/salary-template',
+        icon: () => h(Layers as any, { size: 18 }) as any
+      }
+    ]
   },
   {
     label: '招聘管理',

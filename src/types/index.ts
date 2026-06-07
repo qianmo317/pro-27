@@ -119,13 +119,99 @@ export interface SalaryRecord {
   id: string
   employeeId: string
   employeeName: string
+  department?: string
+  position?: string
   month: string
+  templateId?: string
+  templateName?: string
   baseSalary: number
-  bonus: number
-  allowance: number
-  deduction: number
+  postAllowance: number
+  performanceBonus: number
+  otherAllowance: number
+  socialSecurity: number
+  housingFund: number
+  incomeTax: number
+  otherDeduction: number
+  grossSalary: number
+  totalDeduction: number
   netSalary: number
 }
+
+export type TemplateType = 'position' | 'level' | 'department' | 'custom'
+
+export const TEMPLATE_TYPE_OPTIONS: { label: string; value: TemplateType }[] = [
+  { label: '岗位类型', value: 'position' },
+  { label: '职级', value: 'level' },
+  { label: '部门', value: 'department' },
+  { label: '自定义', value: 'custom' }
+]
+
+export const TEMPLATE_TYPE_LABELS: Record<TemplateType, string> = {
+  position: '岗位类型',
+  level: '职级',
+  department: '部门',
+  custom: '自定义'
+}
+
+export const TEMPLATE_TYPE_COLORS: Record<TemplateType, string> = {
+  position: '#3B82F6',
+  level: '#10B981',
+  department: '#F59E0B',
+  custom: '#8B5CF6'
+}
+
+export interface SalaryTemplate {
+  id: string
+  name: string
+  type: TemplateType
+  applicableDepartment?: string
+  applicablePosition?: string
+  applicableLevel?: string
+  description?: string
+  baseSalary: number
+  postAllowance: number
+  performanceCoefficient: number
+  mealAllowance: number
+  transportationAllowance: number
+  communicationAllowance: number
+  otherAllowance: number
+  socialSecurityRate: number
+  housingFundRate: number
+  taxThreshold: number
+  isDefault: boolean
+  status: 'active' | 'inactive'
+  createdAt: string
+  createdBy: string
+  updatedAt: string
+}
+
+export const TEMPLATE_STATUS_OPTIONS: { label: string; value: SalaryTemplate['status'] }[] = [
+  { label: '启用', value: 'active' },
+  { label: '停用', value: 'inactive' }
+]
+
+export const TEMPLATE_STATUS_LABELS: Record<SalaryTemplate['status'], string> = {
+  active: '启用',
+  inactive: '停用'
+}
+
+export const TEMPLATE_STATUS_COLORS: Record<SalaryTemplate['status'], string> = {
+  active: '#10B981',
+  inactive: '#6B7280'
+}
+
+export const POSITION_LEVEL_OPTIONS = [
+  { label: 'P1 - 实习生', value: 'P1' },
+  { label: 'P2 - 初级', value: 'P2' },
+  { label: 'P3 - 中级', value: 'P3' },
+  { label: 'P4 - 高级', value: 'P4' },
+  { label: 'P5 - 专家', value: 'P5' },
+  { label: 'P6 - 资深专家', value: 'P6' },
+  { label: 'M1 - 主管', value: 'M1' },
+  { label: 'M2 - 经理', value: 'M2' },
+  { label: 'M3 - 总监', value: 'M3' },
+  { label: 'M4 - 副总裁', value: 'M4' }
+]
 
 export interface Candidate {
   id: string
