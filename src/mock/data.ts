@@ -1231,18 +1231,16 @@ export const mockInterviewEvaluations: InterviewEvaluation[] = [
 
 export const mockLeaveBalances: EmployeeLeaveBalance[] = mockEmployees.map(emp => {
   const totalAnnual = 10
-  const totalCompensatory = 5
   const usedAnnual = Math.floor(Math.random() * 5)
-  const usedCompensatory = Math.floor(Math.random() * 3)
   return {
     employeeId: emp.id,
     employeeName: emp.name,
     annualLeaveTotal: totalAnnual,
     annualLeaveUsed: usedAnnual,
     annualLeaveRemaining: totalAnnual - usedAnnual,
-    compensatoryLeaveTotal: totalCompensatory,
-    compensatoryLeaveUsed: usedCompensatory,
-    compensatoryLeaveRemaining: totalCompensatory - usedCompensatory
+    compensatoryLeaveTotal: 0,
+    compensatoryLeaveUsed: 0,
+    compensatoryLeaveRemaining: 0
   }
 })
 
@@ -1395,7 +1393,7 @@ export const mockOvertimeApplications: OvertimeApplication[] = [
     employeeId: '1',
     employeeName: '张三',
     department: '技术部',
-    overtimeDate: '2024-01-10',
+    overtimeDate: '2026-06-02',
     startTime: '18:00',
     endTime: '21:00',
     totalHours: 3,
@@ -1404,15 +1402,15 @@ export const mockOvertimeApplications: OvertimeApplication[] = [
     approverId: '9',
     approverName: '陈十一',
     approvalComment: '同意，辛苦了',
-    createdAt: '2024-01-10',
-    approvedAt: '2024-01-11'
+    createdAt: '2026-06-02',
+    approvedAt: '2026-06-03'
   },
   {
     id: 'overtime-2',
     employeeId: '1',
     employeeName: '张三',
     department: '技术部',
-    overtimeDate: '2024-01-15',
+    overtimeDate: '2026-06-05',
     startTime: '18:00',
     endTime: '22:00',
     totalHours: 4,
@@ -1421,15 +1419,15 @@ export const mockOvertimeApplications: OvertimeApplication[] = [
     approverId: '9',
     approverName: '陈十一',
     approvalComment: '同意，注意休息',
-    createdAt: '2024-01-15',
-    approvedAt: '2024-01-16'
+    createdAt: '2026-06-05',
+    approvedAt: '2026-06-06'
   },
   {
     id: 'overtime-3',
     employeeId: '3',
     employeeName: '王五',
     department: '技术部',
-    overtimeDate: '2024-01-12',
+    overtimeDate: '2026-06-01',
     startTime: '18:00',
     endTime: '20:00',
     totalHours: 2,
@@ -1438,28 +1436,28 @@ export const mockOvertimeApplications: OvertimeApplication[] = [
     approverId: '9',
     approverName: '陈十一',
     approvalComment: '同意',
-    createdAt: '2024-01-12',
-    approvedAt: '2024-01-13'
+    createdAt: '2026-06-01',
+    approvedAt: '2026-06-02'
   },
   {
     id: 'overtime-4',
     employeeId: '3',
     employeeName: '王五',
     department: '技术部',
-    overtimeDate: '2024-01-20',
+    overtimeDate: '2026-06-07',
     startTime: '09:00',
     endTime: '18:00',
     totalHours: 8,
     reason: '周末加班赶项目进度',
     status: 'pending',
-    createdAt: '2024-01-20'
+    createdAt: '2026-06-07'
   },
   {
     id: 'overtime-5',
     employeeId: '2',
     employeeName: '李四',
     department: '产品部',
-    overtimeDate: '2024-01-18',
+    overtimeDate: '2026-06-03',
     startTime: '18:00',
     endTime: '20:30',
     totalHours: 2.5,
@@ -1468,15 +1466,15 @@ export const mockOvertimeApplications: OvertimeApplication[] = [
     approverId: '9',
     approverName: '陈十一',
     approvalComment: '同意',
-    createdAt: '2024-01-18',
-    approvedAt: '2024-01-19'
+    createdAt: '2026-06-03',
+    approvedAt: '2026-06-04'
   },
   {
     id: 'overtime-6',
     employeeId: '7',
     employeeName: '吴九',
     department: '技术部',
-    overtimeDate: '2024-01-22',
+    overtimeDate: '2026-06-04',
     startTime: '18:00',
     endTime: '21:30',
     totalHours: 3.5,
@@ -1485,20 +1483,20 @@ export const mockOvertimeApplications: OvertimeApplication[] = [
     approverId: '9',
     approverName: '陈十一',
     approvalComment: '测试工作应在工作时间内完成，建议优化测试计划',
-    createdAt: '2024-01-22',
-    approvedAt: '2024-01-23'
+    createdAt: '2026-06-04',
+    approvedAt: '2026-06-05'
   },
   {
     id: 'overtime-7',
     employeeId: '4',
     employeeName: '赵六',
     department: '市场部',
-    overtimeDate: '2024-01-25',
+    overtimeDate: '2026-06-06',
     startTime: '18:00',
     endTime: '20:00',
     totalHours: 2,
     reason: '准备市场活动方案',
     status: 'pending',
-    createdAt: '2024-01-25'
+    createdAt: '2026-06-06'
   }
 ]

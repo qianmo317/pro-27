@@ -154,6 +154,17 @@ export const useOvertimeStore = defineStore('overtime', () => {
     currentPage.value = 1
   }
 
+  function initializeCompensatoryLeaveBalances() {
+    const leaveStore = useLeaveStore()
+    applications.value
+      .filter(a => a.status === 'approved')
+      .forEach(application => {
+        updateCompensatoryLeaveBalance(application)
+      })
+  }
+
+  initializeCompensatoryLeaveBalances()
+
   return {
     applications,
     currentPage,
@@ -176,6 +187,7 @@ export const useOvertimeStore = defineStore('overtime', () => {
     deductCompensatoryLeave,
     setFilterStatus,
     setCurrentPage,
-    setPageSize
+    setPageSize,
+    initializeCompensatoryLeaveBalances
   }
 })

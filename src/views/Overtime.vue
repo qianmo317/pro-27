@@ -63,9 +63,9 @@
             
             <n-alert v-if="myBalance" type="info" :bordered="false" style="margin-bottom: 20px;">
               <div class="balance-info">
-                <span>累计加班：<strong>{{ overtimeStore.getOvertimeHoursByEmployeeId('3') }}</strong> 小时</span>
-                <span>可换调休：<strong>{{ overtimeStore.getCompensatoryLeaveDays('3') }}</strong> 天</span>
-                <span>剩余调休：<strong>{{ myBalance.compensatoryLeaveRemaining }}</strong> 天</span>
+                <span>累计加班：<strong>{{ overtimeStore.getOvertimeHoursByEmployeeId(currentEmployeeId).toFixed(2) }}</strong> 小时</span>
+                <span>可换调休：<strong>{{ overtimeStore.getCompensatoryLeaveDays(currentEmployeeId).toFixed(2) }}</strong> 天</span>
+                <span>剩余调休：<strong>{{ myBalance.compensatoryLeaveRemaining.toFixed(2) }}</strong> 天</span>
               </div>
             </n-alert>
             
@@ -231,6 +231,7 @@ import { ref, computed, h } from 'vue'
 import { Send, CheckCircle, XCircle, Eye } from 'lucide-vue-next'
 import { useOvertimeStore } from '@/stores/overtime'
 import { useLeaveStore } from '@/stores/leave'
+import { useUserStore } from '@/stores/user'
 import { useMessage, useDialog, NTag, NSpace, NButton } from 'naive-ui'
 import type { FormInst, FormRules, DataTableColumns } from 'naive-ui'
 import type { OvertimeApplication, OvertimeStatus } from '@/types'
@@ -238,6 +239,9 @@ import { OVERTIME_STATUS_OPTIONS, OVERTIME_STATUS_LABELS, OVERTIME_STATUS_COLORS
 
 const overtimeStore = useOvertimeStore()
 const leaveStore = useLeaveStore()
+const userStore = useUserStore()
+
+const currentEmployeeId = computed(() => userStore.currentUser?.id || '3')
 const message = useMessage()
 const dialog = useDialog()
 
@@ -274,14 +278,14 @@ const totalHours = computed(() => {
 function calculateHours() {
 }
 
-const myBalance = computed(() => leaveStore.getLeaveBalance('3'))
+const myBalance = computed(() => leaveStore.getLeaveBalance(currentEmployeeId.value))
 
 const myFilterStatus = ref('')
 const myCurrentPage = ref(1)
 const myPageSize = ref(10)
 
 const filteredMyApplications = computed(() => {
-  let data = overtimeStore.applications.filter(a => a.employeeId === '3')
+  let data = overtimeStore.applications.filter(a => a.employeeId === currentEmployeeId.value)
   if (myFilterStatus.value) {
     data = data.filter(a => a.status === myFilterStatus.value)
   }
@@ -495,9 +499,9 @@ function handleSubmit() {
       const endTime = formatTime(formData.value.endTime)
       
       overtimeStore.addApplication({
-        employeeId: '3',
-        employeeName: '王员工',
-        department: '市场部',
+        employeeId: currentEmployeeId.value,
+        employeeName: userStore.currentUser?.name || '王员工',
+        department: userStore.currentUser?.department || '市场部',
         overtimeDate,
         startTime,
         endTime,

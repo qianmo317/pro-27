@@ -284,6 +284,8 @@ const userStore = useUserStore()
 const message = useMessage()
 const dialog = useDialog()
 
+const currentEmployeeId = computed(() => userStore.currentUser?.id || '3')
+
 const activeTab = ref('apply')
 const formRef = ref<FormInst | null>(null)
 const approveFormRef = ref<FormInst | null>(null)
@@ -325,7 +327,7 @@ const totalDays = computed(() => {
 function calculateDays() {
 }
 
-const myBalance = computed(() => leaveStore.getLeaveBalance('3'))
+const myBalance = computed(() => leaveStore.getLeaveBalance(currentEmployeeId.value))
 
 const myFilterStatus = ref('')
 const myFilterType = ref('')
@@ -333,7 +335,7 @@ const myCurrentPage = ref(1)
 const myPageSize = ref(10)
 
 const filteredMyApplications = computed(() => {
-  let data = leaveStore.applications.filter(a => a.employeeId === '3')
+  let data = leaveStore.applications.filter(a => a.employeeId === currentEmployeeId.value)
   if (myFilterStatus.value) {
     data = data.filter(a => a.status === myFilterStatus.value)
   }
@@ -587,9 +589,9 @@ function handleSubmit() {
       const endTime = formatTime(formData.value.endTime)
       
       leaveStore.addApplication({
-        employeeId: '3',
-        employeeName: '王员工',
-        department: '市场部',
+        employeeId: currentEmployeeId.value,
+        employeeName: userStore.currentUser?.name || '王员工',
+        department: userStore.currentUser?.department || '市场部',
         leaveType: formData.value.leaveType as LeaveType,
         startDate,
         endDate,
