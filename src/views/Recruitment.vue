@@ -380,9 +380,9 @@ const scheduleForm = reactive({
 const scheduleRules: FormRules = {
   round: [{ required: true, message: '请选择面试轮次', trigger: 'change' }],
   interviewerId: [{ required: true, message: '请选择面试官', trigger: 'change' }],
-  date: [{ required: true, message: '请选择面试日期', trigger: 'change' }],
-  startTime: [{ required: true, message: '请选择开始时间', trigger: 'change' }],
-  endTime: [{ required: true, message: '请选择结束时间', trigger: 'change' }],
+  date: [{ required: true, message: '请选择面试日期', trigger: ['change', 'blur'] }],
+  startTime: [{ required: true, message: '请选择开始时间', trigger: ['change', 'blur'] }],
+  endTime: [{ required: true, message: '请选择结束时间', trigger: ['change', 'blur'] }],
   location: [{ required: true, message: '请选择面试地点', trigger: 'change' }]
 }
 

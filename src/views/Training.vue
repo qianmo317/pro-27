@@ -188,7 +188,9 @@ const formData = ref<Partial<TrainingCourse>>({
 
 const formRules: FormRules = {
   title: [{ required: true, message: '请输入课程名称', trigger: 'blur' }],
-  instructor: [{ required: true, message: '请输入讲师姓名', trigger: 'blur' }]
+  instructor: [{ required: true, message: '请输入讲师姓名', trigger: 'blur' }],
+  startDate: [{ required: true, message: '请选择开始日期', trigger: ['change', 'blur'] }],
+  endDate: [{ required: true, message: '请选择结束日期', trigger: ['change', 'blur'] }]
 }
 
 const statusTypeMap: Record<string, any> = {

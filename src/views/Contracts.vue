@@ -327,14 +327,14 @@ const formRules: FormRules = {
         }
         return true
       },
-      trigger: 'change' 
+      trigger: ['change', 'blur'] 
     }
   ],
   endDate: [
     { 
       required: true, 
       validator: createDateRangeValidator(() => formData.value.startDate),
-      trigger: 'change' 
+      trigger: ['change', 'blur'] 
     }
   ],
   conversionConditions: [{ required: true, message: '请输入转正条件', trigger: 'blur' }],
@@ -363,14 +363,14 @@ const editFormRules: FormRules = {
         }
         return true
       },
-      trigger: 'change' 
+      trigger: ['change', 'blur'] 
     }
   ],
   endDate: [
     { 
       required: true, 
       validator: createDateRangeValidator(() => editFormData.value.startDate),
-      trigger: 'change' 
+      trigger: ['change', 'blur'] 
     }
   ],
   conversionConditions: [{ required: true, message: '请输入转正条件', trigger: 'blur' }],
