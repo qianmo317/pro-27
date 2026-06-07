@@ -68,7 +68,7 @@
               <Clock :size="28" color="#fff" />
             </div>
             <div class="stat-info">
-              <div class="stat-value">{{ myMonthlyOvertimeHours }} 小时</div>
+              <div class="stat-value">{{ myMonthlyOvertimeHours.toFixed(2) }} 小时</div>
               <div class="stat-label">本月加班时长</div>
             </div>
           </div>
@@ -82,7 +82,7 @@
               <CalendarOff :size="28" color="#fff" />
             </div>
             <div class="stat-info">
-              <div class="stat-value">{{ myCompensatoryLeaveRemaining }} 天</div>
+              <div class="stat-value">{{ myCompensatoryLeaveRemaining.toFixed(2) }} 天</div>
               <div class="stat-label">剩余调休天数</div>
             </div>
           </div>

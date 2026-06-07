@@ -86,7 +86,7 @@
             <n-alert v-if="myBalance" type="info" :bordered="false" style="margin-bottom: 20px;">
               <div class="balance-info">
                 <span>剩余年假：<strong>{{ myBalance.annualLeaveRemaining }}</strong> 天 / 共 {{ myBalance.annualLeaveTotal }} 天</span>
-                <span>剩余调休：<strong>{{ myBalance.compensatoryLeaveRemaining }}</strong> 天 / 共 {{ myBalance.compensatoryLeaveTotal }} 天</span>
+                <span>剩余调休：<strong>{{ myBalance.compensatoryLeaveRemaining.toFixed(2) }}</strong> 天 / 共 {{ myBalance.compensatoryLeaveTotal.toFixed(2) }} 天</span>
               </div>
             </n-alert>
             
@@ -637,7 +637,7 @@ function handleApprove() {
       const isCompensatory = selectedApplication.value.leaveType === 'compensatory'
       const balance = leaveStore.getLeaveBalance(selectedApplication.value.employeeId)
       const content = isCompensatory && balance
-        ? `确定要通过该调休申请吗？当前调休余额 ${balance.compensatoryLeaveRemaining} 天，申请 ${selectedApplication.value.totalDays} 天。通过后将自动在考勤表中标记为请假并扣除调休余额。`
+        ? `确定要通过该调休申请吗？当前调休余额 ${balance.compensatoryLeaveRemaining.toFixed(2)} 天，申请 ${selectedApplication.value.totalDays.toFixed(2)} 天。通过后将自动在考勤表中标记为请假并扣除调休余额。`
         : '确定要通过该请假申请吗？通过后将自动在考勤表中标记为请假。'
       
       const d = dialog.warning({
