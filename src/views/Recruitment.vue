@@ -424,11 +424,6 @@ function convertTimeToString(seconds: number | null): string {
 function submitSchedule() {
   scheduleFormRef.value?.validate((errors) => {
     if (!errors && selectedCandidate.value) {
-      if (!scheduleForm.date || !scheduleForm.startTime || !scheduleForm.endTime) {
-        message.error('请完整填写日期和时间')
-        return
-      }
-      
       interviewStore.scheduleInterview({
         candidateId: selectedCandidate.value.id,
         candidateName: selectedCandidate.value.name,

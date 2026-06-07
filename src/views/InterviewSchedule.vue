@@ -698,11 +698,6 @@ function handleInterviewerChange(value: string, option: SelectOption) {
 function submitSchedule() {
   scheduleFormRef.value?.validate((errors) => {
     if (!errors) {
-      if (!scheduleForm.date || !scheduleForm.startTime || !scheduleForm.endTime) {
-        message.error('请完整填写日期和时间')
-        return
-      }
-      
       interviewStore.scheduleInterview({
         candidateId: scheduleForm.candidateId,
         candidateName: scheduleForm.candidateName,
