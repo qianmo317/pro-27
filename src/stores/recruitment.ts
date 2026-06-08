@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { Candidate, CandidateSource, RecruitmentRequirement, RecruitmentRequirementStatus, RecruitmentUrgency } from '@/types'
 import { mockCandidates, mockRecruitmentRequirements, mockUsers } from '@/mock/data'
 
@@ -13,9 +13,69 @@ export const stageLabels: Record<StageType, string> = {
   rejected: '已淘汰'
 }
 
+const CANDIDATES_STORAGE_KEY = 'hrm_candidates'
+const REQUIREMENTS_STORAGE_KEY = 'hrm_requirements'
+
+function loadCandidates(): Candidate[] {
+  try {
+    const stored = localStorage.getItem(CANDIDATES_STORAGE_KEY)
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      if (Array.isArray(parsed)) {
+        const hasAllSources = parsed.every((c: Candidate) => c.source)
+        if (hasAllSources) {
+          return parsed
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Failed to load candidates from localStorage:', e)
+  }
+  return [...mockCandidates]
+}
+
+function loadRequirements(): RecruitmentRequirement[] {
+  try {
+    const stored = localStorage.getItem(REQUIREMENTS_STORAGE_KEY)
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      if (Array.isArray(parsed)) {
+        return parsed
+      }
+    }
+  } catch (e) {
+    console.error('Failed to load requirements from localStorage:', e)
+  }
+  return [...mockRecruitmentRequirements]
+}
+
 export const useRecruitmentStore = defineStore('recruitment', () => {
-  const candidates = ref<Candidate[]>([...mockCandidates])
-  const requirements = ref<RecruitmentRequirement[]>([...mockRecruitmentRequirements])
+  const candidates = ref<Candidate[]>(loadCandidates())
+  const requirements = ref<RecruitmentRequirement[]>(loadRequirements())
+
+  watch(
+    () => candidates.value,
+    (newVal) => {
+      try {
+        localStorage.setItem(CANDIDATES_STORAGE_KEY, JSON.stringify(newVal))
+      } catch (e) {
+        console.error('Failed to save candidates to localStorage:', e)
+      }
+    },
+    { deep: true }
+  )
+
+  watch(
+    () => requirements.value,
+    (newVal) => {
+      try {
+        localStorage.setItem(REQUIREMENTS_STORAGE_KEY, JSON.stringify(newVal))
+      } catch (e) {
+        console.error('Failed to save requirements to localStorage:', e)
+      }
+    },
+    { deep: true }
+  )
   const currentPage = ref(1)
   const pageSize = ref(10)
   const filterStatus = ref<RecruitmentRequirementStatus | null>(null)

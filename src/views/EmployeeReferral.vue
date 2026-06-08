@@ -348,11 +348,13 @@ const statusRules: FormRules = {
 }
 
 const scoreMarks = {
-  0: '0',
-  25: '25',
-  50: '50',
-  75: '75',
-  100: '100'
+  0: '0\n不匹配',
+  20: '20\n较低',
+  40: '40\n一般',
+  60: '60\n及格',
+  75: '75\n良好',
+  90: '90\n优秀',
+  100: '100\n非常匹配'
 }
 
 const positionOptions = computed(() => 
@@ -617,8 +619,22 @@ function handlePayBonus() {
 
 .score-slider-wrapper {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 16px;
+  padding-top: 8px;
+}
+
+.score-slider-wrapper :deep(.n-slider) {
+  flex: 1;
+  margin-top: 8px;
+}
+
+.score-slider-wrapper :deep(.n-slider-mark) {
+  white-space: pre-line;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.3;
+  color: #6B7280;
 }
 
 .score-display {
@@ -626,6 +642,7 @@ function handlePayBonus() {
   font-weight: 700;
   min-width: 60px;
   text-align: center;
+  padding-top: 4px;
 }
 
 .bonus-amount {

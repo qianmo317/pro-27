@@ -1,12 +1,41 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { EmployeeReferral, ReferralRanking, Candidate } from '@/types'
 import { REFERRAL_STATUS_LABELS, REFERRAL_BONUS_RULES, DEPARTMENT_OPTIONS } from '@/types'
 import { mockEmployeeReferrals, mockEmployees, mockUsers } from '@/mock/data'
 import { useRecruitmentStore } from '@/stores/recruitment'
 
+const STORAGE_KEY = 'hrm_referrals'
+
+function loadReferrals(): EmployeeReferral[] {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed
+      }
+    }
+  } catch (e) {
+    console.error('Failed to load referrals from localStorage:', e)
+  }
+  return [...mockEmployeeReferrals]
+}
+
 export const useReferralStore = defineStore('referral', () => {
-  const referrals = ref<EmployeeReferral[]>([...mockEmployeeReferrals])
+  const referrals = ref<EmployeeReferral[]>(loadReferrals())
+
+  watch(
+    () => referrals.value,
+    (newVal) => {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal))
+      } catch (e) {
+        console.error('Failed to save referrals to localStorage:', e)
+      }
+    },
+    { deep: true }
+  )
   const currentPage = ref(1)
   const pageSize = ref(10)
   const filterStatus = ref<EmployeeReferral['status'] | null>(null)
