@@ -134,16 +134,29 @@
           />
         </n-form-item>
         <n-form-item label="匹配度评分" path="matchScore">
-          <div class="score-slider-wrapper">
-            <n-slider 
-              v-model:value="formData.matchScore" 
-              :min="0" 
-              :max="100" 
-              :step="5"
-              :marks="scoreMarks"
-            />
-            <div class="score-display" :style="{ color: getMatchColor(formData.matchScore) }">
-              {{ formData.matchScore }}分
+          <div class="score-container">
+            <div class="score-header">
+              <span class="score-label">
+                {{ getMatchLabel(formData.matchScore) }}
+              </span>
+              <span class="score-value" :style="{ color: getMatchColor(formData.matchScore) }">
+                {{ formData.matchScore }}分
+              </span>
+            </div>
+            <div class="score-slider-wrapper">
+              <n-slider 
+                v-model:value="formData.matchScore" 
+                :min="0" 
+                :max="100" 
+                :step="5"
+                :marks="scoreMarks"
+              />
+            </div>
+            <div class="score-levels">
+              <span class="level-item">0-59 不匹配</span>
+              <span class="level-item">60-74 及格</span>
+              <span class="level-item">75-89 良好</span>
+              <span class="level-item">90-100 优秀</span>
             </div>
           </div>
         </n-form-item>
@@ -384,10 +397,15 @@ const statusRules: FormRules = {
 
 const scoreMarks = {
   0: '0',
-  25: '25',
   50: '50',
-  75: '75',
   100: '100'
+}
+
+function getMatchLabel(score: number): string {
+  if (score >= 90) return '非常匹配'
+  if (score >= 75) return '匹配良好'
+  if (score >= 60) return '基本匹配'
+  return '不太匹配'
 }
 
 const positionOptions = computed(() => 
@@ -654,21 +672,69 @@ function handlePayBonus() {
   border-radius: 12px;
 }
 
-.score-slider-wrapper {
+.score-container {
+  width: 100%;
+}
+
+.score-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.score-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1E1B4B;
+}
+
+.score-value {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.score-slider-wrapper {
+  width: 100%;
+  padding: 8px 0 24px 0;
 }
 
 .score-slider-wrapper :deep(.n-slider) {
-  flex: 1;
+  width: 100%;
 }
 
-.score-display {
-  font-size: 18px;
-  font-weight: 700;
-  min-width: 60px;
-  text-align: center;
+.score-slider-wrapper :deep(.n-slider-rail) {
+  height: 8px;
+  border-radius: 4px;
+}
+
+.score-slider-wrapper :deep(.n-slider-fill) {
+  height: 8px;
+  border-radius: 4px;
+}
+
+.score-slider-wrapper :deep(.n-slider-handle) {
+  width: 20px;
+  height: 20px;
+  border-width: 3px;
+}
+
+.score-slider-wrapper :deep(.n-slider-mark) {
+  font-size: 12px;
+  color: #6B7280;
+  padding-top: 8px;
+}
+
+.score-levels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding: 0 8px;
+}
+
+.level-item {
+  font-size: 12px;
+  color: #6B7280;
 }
 
 .bonus-amount {
