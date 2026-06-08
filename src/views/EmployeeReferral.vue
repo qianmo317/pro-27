@@ -117,6 +117,22 @@
             filterable
           />
         </n-form-item>
+        <n-form-item label="工作经验" path="experience">
+          <n-select 
+            v-model:value="formData.experience" 
+            placeholder="请选择工作经验" 
+            style="width: 100%;" 
+            :options="experienceOptions"
+          />
+        </n-form-item>
+        <n-form-item label="学历" path="education">
+          <n-select 
+            v-model:value="formData.education" 
+            placeholder="请选择学历" 
+            style="width: 100%;" 
+            :options="educationOptions"
+          />
+        </n-form-item>
         <n-form-item label="匹配度评分" path="matchScore">
           <div class="score-slider-wrapper">
             <n-slider 
@@ -327,6 +343,8 @@ const filterDepartment = ref<string | null>(null)
 const formData = reactive({
   candidateName: '',
   candidatePosition: '',
+  experience: '',
+  education: '',
   matchScore: 75,
   matchDescription: ''
 })
@@ -339,22 +357,37 @@ const statusForm = reactive({
 const formRules: FormRules = {
   candidateName: [{ required: true, message: '请输入候选人姓名', trigger: 'blur' }],
   candidatePosition: [{ required: true, message: '请选择应聘职位', trigger: 'change' }],
+  experience: [{ required: true, message: '请选择工作经验', trigger: 'change' }],
+  education: [{ required: true, message: '请选择学历', trigger: 'change' }],
   matchScore: [{ required: true, type: 'number', message: '请设置匹配度评分', trigger: 'change' }],
   matchDescription: [{ required: true, message: '请填写匹配说明', trigger: 'blur' }]
 }
+
+const experienceOptions = [
+  { label: '应届', value: '应届' },
+  { label: '1年', value: '1年' },
+  { label: '2年', value: '2年' },
+  { label: '3年', value: '3年' },
+  { label: '5年以上', value: '5年' }
+]
+
+const educationOptions = [
+  { label: '大专', value: '大专' },
+  { label: '本科', value: '本科' },
+  { label: '硕士', value: '硕士' },
+  { label: '博士', value: '博士' }
+]
 
 const statusRules: FormRules = {
   remarks: [{ required: false }]
 }
 
 const scoreMarks = {
-  0: '0\n不匹配',
-  20: '20\n较低',
-  40: '40\n一般',
-  60: '60\n及格',
-  75: '75\n良好',
-  90: '90\n优秀',
-  100: '100\n非常匹配'
+  0: '0',
+  25: '25',
+  50: '50',
+  75: '75',
+  100: '100'
 }
 
 const positionOptions = computed(() => 
@@ -488,6 +521,8 @@ function handleSubmit() {
       referralStore.addReferral({
         candidateName: formData.candidateName,
         candidatePosition: formData.candidatePosition,
+        experience: formData.experience,
+        education: formData.education,
         matchScore: formData.matchScore,
         matchDescription: formData.matchDescription
       })
@@ -495,6 +530,8 @@ function handleSubmit() {
       showAddModal.value = false
       formData.candidateName = ''
       formData.candidatePosition = ''
+      formData.experience = ''
+      formData.education = ''
       formData.matchScore = 75
       formData.matchDescription = ''
     }
@@ -619,22 +656,12 @@ function handlePayBonus() {
 
 .score-slider-wrapper {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 16px;
-  padding-top: 8px;
 }
 
 .score-slider-wrapper :deep(.n-slider) {
   flex: 1;
-  margin-top: 8px;
-}
-
-.score-slider-wrapper :deep(.n-slider-mark) {
-  white-space: pre-line;
-  text-align: center;
-  font-size: 11px;
-  line-height: 1.3;
-  color: #6B7280;
 }
 
 .score-display {
@@ -642,7 +669,6 @@ function handlePayBonus() {
   font-weight: 700;
   min-width: 60px;
   text-align: center;
-  padding-top: 4px;
 }
 
 .bonus-amount {

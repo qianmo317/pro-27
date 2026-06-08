@@ -24,7 +24,11 @@ function loadCandidates(): Candidate[] {
       if (Array.isArray(parsed)) {
         const hasAllSources = parsed.every((c: Candidate) => c.source)
         if (hasAllSources) {
-          return parsed
+          return parsed.map((c: Candidate) => ({
+            ...c,
+            experience: c.experience || '3年',
+            education: c.education || '本科'
+          }))
         }
       }
     }

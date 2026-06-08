@@ -172,6 +172,8 @@ export const useReferralStore = defineStore('referral', () => {
   function addReferral(data: {
     candidateName: string
     candidatePosition: string
+    experience: string
+    education: string
     matchScore: number
     matchDescription: string
     candidatePhone?: string
@@ -208,8 +210,8 @@ export const useReferralStore = defineStore('referral', () => {
       position: data.candidatePosition,
       avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${candidateId}`,
       appliedDate: new Date().toISOString().split('T')[0],
-      experience: '',
-      education: '',
+      experience: data.experience,
+      education: data.education,
       source: 'referral',
       referrerId: employee.id,
       referrerName: employee.name,

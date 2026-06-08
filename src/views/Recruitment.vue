@@ -56,8 +56,8 @@
                 </div>
               </div>
               <div class="candidate-tags">
-                <n-tag size="small" type="info">{{ element.experience }}</n-tag>
-                <n-tag size="small">{{ element.education }}</n-tag>
+                <n-tag v-if="element.experience" size="small" type="info">{{ element.experience }}</n-tag>
+                <n-tag v-if="element.education" size="small">{{ element.education }}</n-tag>
                 <n-tag 
                   size="small" 
                   :style="{ background: getSourceColor(element.source), color: '#fff', border: 'none' }"
@@ -119,6 +119,9 @@
         </n-form-item>
         <n-form-item label="学历" path="education">
           <n-select v-model:value="formData.education" placeholder="请选择" style="width: 100%;" :options="educationOptions" />
+        </n-form-item>
+        <n-form-item label="来源" path="source">
+          <n-select v-model:value="formData.source" placeholder="请选择" style="width: 100%;" :options="sourceOptions" />
         </n-form-item>
       </n-form>
       
@@ -324,13 +327,24 @@ const formData = ref<Partial<Candidate>>({
   position: '',
   experience: '',
   education: '',
+  source: 'job_platform',
   appliedDate: new Date().toISOString().split('T')[0]
 })
 
 const formRules: FormRules = {
   name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
-  position: [{ required: true, message: '请输入应聘职位', trigger: 'blur' }]
+  position: [{ required: true, message: '请输入应聘职位', trigger: 'blur' }],
+  experience: [{ required: true, message: '请选择工作经验', trigger: 'change' }],
+  education: [{ required: true, message: '请选择学历', trigger: 'change' }],
+  source: [{ required: true, message: '请选择来源', trigger: 'change' }]
 }
+
+const sourceOptions = [
+  { label: '招聘平台', value: 'job_platform' },
+  { label: '猎头', value: 'headhunter' },
+  { label: '校园招聘', value: 'campus' },
+  { label: '其他', value: 'other' }
+]
 
 const experienceOptions = [
   { label: '1年', value: '1年' },
@@ -411,6 +425,7 @@ function handleAdd() {
         position: '',
         experience: '',
         education: '',
+        source: 'job_platform',
         appliedDate: new Date().toISOString().split('T')[0]
       }
     }
