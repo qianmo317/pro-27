@@ -231,7 +231,7 @@ import { ref, computed, watch, onMounted, h } from 'vue'
 import * as echarts from 'echarts'
 import { CalendarCheck, CheckCircle, Clock, XCircle, CalendarOff, ClockAlert, CheckCheck } from 'lucide-vue-next'
 import { useAttendanceStore } from '@/stores/attendance'
-import { NTag, useMessage, type FormInst, type FormRules, type DataTableColumns, type DataTableRowProps } from 'naive-ui'
+import { NTag, useMessage, type FormInst, type FormRules, type DataTableColumns } from 'naive-ui'
 import type { AttendanceRecord, AttendanceAbnormalFilter, AttendanceCorrectionType } from '@/types'
 import {
   ABNORMAL_FILTER_OPTIONS,
@@ -318,7 +318,7 @@ function isAbnormal(row: AttendanceRecord): boolean {
     (!row.correction || row.correction.status !== 'approved')
 }
 
-function getRowProps(row: AttendanceRecord): DataTableRowProps {
+function getRowProps(row: AttendanceRecord): any {
   if (isAbnormal(row)) {
     return {
       style: {

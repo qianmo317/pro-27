@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { Candidate, RecruitmentRequirement, RecruitmentRequirementStatus, RecruitmentUrgency } from '@/types'
+import type { Candidate, CandidateSource, RecruitmentRequirement, RecruitmentRequirementStatus, RecruitmentUrgency } from '@/types'
 import { mockCandidates, mockRecruitmentRequirements, mockUsers } from '@/mock/data'
 
 export type StageType = 'screening' | 'interview1' | 'interview2' | 'offer' | 'rejected'
@@ -44,9 +44,14 @@ export const useRecruitmentStore = defineStore('recruitment', () => {
     }
   }
 
-  function addCandidate(candidate: Omit<Candidate, 'id' | 'stage'>) {
+  function addCandidate(candidate: Omit<Candidate, 'id' | 'stage' | 'source'> & { source?: CandidateSource }) {
     const newId = `can-${Date.now()}`
-    candidates.value.push({ ...candidate, id: newId, stage: 'screening' })
+    candidates.value.push({ 
+      ...candidate, 
+      id: newId, 
+      stage: 'screening',
+      source: candidate.source || 'job_platform'
+    })
   }
 
   function getStageCandidates(stage: StageType): Candidate[] {

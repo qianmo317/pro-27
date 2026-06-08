@@ -87,7 +87,9 @@ import {
   CalendarOff,
   Clock,
   Layers,
-  BarChart3
+  BarChart3,
+  UserPlus,
+  Trophy
 } from 'lucide-vue-next'
 import { useContractStore } from '@/stores/contract'
 import { useUserStore } from '@/stores/user'
@@ -112,6 +114,8 @@ const currentPageTitle = computed(() => {
     '/salary-template': '薪资结构模板',
     '/recruitment': '招聘看板',
     '/recruitment-requirement': '招聘需求',
+    '/employee-referral': '员工内推',
+    '/referral-ranking': '内推排行榜',
     '/interview-schedule': '面试日程',
     '/training': '培训管理',
     '/organization': '组织架构',
@@ -191,27 +195,37 @@ const menuOptions: MenuOption[] = [
     ]
   },
   {
-    label: '招聘管理',
-    key: 'recruitment-group',
-    icon: () => h(Briefcase as any, { size: 20 }) as any,
-    children: [
-      {
-        label: '招聘看板',
-        key: '/recruitment',
-        icon: () => h(Briefcase as any, { size: 18 }) as any
+        label: '招聘管理',
+        key: 'recruitment-group',
+        icon: () => h(Briefcase as any, { size: 20 }) as any,
+        children: [
+          {
+            label: '招聘看板',
+            key: '/recruitment',
+            icon: () => h(Briefcase as any, { size: 18 }) as any
+          },
+          {
+            label: '招聘需求',
+            key: '/recruitment-requirement',
+            icon: () => h(ClipboardList as any, { size: 18 }) as any
+          },
+          {
+            label: '员工内推',
+            key: '/employee-referral',
+            icon: () => h(UserPlus as any, { size: 18 }) as any
+          },
+          {
+            label: '内推排行榜',
+            key: '/referral-ranking',
+            icon: () => h(Trophy as any, { size: 18 }) as any
+          },
+          {
+            label: '面试日程',
+            key: '/interview-schedule',
+            icon: () => h(CalendarDays as any, { size: 18 }) as any
+          }
+        ]
       },
-      {
-        label: '招聘需求',
-        key: '/recruitment-requirement',
-        icon: () => h(ClipboardList as any, { size: 18 }) as any
-      },
-      {
-        label: '面试日程',
-        key: '/interview-schedule',
-        icon: () => h(CalendarDays as any, { size: 18 }) as any
-      }
-    ]
-  },
   {
     label: '培训管理',
     key: '/training',

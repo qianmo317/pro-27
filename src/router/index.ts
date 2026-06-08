@@ -58,6 +58,18 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '招聘需求' }
       },
       {
+        path: '/employee-referral',
+        name: 'employee-referral',
+        component: () => import('@/views/EmployeeReferral.vue'),
+        meta: { title: '员工内推' }
+      },
+      {
+        path: '/referral-ranking',
+        name: 'referral-ranking',
+        component: () => import('@/views/ReferralRanking.vue'),
+        meta: { title: '内推排行榜' }
+      },
+      {
         path: '/training',
         name: 'training',
         component: () => import('@/views/Training.vue'),

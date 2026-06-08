@@ -214,7 +214,7 @@ import {
   Eye
 } from 'lucide-vue-next'
 import { useWorkHoursStore } from '@/stores/workhours'
-import { NTag, useMessage, type DataTableColumns, type DataTableRowProps, type DropdownOption } from 'naive-ui'
+import { NTag, useMessage, type DataTableColumns, type DropdownOption } from 'naive-ui'
 import type { WorkHoursEmployeeStat, WorkHoursDailyRecord, OverworkedEmployee } from '@/types'
 import { DEPARTMENT_OPTIONS, OVERTIME_RISK_LEVELS } from '@/types'
 
@@ -535,7 +535,7 @@ function getRiskLabel(level: string): string {
   return OVERTIME_RISK_LEVELS[level]?.label || '未知风险'
 }
 
-function getEmployeeRowProps(row: WorkHoursEmployeeStat): DataTableRowProps {
+function getEmployeeRowProps(row: WorkHoursEmployeeStat): any {
   if (row.isOverworked) {
     return {
       style: {
@@ -547,7 +547,7 @@ function getEmployeeRowProps(row: WorkHoursEmployeeStat): DataTableRowProps {
   return {}
 }
 
-function getDailyRowProps(row: WorkHoursDailyRecord): DataTableRowProps {
+function getDailyRowProps(row: WorkHoursDailyRecord): any {
   if (row.overtimeHours > 0) {
     return {
       style: {

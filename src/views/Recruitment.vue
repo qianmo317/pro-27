@@ -37,13 +37,50 @@
               <div class="candidate-header">
                 <n-avatar round :src="element.avatar" :size="40" />
                 <div class="candidate-info">
-                  <div class="candidate-name">{{ element.name }}</div>
+                  <div class="candidate-name-wrapper">
+                    <span class="candidate-name">{{ element.name }}</span>
+                    <n-tag 
+                      v-if="element.source === 'referral'" 
+                      size="small" 
+                      type="success" 
+                      round
+                      class="referral-tag"
+                    >
+                      <template #icon>
+                        <Users :size="12" />
+                      </template>
+                      内推
+                    </n-tag>
+                  </div>
                   <div class="candidate-position">{{ element.position }}</div>
                 </div>
               </div>
               <div class="candidate-tags">
                 <n-tag size="small" type="info">{{ element.experience }}</n-tag>
                 <n-tag size="small">{{ element.education }}</n-tag>
+                <n-tag 
+                  size="small" 
+                  :style="{ background: getSourceColor(element.source), color: '#fff', border: 'none' }"
+                >
+                  {{ getSourceLabel(element.source) }}
+                </n-tag>
+              </div>
+              <div v-if="element.source === 'referral' && element.referrerName" class="referrer-info">
+                <span class="referrer-text">
+                  <UserCheck :size="12" />
+                  推荐人: {{ element.referrerName }} ({{ element.referrerDepartment }})
+                </span>
+              </div>
+              <div v-if="element.matchScore" class="match-score">
+                <span class="match-label">匹配度:</span>
+                <n-progress 
+                  :percentage="element.matchScore" 
+                  :show-indicator="false" 
+                  :stroke-width="6"
+                  :color="getMatchColor(element.matchScore)"
+                  style="width: 100px;"
+                />
+                <span class="match-value">{{ element.matchScore }}%</span>
               </div>
               <div class="candidate-footer">
                 <span class="apply-date">
@@ -93,23 +130,61 @@
       </template>
     </n-modal>
     
-    <n-modal v-model:show="showDetailModal" preset="card" title="候选人详情" style="width: 500px;">
+    <n-modal v-model:show="showDetailModal" preset="card" title="候选人详情" style="width: 550px;">
       <div v-if="selectedCandidate" class="candidate-detail">
         <div class="detail-header">
           <n-avatar round :src="selectedCandidate.avatar" :size="80" />
           <div class="candidate-basic">
-            <h3 class="detail-name">{{ selectedCandidate.name }}</h3>
+            <div class="detail-name-wrapper">
+              <h3 class="detail-name">{{ selectedCandidate.name }}</h3>
+              <n-tag 
+                v-if="selectedCandidate.source === 'referral'" 
+                size="large" 
+                type="success" 
+                round
+              >
+                <template #icon>
+                  <Users :size="14" />
+                </template>
+                内推
+              </n-tag>
+            </div>
             <n-tag size="large" type="info">{{ selectedCandidate.position }}</n-tag>
           </div>
         </div>
         <n-divider />
         <n-descriptions :column="2" bordered>
-          <n-descriptions-item label="工作经验">{{ selectedCandidate.experience }}</n-descriptions-item>
-          <n-descriptions-item label="学历">{{ selectedCandidate.education }}</n-descriptions-item>
-          <n-descriptions-item label="当前阶段" :span="2">
+          <n-descriptions-item label="工作经验">{{ selectedCandidate.experience || '-' }}</n-descriptions-item>
+          <n-descriptions-item label="学历">{{ selectedCandidate.education || '-' }}</n-descriptions-item>
+          <n-descriptions-item label="来源">
+            <n-tag 
+              :style="{ background: getSourceColor(selectedCandidate.source), color: '#fff', border: 'none' }"
+            >
+              {{ getSourceLabel(selectedCandidate.source) }}
+            </n-tag>
+          </n-descriptions-item>
+          <n-descriptions-item label="当前阶段">
             <n-tag :type="stageTypeMap[selectedCandidate.stage]">
               {{ stageLabels[selectedCandidate.stage] }}
             </n-tag>
+          </n-descriptions-item>
+          <n-descriptions-item v-if="selectedCandidate.source === 'referral' && selectedCandidate.referrerName" label="推荐人" :span="2">
+            {{ selectedCandidate.referrerName }} ({{ selectedCandidate.referrerDepartment }})
+          </n-descriptions-item>
+          <n-descriptions-item v-if="selectedCandidate.matchScore" label="匹配度" :span="2">
+            <div class="match-score-detail">
+              <n-progress 
+                :percentage="selectedCandidate.matchScore" 
+                :show-indicator="false" 
+                :stroke-width="8"
+                :color="getMatchColor(selectedCandidate.matchScore)"
+                style="flex: 1;"
+              />
+              <span class="match-value-large">{{ selectedCandidate.matchScore }}%</span>
+            </div>
+          </n-descriptions-item>
+          <n-descriptions-item v-if="selectedCandidate.matchDescription" label="匹配说明" :span="2">
+            {{ selectedCandidate.matchDescription }}
           </n-descriptions-item>
           <n-descriptions-item label="应聘日期" :span="2">{{ selectedCandidate.appliedDate }}</n-descriptions-item>
         </n-descriptions>
@@ -217,7 +292,8 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
 import draggable from 'vuedraggable'
-import { Plus, Calendar, CalendarDays } from 'lucide-vue-next'
+import { Plus, Calendar, CalendarDays, Users, UserCheck } from 'lucide-vue-next'
+import { CANDIDATE_SOURCE_LABELS, CANDIDATE_SOURCE_COLORS, type CandidateSource } from '@/types'
 import { useRecruitmentStore, stageLabels, type StageType } from '@/stores/recruitment'
 import { useInterviewStore } from '@/stores/interview'
 import { useMessage } from 'naive-ui'
@@ -421,6 +497,21 @@ function convertTimeToString(seconds: number | null): string {
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
 }
 
+function getSourceLabel(source: CandidateSource): string {
+  return CANDIDATE_SOURCE_LABELS[source] || source
+}
+
+function getSourceColor(source: CandidateSource): string {
+  return CANDIDATE_SOURCE_COLORS[source] || '#6B7280'
+}
+
+function getMatchColor(score: number): string {
+  if (score >= 90) return '#10B981'
+  if (score >= 75) return '#3B82F6'
+  if (score >= 60) return '#F59E0B'
+  return '#EF4444'
+}
+
 function submitSchedule() {
   scheduleFormRef.value?.validate((errors) => {
     if (!errors && selectedCandidate.value) {
@@ -530,10 +621,61 @@ function submitSchedule() {
   flex: 1;
 }
 
+.candidate-name-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
 .candidate-name {
   font-size: 14px;
   font-weight: 600;
   color: #1E1B4B;
+}
+
+.referral-tag {
+  font-weight: 500;
+}
+
+.referrer-info {
+  margin-bottom: 10px;
+  padding: 6px 10px;
+  background: #F0FDF4;
+  border-radius: 6px;
+}
+
+.referrer-text {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #059669;
+  font-weight: 500;
+}
+
+.match-score {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 6px 10px;
+  background: #EFF6FF;
+  border-radius: 6px;
+}
+
+.match-label {
+  font-size: 12px;
+  color: #1E40AF;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.match-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1E40AF;
+  white-space: nowrap;
 }
 
 .candidate-position {
@@ -582,10 +724,30 @@ function submitSchedule() {
   gap: 8px;
 }
 
+.detail-name-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .detail-name {
   font-size: 20px;
   font-weight: 600;
   color: #1E1B4B;
   margin: 0;
+}
+
+.match-score-detail {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.match-value-large {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1E40AF;
 }
 </style>

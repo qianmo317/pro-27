@@ -310,6 +310,32 @@ export const POSITION_LEVEL_OPTIONS = [
   { label: 'M4 - 副总裁', value: 'M4' }
 ]
 
+export type CandidateSource = 'referral' | 'job_platform' | 'headhunter' | 'campus' | 'other'
+
+export const CANDIDATE_SOURCE_OPTIONS: { label: string; value: CandidateSource }[] = [
+  { label: '员工内推', value: 'referral' },
+  { label: '招聘平台', value: 'job_platform' },
+  { label: '猎头推荐', value: 'headhunter' },
+  { label: '校园招聘', value: 'campus' },
+  { label: '其他渠道', value: 'other' }
+]
+
+export const CANDIDATE_SOURCE_LABELS: Record<CandidateSource, string> = {
+  referral: '员工内推',
+  job_platform: '招聘平台',
+  headhunter: '猎头推荐',
+  campus: '校园招聘',
+  other: '其他渠道'
+}
+
+export const CANDIDATE_SOURCE_COLORS: Record<CandidateSource, string> = {
+  referral: '#8B5CF6',
+  job_platform: '#3B82F6',
+  headhunter: '#F59E0B',
+  campus: '#10B981',
+  other: '#6B7280'
+}
+
 export interface Candidate {
   id: string
   name: string
@@ -319,6 +345,71 @@ export interface Candidate {
   appliedDate: string
   experience: string
   education: string
+  source: CandidateSource
+  referrerId?: string
+  referrerName?: string
+  referrerDepartment?: string
+  matchScore?: number
+  matchDescription?: string
+}
+
+export interface EmployeeReferral {
+  id: string
+  candidateId: string
+  candidateName: string
+  candidatePosition: string
+  referrerId: string
+  referrerName: string
+  referrerDepartment: string
+  referrerPosition: string
+  matchScore: number
+  matchDescription: string
+  status: 'pending' | 'screening' | 'interview' | 'offer' | 'hired' | 'rejected'
+  bonusAmount?: number
+  bonusPaidAt?: string
+  createdAt: string
+  updatedAt: string
+  remarks?: string
+}
+
+export const REFERRAL_STATUS_OPTIONS: { label: string; value: EmployeeReferral['status']; color: string }[] = [
+  { label: '待处理', value: 'pending', color: '#F59E0B' },
+  { label: '简历筛选', value: 'screening', color: '#7C3AED' },
+  { label: '面试中', value: 'interview', color: '#3B82F6' },
+  { label: '已发Offer', value: 'offer', color: '#10B981' },
+  { label: '已入职', value: 'hired', color: '#059669' },
+  { label: '已淘汰', value: 'rejected', color: '#EF4444' }
+]
+
+export const REFERRAL_STATUS_LABELS: Record<EmployeeReferral['status'], string> = {
+  pending: '待处理',
+  screening: '简历筛选',
+  interview: '面试中',
+  offer: '已发Offer',
+  hired: '已入职',
+  rejected: '已淘汰'
+}
+
+export const REFERRAL_BONUS_RULES = {
+  P4_BELOW: 3000,
+  P4_P5: 5000,
+  P6_ABOVE: 10000,
+  MANAGER: 15000
+}
+
+export interface ReferralRanking {
+  department: string
+  referralCount: number
+  hiredCount: number
+  totalBonus: number
+  rank: number
+  employees: {
+    id: string
+    name: string
+    referralCount: number
+    hiredCount: number
+    totalBonus: number
+  }[]
 }
 
 export interface TrainingCourse {
