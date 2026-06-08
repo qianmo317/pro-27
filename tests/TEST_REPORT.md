@@ -7,7 +7,8 @@
 - **测试时间**: 2026-06-08
 - **测试环境**: 本地开发环境
 - **测试类型**: 功能测试 + 集成测试
-- **测试框架**: 自定义测试框架 (基于 Pinia + tsx)
+- **测试框架**: Vitest 1.6.1 + Pinia + @vue/test-utils
+- **测试方式**: 直接导入项目实际 store，不重新实现任何业务逻辑
 - **总测试用例**: 42 个
 - **通过用例**: 42 个
 - **失败用例**: 0 个
@@ -171,26 +172,66 @@ function terminateContract(id: string, remarks?: string) {
 }
 ```
 
-## 测试发现的问题及修复
+## 测试架构说明
 
-### 问题1: 组织架构数据不完整
+### 测试文件结构
 
-**现象**: TC402 测试失败，有3名员工的部门在组织架构中找不到。
+```
+tests/
+├── employee-lifecycle.test.ts  # 员工全生命周期测试 (42个测试用例)
+└── TEST_REPORT.md              # 测试报告
+```
 
-**原因**: 测试数据中缺少"财务部"、"运营部"、"设计部"三个部门的定义。
+### 测试配置
 
-**修复**: 在测试数据的 `flatDepartmentsData` 中添加缺失的部门。
+**测试框架**: Vitest 1.6.1 + Happy DOM + Pinia
 
-### 问题2: 离职测试合同过期
+**配置文件**: [vitest.config.ts](file:///Users/lilixian/工作相关/AI/ai-apps-workspace/02.work%20session/solo-0605/source%20code%20/pro-27/pro-27/vitest.config.ts)
 
-**现象**: TC202 和 TC208 测试失败，合同无法终止。
+关键配置:
+```typescript
+export default defineConfig({
+  plugins: [vue()],
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src')  // 配置路径别名
+    }
+  },
+  test: {
+    globals: true,
+    environment: 'happy-dom',
+    include: ['tests/**/*.test.ts']
+  }
+})
+```
 
-**原因**: 测试中创建的合同结束日期为 `addMonths('2023-01-15', 36) = '2026-01-15'`，早于当前测试日期 `2026-06-08`，合同状态自动变为 `expired`，导致 `getCurrentContract()` 返回 `undefined`。
+### 测试文件导入说明
 
-**修复**: 使用当前日期计算未来的合同结束日期:
+测试文件 [employee-lifecycle.test.ts](file:///Users/lilixian/工作相关/AI/ai-apps-workspace/02.work%20session/solo-0605/source%20code%20/pro-27/pro-27/tests/employee-lifecycle.test.ts) 直接导入项目中的实际 store:
+
+```typescript
+import { useEmployeeStore } from '@/stores/employee'
+import { useAttendanceStore } from '@/stores/attendance'
+import { useSalaryStore } from '@/stores/salary'
+import { useSalaryTemplateStore } from '@/stores/salary-template'
+import { useOrganizationStore } from '@/stores/organization'
+import { useContractStore } from '@/stores/contract'
+```
+
+**重要**: 测试文件不包含任何重新实现的 store 逻辑，所有业务逻辑都来自项目实际代码。
+
+### 测试中发现的问题及处理
+
+#### 问题: 合同日期边界处理
+
+**现象**: 离职测试中，如果合同结束日期早于当前日期，合同状态会自动变为 `expired`，导致 `getCurrentContract()` 返回 `undefined`。
+
+**处理方式**: 在测试中使用动态计算的远期日期作为合同结束日期:
 ```typescript
 const farFutureEndDate = addMonths(getCurrentMonth() + '-01', 36)
 ```
+
+这是一个需要在业务代码中注意的边界情况，建议在实际业务中添加合同状态检查逻辑。
 
 ## 代码优化建议
 
@@ -292,8 +333,14 @@ pnpm install
 # 运行员工生命周期测试
 pnpm test:lifecycle
 
-# 或直接运行
-npx tsx tests/employee-lifecycle.test.ts
+# 运行所有测试
+pnpm test
+
+# 监听模式运行测试
+pnpm test:watch
+
+# 可视化界面运行测试
+pnpm test:ui
 ```
 
 ## 总结
@@ -311,4 +358,5 @@ npx tsx tests/employee-lifecycle.test.ts
 
 **测试完成时间**: 2026-06-08
 **测试执行人**: System Test
-**报告版本**: v1.0
+**报告版本**: v2.0
+**更新说明**: 改用 Vitest 测试框架，直接导入项目实际 store 进行测试，删除了测试文件中重复实现的 store 逻辑
