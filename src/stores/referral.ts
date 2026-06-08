@@ -4,6 +4,7 @@ import type { EmployeeReferral, ReferralRanking, Candidate } from '@/types'
 import { REFERRAL_STATUS_LABELS, REFERRAL_BONUS_RULES, DEPARTMENT_OPTIONS } from '@/types'
 import { mockEmployeeReferrals, mockEmployees, mockUsers } from '@/mock/data'
 import { useRecruitmentStore } from '@/stores/recruitment'
+import { useUserStore } from '@/stores/user'
 
 const STORAGE_KEY = 'hrm_referrals'
 
@@ -180,8 +181,9 @@ export const useReferralStore = defineStore('referral', () => {
     candidateEmail?: string
     candidateResume?: string
   }) {
-    const currentUser = mockUsers.find(u => u.role === 'employee') || mockUsers[2]
-    const employee = mockEmployees.find(e => e.id === currentUser.id) || mockEmployees[0]
+    const userStore = useUserStore()
+    const currentUser = userStore.currentUser || mockUsers.find(u => u.role === 'employee') || mockUsers[2]
+    const employee = mockEmployees.find(e => e.id === currentUser.id) || mockEmployees.find(e => e.department === currentUser.department) || mockEmployees[0]
 
     const newId = `ref-${Date.now()}`
     const candidateId = `can-ref-${Date.now()}`

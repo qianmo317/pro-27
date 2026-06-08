@@ -90,8 +90,8 @@
     <n-card class="table-card">
       <n-data-table
         :columns="columns"
-        :data="referralStore.paginatedReferrals"
-        :pagination="referralStore.pagination"
+        :data="paginatedReferrals"
+        :pagination="pagination"
         :single-line="false"
         row-class-name="referral-row"
       />
@@ -352,6 +352,8 @@ const formRef = ref<FormInst | null>(null)
 const statusFormRef = ref<FormInst | null>(null)
 const filterStatus = ref<EmployeeReferral['status'] | null>(null)
 const filterDepartment = ref<string | null>(null)
+const currentPage = ref(1)
+const pageSize = ref(10)
 
 const formData = reactive({
   candidateName: '',
@@ -525,11 +527,46 @@ function getStatusColor(status: EmployeeReferral['status']): string {
   return option?.color || '#6B7280'
 }
 
+const filteredReferrals = computed(() => {
+  return referralStore.referrals.filter(r => {
+    if (filterStatus.value && r.status !== filterStatus.value) return false
+    if (filterDepartment.value && r.referrerDepartment !== filterDepartment.value) return false
+    return true
+  }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+})
+
+const paginatedReferrals = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  return filteredReferrals.value.slice(start, start + pageSize.value)
+})
+
+const total = computed(() => filteredReferrals.value.length)
+
+const pagination = computed(() => ({
+  page: currentPage.value,
+  pageSize: pageSize.value,
+  itemCount: total.value,
+  showSizePicker: true,
+  pageSizes: [10, 20, 50, 100],
+  showQuickJumper: true,
+  onUpdatePage: (page: number) => {
+    currentPage.value = page
+  },
+  onUpdatePageSize: (size: number) => {
+    pageSize.value = size
+    currentPage.value = 1
+  }
+}))
+
 function handleFilterStatusChange(value: EmployeeReferral['status'] | null) {
+  filterStatus.value = value
+  currentPage.value = 1
   referralStore.setFilterStatus(value)
 }
 
 function handleFilterDepartmentChange(value: string | null) {
+  filterDepartment.value = value
+  currentPage.value = 1
   referralStore.setFilterDepartment(value)
 }
 
