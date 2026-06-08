@@ -122,6 +122,13 @@
       </n-grid-item>
     </n-grid>
     
+    <div style="margin-top: 20px;">
+      <PersonnelStructure
+        :employees="employeeStore.employees"
+        @department-change="handleDepartmentDrillDown"
+      />
+    </div>
+
     <n-grid :cols="3" :x-gap="20" :y-gap="20" style="margin-top: 20px;">
       <n-grid-item>
         <n-card title="最近入职员工" class="list-card">
@@ -269,6 +276,7 @@ import { useOvertimeStore } from '@/stores/overtime'
 import { useCareStore } from '@/stores/care'
 import { stageLabels } from '@/stores/recruitment'
 import CareReminderCard from '@/components/CareReminderCard.vue'
+import PersonnelStructure from '@/components/PersonnelStructure.vue'
 import type { Employee } from '@/types'
 import { calculateWorkYears } from '@/lib/utils'
 
@@ -360,6 +368,14 @@ function handleViewEmployeeDetail(employee: Employee) {
 
 function handleBlessingSent(employee: Employee, content: string) {
   message.success(`已向 ${employee.name} 发送祝福`)
+}
+
+function handleDepartmentDrillDown(department: string) {
+  if (department) {
+    message.info(`正在查看 ${department} 的人员结构`)
+  } else {
+    message.info('已切换到全公司人员结构视图')
+  }
 }
 
 function formatMessageTime(isoString: string): string {

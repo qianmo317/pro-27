@@ -19,6 +19,7 @@ export interface Employee {
   entryDate: string
   birthday?: string
   status: 'active' | 'inactive' | 'probation'
+  level?: string
 }
 
 export interface CareReminder {
