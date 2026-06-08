@@ -803,3 +803,75 @@ export interface Interviewer {
   department: string
   position: string
 }
+
+export type SkillProficiency = 'beginner' | 'intermediate' | 'advanced' | 'expert'
+
+export const SKILL_PROFICIENCY_OPTIONS: { label: string; value: SkillProficiency; color: string }[] = [
+  { label: '入门', value: 'beginner', color: '#9CA3AF' },
+  { label: '熟悉', value: 'intermediate', color: '#3B82F6' },
+  { label: '精通', value: 'advanced', color: '#8B5CF6' },
+  { label: '专家', value: 'expert', color: '#10B981' }
+]
+
+export const SKILL_PROFICIENCY_LABELS: Record<SkillProficiency, string> = {
+  beginner: '入门',
+  intermediate: '熟悉',
+  advanced: '精通',
+  expert: '专家'
+}
+
+export const SKILL_PROFICIENCY_COLORS: Record<SkillProficiency, string> = {
+  beginner: '#9CA3AF',
+  intermediate: '#3B82F6',
+  advanced: '#8B5CF6',
+  expert: '#10B981'
+}
+
+export interface EmployeeSkill {
+  id: string
+  employeeId: string
+  employeeName: string
+  skillName: string
+  category: string
+  proficiency: SkillProficiency
+  yearsOfExperience?: number
+  createdAt: string
+}
+
+export const SKILL_CATEGORY_OPTIONS: { label: string; value: string }[] = [
+  { label: '前端开发', value: '前端开发' },
+  { label: '后端开发', value: '后端开发' },
+  { label: '移动端开发', value: '移动端开发' },
+  { label: '数据库', value: '数据库' },
+  { label: 'DevOps', value: 'DevOps' },
+  { label: '测试', value: '测试' },
+  { label: '设计', value: '设计' },
+  { label: '产品', value: '产品' },
+  { label: '运营', value: '运营' },
+  { label: '市场', value: '市场' },
+  { label: '其他', value: '其他' }
+]
+
+export interface EmployeeProject {
+  id: string
+  employeeId: string
+  employeeName: string
+  projectName: string
+  role: string
+  startDate: string
+  endDate: string
+  description: string
+  achievements: string
+  createdAt: string
+}
+
+export interface DepartmentSkillStats {
+  department: string
+  skillName: string
+  totalCount: number
+  avgProficiency: number
+  expertCount: number
+  advancedCount: number
+  intermediateCount: number
+  beginnerCount: number
+}

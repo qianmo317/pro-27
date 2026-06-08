@@ -384,6 +384,149 @@
               </div>
             </div>
           </n-tab-pane>
+
+          <n-tab-pane name="skills" tab="技能标签">
+            <div v-if="currentEmployee" class="skills-section">
+              <div class="section-header">
+                <span class="section-title">
+                  <Tag :size="16" style="margin-right: 6px; vertical-align: middle;" />
+                  技能标签
+                </span>
+                <n-space>
+                  <n-button type="primary" size="small" @click="openTeamSkillModal">
+                    <template #icon>
+                      <BarChart3 :size="14" />
+                    </template>
+                    团队技术能力
+                  </n-button>
+                  <n-button type="primary" size="small" @click="openAddSkillModal">
+                    <template #icon>
+                      <Plus :size="14" />
+                    </template>
+                    添加技能
+                  </n-button>
+                </n-space>
+              </div>
+
+              <div v-if="employeeSkills.length > 0" class="skills-list">
+                <div 
+                  v-for="skill in employeeSkills" 
+                  :key="skill.id" 
+                  class="skill-item"
+                >
+                  <div class="skill-main">
+                    <div class="skill-info">
+                      <div class="skill-name-row">
+                        <span class="skill-name">{{ skill.skillName }}</span>
+                        <n-tag 
+                          size="small" 
+                          type="info"
+                          style="margin-left: 8px;"
+                        >
+                          {{ skill.category }}
+                        </n-tag>
+                      </div>
+                      <div class="skill-meta">
+                        <n-tag 
+                          size="small" 
+                          :style="{ 
+                            backgroundColor: getSkillProficiencyColor(skill.proficiency) + '20',
+                            color: getSkillProficiencyColor(skill.proficiency),
+                            border: '1px solid ' + getSkillProficiencyColor(skill.proficiency) + '40'
+                          }"
+                        >
+                          {{ getSkillProficiencyLabel(skill.proficiency) }}
+                        </n-tag>
+                        <span v-if="skill.yearsOfExperience" class="skill-years">
+                          {{ skill.yearsOfExperience }} 年经验
+                        </span>
+                      </div>
+                    </div>
+                    <div class="skill-actions">
+                      <n-button size="small" quaternary @click="openEditSkillModal(skill)">
+                        <template #icon>
+                          <Edit :size="14" />
+                        </template>
+                      </n-button>
+                      <n-button size="small" quaternary style="color: #EF4444;" @click="handleDeleteSkill(skill.id)">
+                        <template #icon>
+                          <Trash2 :size="14" />
+                        </template>
+                      </n-button>
+                    </div>
+                  </div>
+                  <div class="skill-progress">
+                    <div 
+                      class="skill-progress-bar" 
+                      :style="{ 
+                        width: `${skill.proficiency === 'expert' ? 100 : skill.proficiency === 'advanced' ? 75 : skill.proficiency === 'intermediate' ? 50 : 25}%`,
+                        backgroundColor: getSkillProficiencyColor(skill.proficiency)
+                      }"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="no-skills">
+                <n-empty description="暂无技能标签，点击上方按钮添加" />
+              </div>
+            </div>
+          </n-tab-pane>
+
+          <n-tab-pane name="projects" tab="项目经历">
+            <div v-if="currentEmployee" class="projects-section">
+              <div class="section-header">
+                <span class="section-title">
+                  <Briefcase :size="16" style="margin-right: 6px; vertical-align: middle;" />
+                  项目经历
+                </span>
+                <n-button type="primary" size="small" @click="openAddProjectModal">
+                  <template #icon>
+                    <Plus :size="14" />
+                  </template>
+                  添加项目
+                </n-button>
+              </div>
+
+              <div v-if="employeeProjects.length > 0" class="projects-table">
+                <n-data-table
+                  :columns="projectColumns"
+                  :data="employeeProjects"
+                  :bordered="false"
+                  size="medium"
+                />
+              </div>
+
+              <div v-if="employeeProjects.length > 0" class="projects-cards">
+                <div 
+                  v-for="project in employeeProjects" 
+                  :key="project.id" 
+                  class="project-card"
+                >
+                  <div class="project-header">
+                    <div class="project-title-row">
+                      <span class="project-name">{{ project.projectName }}</span>
+                      <n-tag size="small" type="primary">{{ project.role }}</n-tag>
+                    </div>
+                    <div class="project-dates">
+                      <CalendarDays :size="14" style="margin-right: 4px; vertical-align: middle;" />
+                      {{ project.startDate }} ~ {{ project.endDate }}
+                    </div>
+                  </div>
+                  <div class="project-description">
+                    <div class="project-label">项目描述</div>
+                    <div class="project-content">{{ project.description }}</div>
+                  </div>
+                  <div class="project-achievements">
+                    <div class="project-label">项目成果</div>
+                    <div class="project-content achievements">{{ project.achievements }}</div>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="no-projects">
+                <n-empty description="暂无项目经历，点击上方按钮添加" />
+              </div>
+            </div>
+          </n-tab-pane>
         </n-tabs>
       </div>
       <template #footer>
@@ -590,6 +733,159 @@
       @success="handleImportSuccess"
     />
 
+    <n-modal v-model:show="showSkillModal" preset="card" :title="editingSkill ? '编辑技能' : '添加技能'" style="width: 500px;">
+      <n-form
+        ref="skillFormRef"
+        :model="skillFormData"
+        :rules="skillFormRules"
+        label-placement="left"
+        label-width="100px"
+      >
+        <n-form-item label="技能名称" path="skillName">
+          <n-input 
+            v-model:value="skillFormData.skillName" 
+            placeholder="请输入技能名称，如：Vue.js" 
+            :options="skillStore.allSkillNames.map(name => ({ label: name, value: name }))"
+          />
+        </n-form-item>
+        <n-form-item label="技能分类" path="category">
+          <n-select 
+            v-model:value="skillFormData.category" 
+            placeholder="请选择技能分类" 
+            :options="skillCategoryOptions" 
+          />
+        </n-form-item>
+        <n-form-item label="熟练度" path="proficiency">
+          <n-select 
+            v-model:value="skillFormData.proficiency" 
+            placeholder="请选择熟练度" 
+            :options="skillProficiencyOptions.map(opt => ({ label: opt.label, value: opt.value }))"
+          />
+        </n-form-item>
+        <n-form-item label="使用年限">
+          <n-input-number 
+            v-model:value="skillFormData.yearsOfExperience" 
+            :min="0" 
+            :max="50" 
+            placeholder="请输入使用年限"
+            style="width: 100%;"
+          />
+        </n-form-item>
+      </n-form>
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="showSkillModal = false">取消</n-button>
+          <n-button type="primary" @click="handleSkillSubmit">确认</n-button>
+        </n-space>
+      </template>
+    </n-modal>
+
+    <n-modal v-model:show="showProjectModal" preset="card" :title="editingProject ? '编辑项目经历' : '添加项目经历'" style="width: 680px;">
+      <n-form
+        ref="projectFormRef"
+        :model="projectFormData"
+        :rules="projectFormRules"
+        label-placement="left"
+        label-width="100px"
+      >
+        <n-form-item label="项目名称" path="projectName">
+          <n-input v-model:value="projectFormData.projectName" placeholder="请输入项目名称" />
+        </n-form-item>
+        <n-form-item label="担任角色" path="role">
+          <n-input 
+            v-model:value="projectFormData.role" 
+            placeholder="请输入担任角色，如：前端技术负责人" 
+            :options="projectStore.allRoles.map(role => ({ label: role, value: role }))"
+          />
+        </n-form-item>
+        <n-row :gutter="16">
+          <n-col :span="12">
+            <n-form-item label="开始时间" path="startDate">
+              <n-date-picker v-model:value="projectFormData.startDate" type="date" style="width: 100%;" />
+            </n-form-item>
+          </n-col>
+          <n-col :span="12">
+            <n-form-item label="结束时间">
+              <n-date-picker v-model:value="projectFormData.endDate" type="date" style="width: 100%;" />
+            </n-form-item>
+          </n-col>
+        </n-row>
+        <n-form-item label="项目描述">
+          <n-input v-model:value="projectFormData.description" type="textarea" placeholder="请输入项目描述" :rows="3" />
+        </n-form-item>
+        <n-form-item label="项目成果">
+          <n-input v-model:value="projectFormData.achievements" type="textarea" placeholder="请输入项目成果，突出数据量化的成果" :rows="3" />
+        </n-form-item>
+      </n-form>
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="showProjectModal = false">取消</n-button>
+          <n-button type="primary" @click="handleProjectSubmit">确认</n-button>
+        </n-space>
+      </template>
+    </n-modal>
+
+    <n-modal v-model:show="showTeamSkillModal" preset="card" title="团队技术能力分布" style="width: 900px;">
+      <div class="team-skill-modal">
+        <div class="team-skill-header">
+          <div class="team-skill-filter">
+            <span class="filter-label">选择部门：</span>
+            <n-select 
+              v-model:value="selectedDepartmentForRadar" 
+              :options="departmentOptionsForRadar" 
+              style="width: 200px;"
+            />
+          </div>
+        </div>
+        
+        <n-grid :cols="2" :x-gap="20" style="margin-top: 16px;">
+          <n-grid-item>
+            <n-card title="技术能力雷达图" size="small">
+              <div ref="radarChartRef" class="radar-chart"></div>
+            </n-card>
+          </n-grid-item>
+          <n-grid-item>
+            <n-card title="技能分布详情" size="small">
+              <div v-if="skillStatsForDepartment.length > 0" class="skill-stats-list">
+                <div 
+                  v-for="stat in skillStatsForDepartment.slice(0, 10)" 
+                  :key="stat.skillName" 
+                  class="skill-stat-item"
+                >
+                  <div class="skill-stat-header">
+                    <span class="skill-stat-name">{{ stat.skillName }}</span>
+                    <span class="skill-stat-count">{{ stat.totalCount }} 人掌握</span>
+                  </div>
+                  <div class="skill-stat-bar">
+                    <div 
+                      class="skill-stat-progress" 
+                      :style="{ 
+                        width: `${(stat.totalCount / Math.max(...skillStatsForDepartment.map(s => s.totalCount))) * 100}%` 
+                      }"
+                    ></div>
+                  </div>
+                  <div class="skill-stat-meta">
+                    <n-tag v-if="stat.expertCount > 0" size="small" type="success">专家 {{ stat.expertCount }}</n-tag>
+                    <n-tag v-if="stat.advancedCount > 0" size="small" type="info">精通 {{ stat.advancedCount }}</n-tag>
+                    <n-tag v-if="stat.intermediateCount > 0" size="small" type="warning">熟悉 {{ stat.intermediateCount }}</n-tag>
+                    <n-tag v-if="stat.beginnerCount > 0" size="small" type="default">入门 {{ stat.beginnerCount }}</n-tag>
+                  </div>
+                </div>
+              </div>
+              <div v-else>
+                <n-empty description="暂无技能数据" />
+              </div>
+            </n-card>
+          </n-grid-item>
+        </n-grid>
+      </div>
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="showTeamSkillModal = false">关闭</n-button>
+        </n-space>
+      </template>
+    </n-modal>
+
     <n-modal v-model:show="showImportResult" preset="card" title="导入结果" style="width: 600px;">
       <div class="import-result-modal">
         <n-result
@@ -627,17 +923,19 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, h, nextTick, onMounted } from 'vue'
-import { Plus, Search, Edit, Trash2, Eye, ArrowRightLeft, CalendarDays, Clock, Download, Upload } from 'lucide-vue-next'
+import { Plus, Search, Edit, Trash2, Eye, ArrowRightLeft, CalendarDays, Clock, Download, Upload, Briefcase, Tag, BarChart3, X, Check } from 'lucide-vue-next'
 import * as echarts from 'echarts'
 import { useEmployeeStore } from '@/stores/employee'
 import { useContractStore } from '@/stores/contract'
 import { usePerformanceStore } from '@/stores/performance'
 import { useEmployeeTransferStore } from '@/stores/employee-transfer'
 import { useLeaveStore } from '@/stores/leave'
-import { useMessage, useDialog, NTag, NSpace, NButton, NTimeline, NTimelineItem, NRow, NCol } from 'naive-ui'
+import { useEmployeeSkillStore } from '@/stores/employee-skill'
+import { useEmployeeProjectStore } from '@/stores/employee-project'
+import { useMessage, useDialog, NTag, NSpace, NButton, NTimeline, NTimelineItem, NRow, NCol, NEmpty, NDataTable } from 'naive-ui'
 import type { FormInst, FormRules, DataTableColumns, DialogReactive } from 'naive-ui'
-import type { Employee, Contract, PerformanceAppraisal, PerformanceResultGrade, EmployeeTransfer, TransferType, LeaveApplication, LeaveType, LeaveStatus } from '@/types'
-import { PERFORMANCE_GRADE_LABELS, PERFORMANCE_GRADE_COLORS, TRANSFER_TYPE_OPTIONS, TRANSFER_TYPE_LABELS, TRANSFER_STATUS_OPTIONS, TRANSFER_TYPE_COLORS, LEAVE_TYPE_LABELS, LEAVE_TYPE_COLORS, LEAVE_STATUS_LABELS, LEAVE_STATUS_COLORS } from '@/types'
+import type { Employee, Contract, PerformanceAppraisal, PerformanceResultGrade, EmployeeTransfer, TransferType, LeaveApplication, LeaveType, LeaveStatus, EmployeeSkill, SkillProficiency, EmployeeProject } from '@/types'
+import { PERFORMANCE_GRADE_LABELS, PERFORMANCE_GRADE_COLORS, TRANSFER_TYPE_OPTIONS, TRANSFER_TYPE_LABELS, TRANSFER_STATUS_OPTIONS, TRANSFER_TYPE_COLORS, LEAVE_TYPE_LABELS, LEAVE_TYPE_COLORS, LEAVE_STATUS_LABELS, LEAVE_STATUS_COLORS, SKILL_PROFICIENCY_OPTIONS, SKILL_PROFICIENCY_LABELS, SKILL_PROFICIENCY_COLORS, SKILL_CATEGORY_OPTIONS } from '@/types'
 import { useOrganizationStore } from '@/stores/organization'
 import AttachmentManager from '@/components/AttachmentManager.vue'
 import BatchImport from '@/components/BatchImport.vue'
@@ -649,6 +947,8 @@ const contractStore = useContractStore()
 const performanceStore = usePerformanceStore()
 const transferStore = useEmployeeTransferStore()
 const leaveStore = useLeaveStore()
+const skillStore = useEmployeeSkillStore()
+const projectStore = useEmployeeProjectStore()
 const organizationStore = useOrganizationStore()
 const message = useMessage()
 const dialog = useDialog()
@@ -677,6 +977,96 @@ const activeDetailTab = ref('contract')
 const importResultData = ref({
   successCount: 0,
   errors: [] as { row: number; message: string; data: Partial<Employee> }[]
+})
+
+const showSkillModal = ref(false)
+const showProjectModal = ref(false)
+const showTeamSkillModal = ref(false)
+const editingSkill = ref<EmployeeSkill | null>(null)
+const editingProject = ref<EmployeeProject | null>(null)
+const selectedDepartmentForRadar = ref('技术部')
+const radarChartRef = ref<HTMLElement | null>(null)
+
+const skillFormRef = ref<FormInst | null>(null)
+const projectFormRef = ref<FormInst | null>(null)
+
+const skillFormData = ref<Partial<EmployeeSkill>>({
+  skillName: '',
+  category: '前端开发',
+  proficiency: 'intermediate' as SkillProficiency,
+  yearsOfExperience: 1
+})
+
+const projectFormData = ref<Partial<EmployeeProject>>({
+  projectName: '',
+  role: '',
+  startDate: null,
+  endDate: null,
+  description: '',
+  achievements: ''
+})
+
+const skillFormRules: FormRules = {
+  skillName: [{ required: true, message: '请输入技能名称', trigger: 'blur' }],
+  category: [{ required: true, message: '请选择技能分类', trigger: 'change' }],
+  proficiency: [{ required: true, message: '请选择熟练度', trigger: 'change' }]
+}
+
+const projectFormRules: FormRules = {
+  projectName: [{ required: true, message: '请输入项目名称', trigger: 'blur' }],
+  role: [{ required: true, message: '请输入担任角色', trigger: 'blur' }],
+  startDate: [{ required: true, type: 'number', message: '请选择开始时间', trigger: 'change' }]
+}
+
+const employeeSkills = computed(() => {
+  if (!currentEmployee.value) return []
+  return skillStore.getSkillsByEmployeeId(currentEmployee.value.id)
+})
+
+const employeeProjects = computed(() => {
+  if (!currentEmployee.value) return []
+  return projectStore.getProjectsByEmployeeId(currentEmployee.value.id)
+})
+
+const skillCategoryOptions = SKILL_CATEGORY_OPTIONS
+const skillProficiencyOptions = SKILL_PROFICIENCY_OPTIONS
+const departmentOptionsForRadar = computed(() => organizationStore.departmentOptions)
+
+const projectColumns: DataTableColumns<EmployeeProject> = [
+  { title: '项目名称', key: 'projectName', ellipsis: { tooltip: true } },
+  { title: '担任角色', key: 'role', width: 140 },
+  { 
+    title: '起止时间', 
+    key: 'time',
+    width: 200,
+    render: (row) => `${row.startDate} ~ ${row.endDate}`
+  },
+  {
+    title: '项目成果',
+    key: 'achievements',
+    ellipsis: { tooltip: true },
+    render: (row) => h('span', { style: { color: '#10B981' } }, row.achievements)
+  },
+  {
+    title: '操作',
+    key: 'actions',
+    width: 120,
+    render: (row) => h(NSpace as any, { size: 'small' }, {
+      default: () => [
+        h(NButton as any, { size: 'small', quaternary: true, onClick: () => handleEditProject(row) }, {
+          icon: () => h(Edit as any, { size: 14 })
+        }),
+        h(NButton as any, { size: 'small', quaternary: true, onClick: () => handleDeleteProject(row.id), style: 'color: #EF4444;' }, {
+          icon: () => h(Trash2 as any, { size: 14 })
+        })
+      ]
+    })
+  }
+]
+
+const skillStatsForDepartment = computed(() => {
+  if (!selectedDepartmentForRadar.value) return []
+  return skillStore.getDepartmentSkillStats(selectedDepartmentForRadar.value)
 })
 
 const genderOptions = [
@@ -1333,6 +1723,234 @@ function resetForm() {
     status: 'probation'
   }
 }
+
+function getSkillProficiencyLabel(proficiency: SkillProficiency): string {
+  return SKILL_PROFICIENCY_LABELS[proficiency]
+}
+
+function getSkillProficiencyColor(proficiency: SkillProficiency): string {
+  return SKILL_PROFICIENCY_COLORS[proficiency]
+}
+
+function openAddSkillModal() {
+  editingSkill.value = null
+  skillFormData.value = {
+    skillName: '',
+    category: '前端开发',
+    proficiency: 'intermediate' as SkillProficiency,
+    yearsOfExperience: 1
+  }
+  showSkillModal.value = true
+}
+
+function openEditSkillModal(skill: EmployeeSkill) {
+  editingSkill.value = skill
+  skillFormData.value = { ...skill }
+  showSkillModal.value = true
+}
+
+function handleSkillSubmit() {
+  skillFormRef.value?.validate((errors) => {
+    if (!errors && currentEmployee.value) {
+      if (editingSkill.value) {
+        skillStore.updateSkill(editingSkill.value.id, skillFormData.value)
+        message.success('技能更新成功')
+      } else {
+        if (skillStore.isSkillExists(currentEmployee.value.id, skillFormData.value.skillName || '')) {
+          message.error('该技能已存在')
+          return
+        }
+        skillStore.addSkill({
+          employeeId: currentEmployee.value.id,
+          employeeName: currentEmployee.value.name,
+          skillName: skillFormData.value.skillName || '',
+          category: skillFormData.value.category || '',
+          proficiency: skillFormData.value.proficiency as SkillProficiency,
+          yearsOfExperience: skillFormData.value.yearsOfExperience
+        })
+        message.success('技能添加成功')
+      }
+      showSkillModal.value = false
+    }
+  })
+}
+
+function handleDeleteSkill(id: string) {
+  const d = dialog.warning({
+    title: '确认删除',
+    content: '确定要删除该技能吗？',
+    positiveText: '删除',
+    negativeText: '取消',
+    onPositiveClick: () => {
+      skillStore.deleteSkill(id)
+      message.success('删除成功')
+      d.destroy()
+    }
+  })
+}
+
+function openAddProjectModal() {
+  editingProject.value = null
+  projectFormData.value = {
+    projectName: '',
+    role: '',
+    startDate: null,
+    endDate: null,
+    description: '',
+    achievements: ''
+  }
+  showProjectModal.value = true
+}
+
+function handleEditProject(project: EmployeeProject) {
+  editingProject.value = project
+  projectFormData.value = { ...project }
+  showProjectModal.value = true
+}
+
+function handleProjectSubmit() {
+  projectFormRef.value?.validate((errors) => {
+    if (!errors && currentEmployee.value) {
+      const startDate = typeof projectFormData.value.startDate === 'number'
+        ? formatDate(projectFormData.value.startDate as number)
+        : projectFormData.value.startDate || ''
+      
+      const endDate = typeof projectFormData.value.endDate === 'number'
+        ? formatDate(projectFormData.value.endDate as number)
+        : projectFormData.value.endDate || ''
+
+      if (editingProject.value) {
+        projectStore.updateProject(editingProject.value.id, {
+          ...projectFormData.value,
+          startDate,
+          endDate
+        })
+        message.success('项目经历更新成功')
+      } else {
+        projectStore.addProject({
+          employeeId: currentEmployee.value.id,
+          employeeName: currentEmployee.value.name,
+          projectName: projectFormData.value.projectName || '',
+          role: projectFormData.value.role || '',
+          startDate,
+          endDate,
+          description: projectFormData.value.description || '',
+          achievements: projectFormData.value.achievements || ''
+        })
+        message.success('项目经历添加成功')
+      }
+      showProjectModal.value = false
+    }
+  })
+}
+
+function handleDeleteProject(id: string) {
+  const d = dialog.warning({
+    title: '确认删除',
+    content: '确定要删除该项目经历吗？',
+    positiveText: '删除',
+    negativeText: '取消',
+    onPositiveClick: () => {
+      projectStore.deleteProject(id)
+      message.success('删除成功')
+      d.destroy()
+    }
+  })
+}
+
+function openTeamSkillModal() {
+  if (currentEmployee.value) {
+    selectedDepartmentForRadar.value = currentEmployee.value.department
+  }
+  showTeamSkillModal.value = true
+  nextTick(() => {
+    initRadarChart()
+  })
+}
+
+function initRadarChart() {
+  if (!radarChartRef.value) return
+  
+  const chart = echarts.init(radarChartRef.value)
+  const radarData = skillStore.getTopSkillsForRadar(selectedDepartmentForRadar.value, 8)
+  
+  if (radarData.indicator.length === 0) {
+    chart.setOption({
+      title: { text: '暂无技能数据', left: 'center', top: 'center', textStyle: { color: '#9CA3AF' } }
+    })
+    return
+  }
+  
+  const option = {
+    tooltip: {
+      trigger: 'item'
+    },
+    legend: {
+      data: ['平均熟练度'],
+      bottom: 0
+    },
+    radar: {
+      indicator: radarData.indicator,
+      shape: 'polygon',
+      splitNumber: 4,
+      axisName: {
+        color: '#4B5563',
+        fontSize: 12
+      },
+      splitLine: {
+        lineStyle: {
+          color: ['#E5E7EB']
+        }
+      },
+      splitArea: {
+        show: true,
+        areaStyle: {
+          color: ['#F9FAFB', '#F3F4F6']
+        }
+      },
+      axisLine: {
+        lineStyle: {
+          color: '#D1D5DB'
+        }
+      }
+    },
+    series: [{
+      name: '团队技术能力',
+      type: 'radar',
+      data: [
+        {
+          value: radarData.values,
+          name: '平均熟练度',
+          symbol: 'circle',
+          symbolSize: 6,
+          lineStyle: {
+            width: 3,
+            color: '#7C3AED'
+          },
+          areaStyle: {
+            color: new echarts.graphic.RadialGradient(0.5, 0.5, 1, [
+              { offset: 0, color: 'rgba(124, 58, 237, 0.5)' },
+              { offset: 1, color: 'rgba(124, 58, 237, 0.1)' }
+            ])
+          },
+          itemStyle: {
+            color: '#7C3AED'
+          }
+        }
+      ]
+    }]
+  }
+  
+  chart.setOption(option)
+}
+
+watch(selectedDepartmentForRadar, () => {
+  if (showTeamSkillModal.value) {
+    nextTick(() => {
+      initRadarChart()
+    })
+  }
+})
 </script>
 
 <style scoped>
@@ -1909,5 +2527,252 @@ function resetForm() {
   border: 1px solid #E5E7EB;
   border-radius: 8px;
   overflow: hidden;
+}
+
+.skills-section {
+  padding: 8px 0;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.skills-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skill-item {
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.2s;
+}
+
+.skill-item:hover {
+  border-color: #7C3AED;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.1);
+}
+
+.skill-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.skill-info {
+  flex: 1;
+}
+
+.skill-name-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.skill-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1E1B4B;
+}
+
+.skill-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.skill-years {
+  font-size: 13px;
+  color: #6B7280;
+}
+
+.skill-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.skill-progress {
+  height: 6px;
+  background: #E5E7EB;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.skill-progress-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+.no-skills {
+  padding: 40px 0;
+}
+
+.projects-section {
+  padding: 8px 0;
+}
+
+.projects-table {
+  margin-bottom: 24px;
+}
+
+.projects-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.project-card {
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.2s;
+}
+
+.project-card:hover {
+  border-color: #7C3AED;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.1);
+}
+
+.project-header {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #EDE9FE;
+}
+
+.project-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.project-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1E1B4B;
+}
+
+.project-dates {
+  font-size: 13px;
+  color: #7C3AED;
+  font-weight: 500;
+}
+
+.project-description,
+.project-achievements {
+  margin-bottom: 12px;
+}
+
+.project-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.project-content {
+  font-size: 14px;
+  color: #4B5563;
+  line-height: 1.6;
+}
+
+.project-content.achievements {
+  color: #10B981;
+  font-weight: 500;
+}
+
+.no-projects {
+  padding: 40px 0;
+}
+
+.team-skill-modal {
+  text-align: left;
+}
+
+.team-skill-header {
+  margin-bottom: 16px;
+}
+
+.team-skill-filter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.filter-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.radar-chart {
+  height: 320px;
+  width: 100%;
+}
+
+.skill-stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.skill-stat-item {
+  padding: 12px;
+  background: #F9FAFB;
+  border-radius: 8px;
+  border: 1px solid #E5E7EB;
+}
+
+.skill-stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.skill-stat-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1E1B4B;
+}
+
+.skill-stat-count {
+  font-size: 12px;
+  color: #7C3AED;
+  font-weight: 500;
+}
+
+.skill-stat-bar {
+  height: 6px;
+  background: #E5E7EB;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.skill-stat-progress {
+  height: 100%;
+  background: linear-gradient(90deg, #7C3AED, #A78BFA);
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+.skill-stat-meta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 </style>
